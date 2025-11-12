@@ -3112,7 +3112,42 @@ renderTable('playoff-goalie-stats','searchPlayoffGoalies','updated-playoff-goali
     observer.observe(footer);
   });
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // 🔍 Funktion som gör spelarnamn klickbara
+  function makeNamesClickable(container) {
+    const cells = container.querySelectorAll("td, th");
+
+    cells.forEach(cell => {
+      const text = cell.textContent.trim();
+
+      // Hoppa över tomma eller för korta värden
+      if (text.length < 2) return;
+
+      // Kolla om det verkar vara ett spelarnamn (inga siffror, inga symboler)
+      if (/^[A-Za-zÅÄÖåäö_ ]+$/.test(text)) {
+        const link = document.createElement("a");
+        link.href = `https://sweehockey-svg.github.io/SEC/players/?player=${encodeURIComponent(text)}`;
+        link.textContent = text;
+        link.style.color = "#f0d58b";
+        link.style.textDecoration = "none";
+        link.addEventListener("mouseover", () => link.style.textDecoration = "underline");
+        link.addEventListener("mouseout", () => link.style.textDecoration = "none");
+        cell.textContent = "";
+        cell.appendChild(link);
+      }
+    });
+  }
+
+  // Aktivera på alla tabeller (eller en specifik del)
+  const tables = document.querySelectorAll("table");
+  tables.forEach(makeNamesClickable);
+
+  console.log("🧷 Spelarnamn klickbara → /players/?player=namn");
+});
+</script>
 
 </body>
 </html>
+
 
