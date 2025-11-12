@@ -3113,48 +3113,63 @@ renderTable('playoff-goalie-stats','searchPlayoffGoalies','updated-playoff-goali
   });
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("🧷 Klickbara namn-script startat…");
+  console.log("🧷 Aktiverar klickbara namn (endast Spelare/Goalie-kolumner)");
 
-  function makeNamesClickable(container) {
-    const cells = container.querySelectorAll("td, th");
-    console.log(`🔍 Hittade ${cells.length} celler i tabell`);
+  function makeNamesClickable(table) {
+    const headerCells = table.querySelectorAll("thead th");
+    let targetColIndexes = [];
 
-    cells.forEach(cell => {
-      const text = cell.textContent.trim();
-
-      // Visa några exempel i konsolen
-      if (Math.random() < 0.02) console.log("🧠 Testar cell:", text);
-
-      if (text.length < 2) return;
-      if (/^[A-Za-zÅÄÖåäö_ ]+$/.test(text)) {
-        console.log("✅ Namn funnet:", text);
-        const link = document.createElement("a");
-        link.href = `https://sweehockey-svg.github.io/SEC/players/?player=${encodeURIComponent(text)}`;
-        link.textContent = text;
-        link.style.color = "#f0d58b";
-        link.style.textDecoration = "none";
-        link.addEventListener("mouseover", () => link.style.textDecoration = "underline");
-        link.addEventListener("mouseout", () => link.style.textDecoration = "none");
-        cell.textContent = "";
-        cell.appendChild(link);
+    headerCells.forEach((th, i) => {
+      const headerText = th.textContent.trim().toLowerCase();
+      if (/(spelare|player|målvakt|goalie|name)/i.test(headerText)) {
+        targetColIndexes.push(i);
       }
+    });
+
+    if (targetColIndexes.length === 0) return; // Ingen relevant kolumn funnen
+
+    console.log("🎯 Hittade namnkolumner:", targetColIndexes);
+
+    const rows = table.querySelectorAll("tbody tr");
+    rows.forEach(row => {
+      targetColIndexes.forEach(index => {
+        const cell = row.children[index];
+        if (!cell) return;
+
+        const text = cell.textContent.trim();
+        if (!text || text.length < 2) return;
+
+        // Tillåt även _ och siffror (för eHockey-nicknames)
+        if (/^[A-Za-zÅÄÖåäö0-9_ -]+$/.test(text)) {
+          const link = document.createElement("a");
+          link.href = `https://sweehockey-svg.github.io/SEC/players/?player=${encodeURIComponent(text)}`;
+          link.textContent = text;
+          link.style.color = "#f0d58b";
+          link.style.textDecoration = "none";
+          link.addEventListener("mouseover", () => link.style.textDecoration = "underline");
+          link.addEventListener("mouseout", () => link.style.textDecoration = "none");
+
+          cell.textContent = "";
+          cell.appendChild(link);
+        }
+      });
     });
   }
 
   function activate() {
     const tables = document.querySelectorAll("table");
-    console.log("📊 Antal tabeller:", tables.length);
+    console.log("📊 Totalt antal tabeller:", tables.length);
     tables.forEach(makeNamesClickable);
   }
 
-  // 🔁 vänta lite så att tabeller som laddas via script hinner dyka upp
-  setTimeout(activate, 1500);
+  // vänta 1 sekund så tabeller hinner laddas
+  setTimeout(activate, 1000);
 });
 </script>
 
-
 </body>
 </html>
+
 
 
 
