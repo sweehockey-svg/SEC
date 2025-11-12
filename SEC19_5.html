@@ -3111,21 +3111,23 @@ renderTable('playoff-goalie-stats','searchPlayoffGoalies','updated-playoff-goali
 
     observer.observe(footer);
   });
-</script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  // 🔍 Funktion som gör spelarnamn klickbara
+  console.log("🧷 Klickbara namn-script startat…");
+
   function makeNamesClickable(container) {
     const cells = container.querySelectorAll("td, th");
+    console.log(`🔍 Hittade ${cells.length} celler i tabell`);
 
     cells.forEach(cell => {
       const text = cell.textContent.trim();
 
-      // Hoppa över tomma eller för korta värden
-      if (text.length < 2) return;
+      // Visa några exempel i konsolen
+      if (Math.random() < 0.02) console.log("🧠 Testar cell:", text);
 
-      // Kolla om det verkar vara ett spelarnamn (inga siffror, inga symboler)
+      if (text.length < 2) return;
       if (/^[A-Za-zÅÄÖåäö_ ]+$/.test(text)) {
+        console.log("✅ Namn funnet:", text);
         const link = document.createElement("a");
         link.href = `https://sweehockey-svg.github.io/SEC/players/?player=${encodeURIComponent(text)}`;
         link.textContent = text;
@@ -3139,15 +3141,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Aktivera på alla tabeller (eller en specifik del)
-  const tables = document.querySelectorAll("table");
-  tables.forEach(makeNamesClickable);
+  function activate() {
+    const tables = document.querySelectorAll("table");
+    console.log("📊 Antal tabeller:", tables.length);
+    tables.forEach(makeNamesClickable);
+  }
 
-  console.log("🧷 Spelarnamn klickbara → /players/?player=namn");
+  // 🔁 vänta lite så att tabeller som laddas via script hinner dyka upp
+  setTimeout(activate, 1500);
 });
 </script>
 
+
 </body>
 </html>
+
 
 
