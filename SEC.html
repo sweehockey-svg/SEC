@@ -1,0 +1,3118 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Svenska eHockey Cupen 19.5</title>
+
+  <style>
+    :root {
+      --sec-bg-deep: #02030a;
+      --sec-bg-top: #080f24;
+      --sec-gold: #d6b15f;
+      --sec-gold-soft: #f0d58b;
+      --sec-text-main: #e3e4f2;
+      --sec-text-muted: #b4b7d8;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+      background: #000;
+      color: var(--sec-text-main);
+      min-height: 100vh;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Bakgrund + rökridå */
+    #sec-bg-layer {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      z-index: -2;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(214,177,95,0.17) 0, transparent 55%),
+        radial-gradient(circle at 100% 0%, rgba(88,120,255,0.16) 0, transparent 55%),
+        radial-gradient(circle at 50% 100%, #010314 0, #000 70%);
+    }
+
+    .smoke-layer {
+      position: absolute;
+      inset: -20%;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(120,140,200,0.12) 0, transparent 45%),
+        radial-gradient(circle at 80% 30%, rgba(120,140,200,0.10) 0, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(80,100,160,0.12) 0, transparent 45%);
+      opacity: 0;
+      animation: smokeFade 1.4s ease forwards 0.8s, smokeDrift 40s linear infinite;
+      mix-blend-mode: screen;
+    }
+
+    .smoke-layer.smoke-back {
+      filter: blur(22px);
+      opacity: 0;
+      animation: smokeFade 1.8s ease forwards 1s, smokeDrift 55s linear infinite;
+    }
+
+    @keyframes smokeFade {
+      from { opacity: 0; }
+      to   { opacity: 0.4; }
+    }
+
+    @keyframes smokeDrift {
+      0%   { transform: translate3d(0,0,0) scale(1); }
+      50%  { transform: translate3d(-4%, -2%, 1px) scale(1.05); }
+      100% { transform: translate3d(3%, 3%, 0) scale(1); }
+    }
+
+    #sec-page {
+      position: relative;
+      width: 100%;
+      max-width: 1200px;
+      padding: 20px 12px 80px;
+      z-index: 1;
+      animation: pageFade .6s ease-out;
+    }
+
+    @keyframes pageFade {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* HEADER */
+    .sfc-header {
+      margin-top: 12px;
+      border-radius: 22px;
+      padding: 26px 16px 22px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,0.05), transparent 40%),
+        radial-gradient(circle at top, #151b3f 0, #050614 55%, #02030a 100%);
+      border: 1px solid rgba(214,177,95,0.6);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.95);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sfc-header::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(214,177,95,0.24) 0, transparent 55%);
+      opacity: 0.4;
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    .sfc-logo {
+      width: 165px;
+      filter: drop-shadow(0 0 20px rgba(214,177,95,0.7));
+      position: relative;
+      z-index: 1;
+    }
+
+    .sfc-title {
+      position: relative;
+      z-index: 1;
+      font-weight: 800;
+      font-size: clamp(1.3rem, 2.6vw, 1.7rem);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: #fdfbff;
+      margin-top: 4px;
+    }
+
+    .sfc-title strong {
+      color: var(--sec-gold-soft);
+    }
+
+    .sfc-divider {
+      position: relative;
+      z-index: 1;
+      width: 180px;
+      height: 3px;
+      border-radius: 999px;
+      margin: 18px auto 0;
+      background: linear-gradient(90deg, transparent, var(--sec-gold-soft), transparent);
+      box-shadow: 0 0 15px rgba(214,177,95,0.8);
+    }
+
+    .sfc-reflection {
+      position: absolute;
+      left: 50%;
+      bottom: -6px;
+      width: 60%;
+      height: 26px;
+      transform: translateX(-50%);
+      background: radial-gradient(ellipse at top, rgba(214,177,95,0.38) 0, transparent 60%);
+      opacity: 0.45;
+      filter: blur(6px);
+      pointer-events: none;
+    }
+
+    /* TABS */
+    .cup-tabs {
+      margin-top: 20px;
+      border-radius: 999px;
+      background: rgba(2,4,12,0.94);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(214,177,95,0.35);
+      box-shadow: 0 14px 34px rgba(0,0,0,0.95);
+      padding: 7px 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .cup-tabs .tab {
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      color: var(--sec-text-muted);
+      font-size: .8rem;
+      padding: 9px 16px;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s ease, color .2s ease, box-shadow .2s ease, transform .15s ease;
+    }
+
+    .cup-tabs .tab:hover {
+      background: rgba(255,255,255,0.05);
+      transform: translateY(-1px);
+    }
+
+    .cup-tabs .tab.active {
+      background: linear-gradient(90deg, var(--sec-gold), var(--sec-gold-soft));
+      color: #181933;
+      box-shadow: 0 0 18px rgba(214,177,95,0.65);
+      transform: translateY(-1px);
+    }
+
+    /* PANELER */
+.tab-panel {
+  margin-top: 26px;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top, rgba(255,255,255,0.04) 0, transparent 55%),
+    radial-gradient(circle at 0% 100%, rgba(214,177,95,0.14) 0, transparent 55%),
+    linear-gradient(180deg, #060715, #02030a 60%, #000 100%);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 24px 20px 26px;
+  box-shadow: 0 18px 42px rgba(0,0,0,0.95);
+  color: var(--sec-text-main);
+  animation: panelFade .4s ease;
+  display: none;           /* 👈 Göm alla paneler som standard */
+}
+
+/* Endast aktiv panel syns */
+.tab-panel.active {
+  display: block;
+}
+
+/* FOOTER – Dark Arena Premium */
+#sec-footer-wrapper {
+  margin-top: 100px;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  max-width: 1100px;
+  margin-inline: auto;
+  padding: 60px 0 40px;
+  background: radial-gradient(circle at top center, rgba(255,215,100,0.04) 0%, transparent 80%);
+  border-top: 1px solid rgba(214,177,95,0.15);
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 -6px 18px rgba(0,0,0,0.45);
+}
+
+.sec-footer-glow {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  width: 420px;
+  height: 140px;
+  transform: translateX(-50%);
+  background: radial-gradient(circle at center, rgba(214,177,95,0.2) 0%, transparent 75%);
+  filter: blur(32px);
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+#sec-footer-line {
+  width: 320px;
+  height: 2px;
+  margin: 0 auto 14px;
+  background: linear-gradient(90deg, transparent, var(--sec-gold-soft), transparent);
+  box-shadow: 0 0 10px rgba(214,177,95,0.7);
+  opacity: 0.9;
+}
+
+#sec-footer-text {
+  font-size: 0.88rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(230,230,240,0.9);
+  font-weight: 500;
+  text-shadow: 0 0 4px rgba(255, 215, 100, 0.15);
+}
+
+#sec-footer-text span {
+  color: var(--sec-gold-soft);
+  font-weight: 600;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+#sec-footer-text span:hover {
+  color: #f6e8b0;
+  text-shadow: 0 0 10px rgba(255, 220, 130, 0.4);
+}
+/* FOOTER – Scroll Fade-in */
+#sec-footer-wrapper {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 1.2s ease, transform 1.2s ease;
+}
+
+#sec-footer-wrapper.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* === TEAM GRID === */
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 🔧 Ändra till 2 eller 4 för fler/färre per rad */
+  gap: 1.5rem;
+  margin-top: 2rem;
+  justify-items: center;
+}
+
+/* === TEAM CARD === */
+.team-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 215, 0, 0.06));
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 18px;
+  text-align: center;
+  padding: 18px;
+  width: 250px;
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.team-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.25);
+}
+
+/* === LOGO === */
+.team-logo img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 215, 0, 0.25);
+  margin-bottom: 10px;
+}
+
+/* === TEXT === */
+.team-card h3 {
+  color: #fff;
+  font-weight: 600;
+  margin: 8px 0;
+}
+
+.team-card p {
+  font-size: 0.9rem;
+  color: #ddd;
+  line-height: 1.4;
+}
+
+/* Responsiv layout (mobilvänlig) */
+@media (max-width: 900px) {
+  .team-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .team-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+  
+/* --- Flikar (lagvy) --- */
+.stat-tabs {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0 28px;
+  gap: 12px;
+}
+.stat-tabs .tab {
+  padding: 8px 16px;
+  border: 2px solid #0b1a49;
+  border-radius: 8px;
+  background: #fff;
+  color: #0b1a49;
+  font: 600 14px/1.2 Inter, system-ui, Arial;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.stat-tabs .tab:hover {
+  background: #f4f7ff;
+}
+.stat-tabs .tab.active {
+  background: #0b1a49;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,.1);
+}
+
+/* --- Lagstatistik – tabeller --- */
+.team-view table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font: 14px/1.3 Inter,system-ui,Arial,sans-serif;
+}
+.team-view thead th {
+  position: sticky;
+  top: 0;
+  background: #0b1a49;
+  color: #d6b15f;
+  padding: 10px 8px;
+  text-align: right;
+}
+.team-view thead th:nth-child(1),
+.team-view thead th:nth-child(2){text-align:left}
+.team-view tbody td{padding:10px 8px;border-bottom:1px solid #e9eef5;text-align:right}
+.team-view tbody td:nth-child(1),
+.team-view tbody td:nth-child(2){text-align:left}
+.team-view .wrap{background:#fff;border-radius:12px;overflow-x:auto;box-shadow:0 6px 18px rgba(0,0,0,.08)}
+.team-view h2{font:600 18px/1.2 Inter,system-ui,Arial;margin:18px 4px 8px}
+.team-view .sep{height:12px}
+
+/* --- Lagmatcher (per lag) --- */
+.match-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 30px;
+}
+.match-block {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+.match-date {
+  background: #0b1a49;
+  color: #fff;
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: 15px;
+}
+.match-round {
+  background: #666;
+  color: #fff;
+  padding: 8px 14px;
+  font-weight: 600;
+  font-size: 14px;
+}
+.match-table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 15px/1.4 Inter, system-ui, Arial;
+}
+.match-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #eaeef5;
+}
+.match-table tr:last-child td {
+  border-bottom: none;
+}
+.match-time {
+  color: #555;
+  font-weight: 500;
+  width: 15%;
+}
+.match-team {
+  width: 35%;
+  font-weight: 600;
+}
+.match-score {
+  text-align: center;
+  width: 20%;
+  font-weight: 600;
+  color: #0b1a49;
+  position: relative;
+}
+.match-score .ot {
+  display: block;
+  font-size: 12px;
+  color: #777;
+  font-weight: 500;
+  margin-top: 2px;
+  text-align: center;
+}
+.match-team.winner {
+  font-weight: 700;
+  color: #0b1a49;
+}
+/* 🔒 Förhindra sidleds-scroll på mobilen */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+}
+
+</style>
+</head>
+
+<body>
+  <div id="sec-bg-layer">
+    <div class="smoke-layer smoke-back"></div>
+    <div class="smoke-layer"></div>
+  </div>
+
+  <div id="sec-page">
+    <!-- HEADER -->
+    <div class="sfc-header">
+      <img 
+        src="https://drive.google.com/thumbnail?id=1QybW_Uw8HO0OXo8vwQFD-zrrr-ifFrC9&sz=w1000" 
+        alt="SEC Logo" 
+        class="sfc-logo">
+      <div class="sfc-title">
+        🏆 Svenska eHockey <strong>Cupen</strong> 19.5 🏒
+      </div>
+      <div class="sfc-divider"></div>
+      <div class="sfc-reflection"></div>
+    </div>
+
+    <!-- NAVIGATION -->
+    <nav class="cup-tabs">
+      <button class="tab active" data-target="info">Info</button>
+      <button class="tab" data-target="lag">Lag</button>
+      <button class="tab" data-target="tabell">Tabell</button>
+      <button class="tab" data-target="slutspel">Slutspel</button>
+      <button class="tab" data-target="matcher">Matcher</button>
+      <button class="tab" data-target="statistik">Statistik</button>
+      <button class="tab" data-target="regler">Regler</button>
+    </nav>
+
+    <!-- INFO -->
+    <div id="info" class="tab-panel active">
+      <div class="info-card" style="padding:20px;">
+        <h2>ℹ️ Om Svenska eHockey Cupen 19.5</h2>
+        <p>
+          <strong>Svenska eHockey Cupen 19.5 (SEC 19.5)</strong> var en försäsongsturnering som spelades i oktober 2026 – 
+          en uppvärmning inför vinterns kommande eHockeyturneringar. Sex svenska lag gjorde upp i ett intensivt 
+          gruppspel följt av ett slutspel mellan de fyra främsta lagen.
+        </p>
+        <p>
+          Turneringen bjöd på underhållande matcher, tuff konkurrens och flera minnesvärda prestationer. 
+          Här hittar du <strong>lag, tabeller, matcher, statistik och resultat</strong> – allt samlat på ett ställe.
+        </p>
+      </div>
+    </div>
+
+<!-- 🔹 LAG -->
+<div id="lag" class="tab-panel">
+  <h2>🏒 Deltagande lag</h2>
+  <p>Här är de sex deltagande lagen i <strong>Svenska eHockey Cupen 19.5</strong>. Klicka på ett lag för att se dess statistik, matcher och slutspelsresultat.</p>
+
+  <div class="team-grid">
+
+    <!-- 🏒 LAG 1 – MoDo Hockey -->
+    <div class="team-card" data-team="modo">
+      <div class="team-logo">
+        <img src="https://drive.google.com/thumbnail?id=1Pbr3B5ZSRjbluKEpNXvz6e4xnj0oB0Pw&sz=w1000" alt="MoDo Hockey">
+      </div>
+      <h3>MoDo Hockey</h3>
+      <p><strong>C:</strong> MrXbox79<br><strong>A:</strong> RookieLIAMOVIC, Disctrasan-</p>
+    </div>
+
+    <!-- 🏒 LAG 2 – SSK Academy -->
+    <div class="team-card" data-team="ssk">
+      <div class="team-logo">
+        <img src="https://drive.google.com/thumbnail?id=1kdxwWivlii1hCK3doJY8I44dIQ_hQzYo&sz=w1000" alt="SSK Academy">
+      </div>
+      <h3>SSK Academy</h3>
+      <p><strong>C:</strong> foxflyers<br><strong>A:</strong> m4Dow_86, Toivo4936</p>
+    </div>
+
+    <!-- 🏒 LAG 3 – Sunne IK Esport -->
+    <div class="team-card" data-team="sunne">
+      <div class="team-logo">
+        <img src="https://drive.google.com/thumbnail?id=15oE3SXfRAA3VK0nciLqYZ2FL6D8GUBtG&sz=w1000" alt="Sunne IK Esport">
+      </div>
+      <h3>Sunne IK Esport</h3>
+      <p><strong>C:</strong> O3_DAFA<br><strong>A:</strong> –</p>
+    </div>
+
+    <!-- 🏒 LAG 4 – Surte Sisu HC -->
+    <div class="team-card" data-team="surte">
+      <div class="team-logo">
+        <img src="https://drive.google.com/thumbnail?id=1qRkJLEFmS-npNei6bs09fsy0QLmmrvpB&sz=w1000" alt="Surte Sisu HC">
+      </div>
+      <h3>Surte Sisu HC</h3>
+      <p><strong>C:</strong> FezH___<br><strong>A:</strong> fakespear, –</p>
+    </div>
+
+    <!-- 🏒 LAG 5 – Veterankraft -->
+    <div class="team-card" data-team="veteran">
+      <div class="team-logo">
+        <img src="https://drive.google.com/thumbnail?id=18GqojyIKrdOcvfNJdhrlNF_-mB-XVmjH&sz=w1000" alt="Veterankraft">
+      </div>
+      <h3>Veterankraft</h3>
+      <p><strong>C:</strong> I-Buffy-l<br><strong>A:</strong> Supremski, Prolane-</p>
+    </div>
+
+    <!-- 🏒 LAG 6 – vNexs Vipers -->
+    <div class="team-card" data-team="vnexs">
+      <div class="team-logo">
+        <img src="https://drive.google.com/thumbnail?id=1lM9wrVIDUgc1ri4ZSQmErsb9aGZo5wBM&sz=w1000" alt="vNexs Vipers">
+      </div>
+      <h3>vNexs Vipers</h3>
+      <p><strong>C:</strong> Hescoores<br><strong>A:</strong> Dan9105, Jonsson03</p>
+    </div>
+
+  </div>
+<style>
+/* 🎨 FÖRBÄTTRAD DESIGN FÖR LAGSIDOR */
+.team-hero {
+  text-align: center;
+  padding: 30px 15px 10px;
+}
+.team-hero-logo {
+  width: 220px;
+  max-width: 80%;
+  margin-bottom: 12px;
+}
+.team-hero h2 {
+  font-size: 2rem;
+  margin: 10px 0;
+  color: #fff;
+  font-weight: 700;
+}
+.team-roster {
+  color: #ccc;
+  font-size: 1rem;
+}
+
+/* 🔘 Flikar (Gruppspel / Slutspel / Matcher) */
+.stat-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 20px 0 30px;
+}
+.stat-tabs .tab {
+  background: #10121a;
+  color: #ddd;
+  border: 1px solid #2e2f3a;
+  border-radius: 8px;
+  padding: 10px 18px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.stat-tabs .tab:hover {
+  background: #1c1f29;
+  color: #fff;
+}
+.stat-tabs .tab.active {
+  background: #ffd35c;
+  color: #000;
+  border-color: #ffd35c;
+}
+
+/* 📊 Tabellen */
+.team-view table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  background: #0d0f17;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.team-view th {
+  background: #162032;
+  color: #ffda73;
+  padding: 10px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.team-view td {
+  padding: 10px;
+  color: #eaeaea;
+  border-bottom: 1px solid #1f2533;
+}
+.team-view tr:nth-child(even) td {
+  background: #111523;
+}
+.team-view tr:hover td {
+  background: #1b2233;
+}
+
+/* 🧱 Matchblock */
+.match-container {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.match-block {
+  background: #0f111a;
+  border: 1px solid #2a2d38;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+.match-date {
+  font-weight: 600;
+  color: #ffda73;
+  margin-bottom: 10px;
+  font-size: 1.05rem;
+}
+.match-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.match-time {
+  width: 70px;
+  color: #999;
+}
+.match-team {
+  color: #ddd;
+  font-weight: 500;
+}
+.match-team.winner {
+  color: #79ff97;
+  font-weight: 700;
+}
+.match-score {
+  color: #fff;
+  text-align: center;
+  font-weight: 600;
+}
+.match-score .ot {
+  color: #ffda73;
+  font-size: 0.8rem;
+  margin-left: 4px;
+}
+
+/* 🔙 Tillbaka-knapp */
+.back-to-lag {
+  display: inline-block;
+  background: #ffd35c;
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  margin: 10px 0 15px;
+  font-weight: 600;
+}
+.back-to-lag:hover {
+  background: #ffe27a;
+}
+
+/* 🔹 Allmänt */
+.wrap {
+  overflow-x: auto;
+}
+.sep {
+  height: 25px;
+}
+/* Dölj rubriken "Deltagande lag" när man är inne på en individuell lagsida */
+#lag.show-team > h2,
+#lag.show-team > p {
+  display: none !important;
+}
+
+/* 🔄 Fade-effekt vid växling mellan lag och lagsidor */
+#lag .team-grid,
+#lag .team-panel {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+#lag .team-grid[style*="display: grid"],
+#lag .team-panel[style*="display: block"] {
+  opacity: 1;
+}
+
+/* --- Lagsidevisning (stabil version) --- */
+
+/* Dölj alla individuella lagpaneler som standard */
+.team-panel {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Visa aktiv panel när JS sätter display:block */
+.team-panel[style*="display: block"] {
+  display: block;
+  opacity: 1;
+}
+
+/* Visa lagöversikten som grid, med fade */
+#lag > .team-grid {
+  display: grid;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+/* Dölj rubrik och text när man är inne på ett lag */
+#lag.show-team > h2,
+#lag.show-team > p {
+  display: none !important;
+}
+
+/* Dölj "Tillbaka till lagsidan"-knappen på huvudsidan, men visa på lagsidor */
+#lag .back-to-lag {
+  display: none;
+}
+.team-panel .back-to-lag {
+  display: inline-block !important;
+}
+
+
+
+
+</style>
+
+  <!-- 🔸 TEAM SUBPAGES -->
+  <!-- Each team page below will show when clicked -->
+
+  <!-- 🟥 MoDo Hockey -->
+  <div id="team-modo" class="team-panel" style="display:none;">
+    <button type="button" class="back-to-lag">← Tillbaka till lagsidan</button>
+    <div class="team-hero">
+      <img src="https://drive.google.com/thumbnail?id=1Pbr3B5ZSRjbluKEpNXvz6e4xnj0oB0Pw&sz=w1000" class="team-hero-logo" alt="MoDo Hockey">
+      <h2>MoDo Hockey</h2>
+      <p class="team-roster"><strong>C:</strong> MrXbox79 &nbsp; <strong>A:</strong> RookieLIAMOVIC, Disctrasan-</p>
+    </div>
+    <div class="stat-tabs">
+      <button class="tab active" data-mode="gruppspel">Gruppspel</button>
+      <button class="tab" data-mode="slutspel">Slutspel</button>
+      <button class="tab" data-mode="matcher">Matcher</button>
+    </div>
+
+    <div class="team-view" style="max-width:980px;margin:auto"></div>
+    <script>
+    (function(){
+      const panel = document.getElementById("team-modo");
+      if (!panel) return;
+      const host = panel.querySelector(".team-view");
+      const tabs = panel.querySelectorAll(".stat-tabs .tab");
+      const API = "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec";
+      const TEAM = "MOD";
+      const TEAM_NAME = "Modo Hockey";
+
+      // --- Tabellbyggare ---
+      const makeTable = (rows, type) => {
+        const table = document.createElement("table");
+        const thead = document.createElement("thead");
+        if (type === "goalie") {
+          thead.innerHTML = `<tr><th>#</th><th>Goalie</th><th>GP</th><th>SA</th><th>GA</th><th>SV</th><th>GAA</th><th>SV%</th><th>SO</th></tr>`;
+        } else {
+          thead.innerHTML = `<tr><th>#</th><th>Player</th><th>GP</th><th>G</th><th>A</th><th>PTS</th><th>PIM</th></tr>`;
+        }
+        const tbody = document.createElement("tbody");
+        rows.forEach((r, i) => {
+          if (type === "goalie") {
+            tbody.innerHTML += `<tr><td>${i+1}</td><td>${r.goalies||""}</td><td>${r.gp||""}</td><td>${r.sa||""}</td><td>${r.ga||""}</td><td>${r.sv||""}</td><td>${r.gaa||""}</td><td>${r.svp||""}</td><td>${r.so||""}</td></tr>`;
+          } else {
+            tbody.innerHTML += `<tr><td>${i+1}</td><td>${r.players||r.player||""}</td><td>${r.gp||""}</td><td>${r.g||""}</td><td>${r.a||""}</td><td>${r.pts||""}</td><td>${r.pim||""}</td></tr>`;
+          }
+        });
+        table.append(thead, tbody);
+        return table;
+      };
+
+      // --- Gruppspel & Slutspel ---
+      const loadStats = (mode) => {
+        if (!host) return;
+        host.innerHTML = `<div style="padding:12px">Laddar ${mode}...</div>`;
+        const sheetSkaters = mode === "slutspel" ? "Spelarstats slut 19.5" : "Spelarstats";
+        const sheetGoalies = mode === "slutspel" ? "Målvaktsstats slut 19.5" : "Målvaktsstats";
+        Promise.all([
+          fetch(API + `?sheet=${encodeURIComponent(sheetGoalies)}`).then(r => r.json()),
+          fetch(API + `?sheet=${encodeURIComponent(sheetSkaters)}`).then(r => r.json())
+        ]).then(([g, s]) => {
+          const goalies = g.filter(r => String(r.team||"").trim() === TEAM);
+          const skaters = s.filter(r => String(r.team||"").trim() === TEAM);
+          host.innerHTML = "";
+          const h2g = document.createElement("h2");
+          h2g.textContent = `${TEAM_NAME} – Målvakter ${mode === "slutspel" ? "(Slutspel)" : ""}`;
+          const wrap1 = document.createElement("div");
+          wrap1.className = "wrap";
+          wrap1.append(makeTable(goalies, "goalie"));
+          const h2s = document.createElement("h2");
+          h2s.textContent = `${TEAM_NAME} – Spelare ${mode === "slutspel" ? "(Slutspel)" : ""}`;
+          const wrap2 = document.createElement("div");
+          wrap2.className = "wrap";
+          wrap2.append(makeTable(skaters, "skater"));
+          const sep = document.createElement("div");
+          sep.className = "sep";
+          host.append(h2g, wrap1, sep, h2s, wrap2);
+        }).catch(err => {
+          host.innerHTML = `<div style="padding:12px;color:#f66;">Fel vid hämtning av statistik: ${err}</div>`;
+        });
+      };
+
+      // --- Matcher (från statisk HTML) ---
+      const loadMatches = () => {
+        if (!host) return;
+        host.innerHTML = `      <div class="match-container">
+        <div class="match-block">
+          <div class="match-date">📅 Torsdag 9 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team">Modo Hockey</td><td class="match-score"><span>2 – <b>3</b></span><span class="ot">OT</span></td><td class="match-team winner">Veterankraft</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team winner">Veterankraft</td><td class="match-score"><span><b>5</b> – 2</span></td><td class="match-team">Modo Hockey</td></tr>
+          </table>
+        </div>
+
+        <div class="match-block">
+          <div class="match-date">📅 Söndag 12 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team winner">Modo Hockey</td><td class="match-score"><span><b>4</b> – 0</span></td><td class="match-team">Surte Sisu HC</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team">Surte Sisu HC</td><td class="match-score"><span>0 – <b>1</b></span><span class="ot">OT</span></td><td class="match-team winner">Modo Hockey</td></tr>
+            <tr><td class="match-time">21:00</td><td class="match-team winner">vNexs Vipers</td><td class="match-score"><span><b>6</b> – 4</span></td><td class="match-team">Modo Hockey</td></tr>
+            <tr><td class="match-time">21:30</td><td class="match-team winner">Modo Hockey</td><td class="match-score"><span><b>5</b> – 1</span></td><td class="match-team">vNexs Vipers</td></tr>
+          </table>
+        </div>
+
+        <div class="match-block">
+          <div class="match-date">📅 Torsdag 16 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team">SSK Academy</td><td class="match-score"><span>1 – <b>3</b></span></td><td class="match-team winner">Modo Hockey</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team winner">Modo Hockey</td><td class="match-score"><span><b>3</b> – 0</span></td><td class="match-team">SSK Academy</td></tr>
+          </table>
+        </div>
+
+        <div class="match-block">
+          <div class="match-date">📅 Söndag 19 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team">Modo Hockey</td><td class="match-score"><span>1 – <b>6</b></span></td><td class="match-team winner">Sunne IK Esport</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team winner">Sunne IK Esport</td><td class="match-score"><span><b>3</b> – 2</span></td><td class="match-team">Modo Hockey</td></tr>
+          </table>
+        </div>
+
+        <div class="match-block">
+          <div class="match-date">🥈 Semifinaler📅 Tisdag 21 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team">Modo Hockey</td><td class="match-score"><span>0 – <b>6</b></span></td><td class="match-team winner">vNexs Vipers</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team winner">vNexs Vipers</td><td class="match-score"><span><b>3</b> – 2</span></td><td class="match-team">Modo Hockey</td></tr>
+            <tr><td class="match-time">21:00</td><td class="match-team">Modo Hockey</td><td class="match-score"><span>1 – <b>3</b></span></td><td class="match-team winner">vNexs Vipers</td></tr>
+          </table>
+        </div>
+      </div>`;
+      };
+
+      // --- Fliklogik ---
+      tabs.forEach(btn => {
+        btn.addEventListener("click", () => {
+          tabs.forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          const mode = btn.dataset.mode;
+          if (mode === "matcher") loadMatches();
+          else loadStats(mode);
+        });
+      });
+
+      // Default: gruppspel
+      loadStats("gruppspel");
+    })();
+    </script>
+    
+  </div>
+
+  <!-- 🟦 SSK Academy -->
+  <div id="team-ssk" class="team-panel" style="display:none;">
+    <button type="button" class="back-to-lag">← Tillbaka till lagsidan</button>
+    <div class="team-hero">
+      <img src="https://drive.google.com/thumbnail?id=1kdxwWivlii1hCK3doJY8I44dIQ_hQzYo&sz=w1000" class="team-hero-logo" alt="SSK Academy">
+      <h2>SSK Academy</h2>
+      <p class="team-roster"><strong>C:</strong> foxflyers &nbsp; <strong>A:</strong> m4Dow_86, Toivo4936</p>
+    </div>
+    <div class="stat-tabs">
+      <button class="tab active" data-mode="gruppspel">Gruppspel</button>
+      <button class="tab" data-mode="slutspel">Slutspel</button>
+      <button class="tab" data-mode="matcher">Matcher</button>
+    </div>
+
+    <div class="team-view" style="max-width:980px;margin:auto"></div>
+    <script>
+    (function(){
+      const panel = document.getElementById("team-ssk");
+      if (!panel) return;
+      const host = panel.querySelector(".team-view");
+      const tabs = panel.querySelectorAll(".stat-tabs .tab");
+      const API = "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec";
+      const TEAM = "SA";
+      const TEAM_NAME = "SSK Academy";
+
+      // --- Tabellbyggare ---
+      const makeTable = (rows, type) => {
+        const table = document.createElement("table");
+        const thead = document.createElement("thead");
+        if (type === "goalie") {
+          thead.innerHTML = `<tr><th>#</th><th>Goalie</th><th>GP</th><th>SA</th><th>GA</th><th>SV</th><th>GAA</th><th>SV%</th><th>SO</th></tr>`;
+        } else {
+          thead.innerHTML = `<tr><th>#</th><th>Player</th><th>GP</th><th>G</th><th>A</th><th>PTS</th><th>PIM</th></tr>`;
+        }
+        const tbody = document.createElement("tbody");
+        rows.forEach((r, i) => {
+          if (type === "goalie") {
+            tbody.innerHTML += `<tr><td>${i+1}</td><td>${r.goalies||""}</td><td>${r.gp||""}</td><td>${r.sa||""}</td><td>${r.ga||""}</td><td>${r.sv||""}</td><td>${r.gaa||""}</td><td>${r.svp||""}</td><td>${r.so||""}</td></tr>`;
+          } else {
+            tbody.innerHTML += `<tr><td>${i+1}</td><td>${r.players||r.player||""}</td><td>${r.gp||""}</td><td>${r.g||""}</td><td>${r.a||""}</td><td>${r.pts||""}</td><td>${r.pim||""}</td></tr>`;
+          }
+        });
+        table.append(thead, tbody);
+        return table;
+      };
+
+      // --- Gruppspel & Slutspel ---
+      const loadStats = (mode) => {
+        if (!host) return;
+        host.innerHTML = `<div style="padding:12px">Laddar ${mode}...</div>`;
+        const sheetSkaters = mode === "slutspel" ? "Spelarstats slut 19.5" : "Spelarstats";
+        const sheetGoalies = mode === "slutspel" ? "Målvaktsstats slut 19.5" : "Målvaktsstats";
+        Promise.all([
+          fetch(API + `?sheet=${encodeURIComponent(sheetGoalies)}`).then(r => r.json()),
+          fetch(API + `?sheet=${encodeURIComponent(sheetSkaters)}`).then(r => r.json())
+        ]).then(([g, s]) => {
+          const goalies = g.filter(r => String(r.team||"").trim() === TEAM);
+          const skaters = s.filter(r => String(r.team||"").trim() === TEAM);
+          host.innerHTML = "";
+          const h2g = document.createElement("h2");
+          h2g.textContent = `${TEAM_NAME} – Målvakter ${mode === "slutspel" ? "(Slutspel)" : ""}`;
+          const wrap1 = document.createElement("div");
+          wrap1.className = "wrap";
+          wrap1.append(makeTable(goalies, "goalie"));
+          const h2s = document.createElement("h2");
+          h2s.textContent = `${TEAM_NAME} – Spelare ${mode === "slutspel" ? "(Slutspel)" : ""}`;
+          const wrap2 = document.createElement("div");
+          wrap2.className = "wrap";
+          wrap2.append(makeTable(skaters, "skater"));
+          const sep = document.createElement("div");
+          sep.className = "sep";
+          host.append(h2g, wrap1, sep, h2s, wrap2);
+        }).catch(err => {
+          host.innerHTML = `<div style="padding:12px;color:#f66;">Fel vid hämtning av statistik: ${err}</div>`;
+        });
+      };
+
+      // --- Matcher (från statisk HTML) ---
+      const loadMatches = () => {
+        if (!host) return;
+        host.innerHTML = `      <div class="match-container">
+        <div class="match-block">
+          <div class="match-date">📅 Onsdag 8 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team">SSK Academy</td><td class="match-score"><span>2 – <b>6</b></span></td><td class="match-team winner">vNexs Vipers</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team winner">vNexs Vipers</td><td class="match-score"><span><b>4</b> – 1</span></td><td class="match-team">SSK Academy</td></tr>
+          </table>
+        </div>
+
+        <div class="match-block">
+          <div class="match-date">📅 Söndag 12 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team winner">Veterankraft</td><td class="match-score"><span><b>3</b> – 2</span></td><td class="match-team">SSK Academy</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team">SSK Academy</td><td class="match-score"><span>4 – <b>7</b></span></td><td class="match-team winner">Veterankraft</td></tr>
+          </table>
+        </div>
+
+        <div class="match-block">
+          <div class="match-date">📅 Torsdag 16 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team">SSK Academy</td><td class="match-score"><span>1 – <b>3</b></span></td><td class="match-team winner">Modo Hockey</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team winner">Modo Hockey</td><td class="match-score"><span><b>3</b> – 0</span></td><td class="match-team">SSK Academy</td></tr>
+            <tr><td class="match-time">21:00</td><td class="match-team">SSK Academy</td><td class="match-score"><span>0 – <b>1</b></span></td><td class="match-team winner">Surte Sisu HC</td></tr>
+            <tr><td class="match-time">21:30</td><td class="match-team">Surte Sisu HC</td><td class="match-score"><span>0 – <b>5</b></span></td><td class="match-team winner">SSK Academy</td></tr>
+          </table>
+        </div>
+
+        <div class="match-block">
+          <div class="match-date">📅 Söndag 19 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team winner">Sunne IK Esport</td><td class="match-score"><span><b>5</b> – 4</span><span class="ot">OT</span></td><td class="match-team">SSK Academy</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team winner">SSK Academy</td><td class="match-score"><span><b>6</b> – 2</span></td><td class="match-team">Sunne IK Esport</td></tr>
+          </table>
+        </div>
+      </div>`;
+      };
+
+      // --- Fliklogik ---
+      tabs.forEach(btn => {
+        btn.addEventListener("click", () => {
+          tabs.forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          const mode = btn.dataset.mode;
+          if (mode === "matcher") loadMatches();
+          else loadStats(mode);
+        });
+      });
+
+      // Default: gruppspel
+      loadStats("gruppspel");
+    })();
+    </script>
+    
+  </div>
+
+  <!-- 🟨 Sunne IK Esport -->
+  <div id="team-sunne" class="team-panel" style="display:none;">
+    <button type="button" class="back-to-lag">← Tillbaka till lagsidan</button>
+    <div class="team-hero">
+      <img src="https://drive.google.com/thumbnail?id=15oE3SXfRAA3VK0nciLqYZ2FL6D8GUBtG&sz=w1000" class="team-hero-logo" alt="Sunne IK Esport">
+      <h2>Sunne IK Esport</h2>
+      <p class="team-roster"><strong>C:</strong> O3_DAFA &nbsp; <strong>A:</strong> –</p>
+    </div>
+    <div class="stat-tabs">
+      <button class="tab active" data-mode="gruppspel">Gruppspel</button>
+      <button class="tab" data-mode="slutspel">Slutspel</button>
+      <button class="tab" data-mode="matcher">Matcher</button>
+    </div>
+
+    <div class="team-view" style="max-width:980px;margin:auto"></div>
+    <script>
+    (function(){
+      const panel = document.getElementById("team-sunne");
+      if (!panel) return;
+      const host = panel.querySelector(".team-view");
+      const tabs = panel.querySelectorAll(".stat-tabs .tab");
+      const API = "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec";
+      const TEAM = "SES";
+      const TEAM_NAME = "Sunne IK Esport";
+
+      // --- Tabellbyggare ---
+      const makeTable = (rows, type) => {
+        const table = document.createElement("table");
+        const thead = document.createElement("thead");
+        if (type === "goalie") {
+          thead.innerHTML = `<tr><th>#</th><th>Goalie</th><th>GP</th><th>SA</th><th>GA</th><th>SV</th><th>GAA</th><th>SV%</th><th>SO</th></tr>`;
+        } else {
+          thead.innerHTML = `<tr><th>#</th><th>Player</th><th>GP</th><th>G</th><th>A</th><th>PTS</th><th>PIM</th></tr>`;
+        }
+        const tbody = document.createElement("tbody");
+        rows.forEach((r, i) => {
+          if (type === "goalie") {
+            tbody.innerHTML += `<tr><td>${i+1}</td><td>${r.goalies||""}</td><td>${r.gp||""}</td><td>${r.sa||""}</td><td>${r.ga||""}</td><td>${r.sv||""}</td><td>${r.gaa||""}</td><td>${r.svp||""}</td><td>${r.so||""}</td></tr>`;
+          } else {
+            tbody.innerHTML += `<tr><td>${i+1}</td><td>${r.players||r.player||""}</td><td>${r.gp||""}</td><td>${r.g||""}</td><td>${r.a||""}</td><td>${r.pts||""}</td><td>${r.pim||""}</td></tr>`;
+          }
+        });
+        table.append(thead, tbody);
+        return table;
+      };
+
+      // --- Gruppspel & Slutspel ---
+      const loadStats = (mode) => {
+        if (!host) return;
+        host.innerHTML = `<div style="padding:12px">Laddar ${mode}...</div>`;
+        const sheetSkaters = mode === "slutspel" ? "Spelarstats slut 19.5" : "Spelarstats";
+        const sheetGoalies = mode === "slutspel" ? "Målvaktsstats slut 19.5" : "Målvaktsstats";
+        Promise.all([
+          fetch(API + `?sheet=${encodeURIComponent(sheetGoalies)}`).then(r => r.json()),
+          fetch(API + `?sheet=${encodeURIComponent(sheetSkaters)}`).then(r => r.json())
+        ]).then(([g, s]) => {
+          const goalies = g.filter(r => String(r.team||"").trim() === TEAM);
+          const skaters = s.filter(r => String(r.team||"").trim() === TEAM);
+          host.innerHTML = "";
+          const h2g = document.createElement("h2");
+          h2g.textContent = `${TEAM_NAME} – Målvakter ${mode === "slutspel" ? "(Slutspel)" : ""}`;
+          const wrap1 = document.createElement("div");
+          wrap1.className = "wrap";
+          wrap1.append(makeTable(goalies, "goalie"));
+          const h2s = document.createElement("h2");
+          h2s.textContent = `${TEAM_NAME} – Spelare ${mode === "slutspel" ? "(Slutspel)" : ""}`;
+          const wrap2 = document.createElement("div");
+          wrap2.className = "wrap";
+          wrap2.append(makeTable(skaters, "skater"));
+          const sep = document.createElement("div");
+          sep.className = "sep";
+          host.append(h2g, wrap1, sep, h2s, wrap2);
+        }).catch(err => {
+          host.innerHTML = `<div style="padding:12px;color:#f66;">Fel vid hämtning av statistik: ${err}</div>`;
+        });
+      };
+
+      // --- Matcher (från statisk HTML) ---
+      const loadMatches = () => {
+        if (!host) return;
+        host.innerHTML = `      <div class="match-container">
+        <div class="match-block">
+          <div class="match-date">📅 Onsdag 8 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team">Sunne IK Esport</td><td class="match-score"><span>2 – <b>4</b></span></td><td class="match-team winner">Veterankraft</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team">Veterankraft</td><td class="match-score"><span>2 – <b>5</b></span></td><td class="match-team winner">Sunne IK Esport</td></tr>
+          </table>
+        </div>
+
+        <div class="match-block">
+          <div class="match-date">📅 Söndag 12 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team">Sunne IK Esport</td><td class="match-score"><span>3 – <b>4</b></span><span class="ot">OT</span></td><td class="match-team winner">vNexs Vipers</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team winner">vNexs Vipers</td><td class="match-score"><span><b>3</b> – 1</span></td><td class="match-team">Sunne IK Esport</td></tr>
+          </table>
+        </div>
+
+        <div class="match-block">
+          <div class="match-date">📅 Söndag 19 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team">Surte Sisu HC</td><td class="match-score"><span>0 – <b>6</b></span></td><td class="match-team winner">Sunne IK Esport</td></tr>
+            <tr><td class="match-time">20:00</td><td class="match-team winner">Sunne IK Esport</td><td class="match-score"><span><b>5</b> – 4</span><span class="ot">OT</span></td><td class="match-team">SSK Academy</td></tr>
+            <tr><td class="match-time">20:00</td><td class="match-team">Modo Hockey</td><td class="match-score"><span>1 – <b>6</b></span></td><td class="match-team winner">Sunne IK Esport</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team winner">Sunne IK Esport</td><td class="match-score"><span><b>5</b> – 3</span></td><td class="match-team">Surte Sisu HC</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team winner">SSK Academy</td><td class="match-score"><span><b>6</b> – 2</span></td><td class="match-team">Sunne IK Esport</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team winner">Sunne IK Esport</td><td class="match-score"><span><b>3</b> – 2</span></td><td class="match-team">Modo Hockey</td></tr>
+          </table>
+        </div>
+
+        <div class="match-block">
+          <div class="match-date">🥈 Semifinaler📅 Tisdag 21 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team">Veterankraft</td><td class="match-score"><span>0 – <b>3</b></span></td><td class="match-team winner">Sunne IK Esport</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team">Sunne IK Esport</td><td class="match-score"><span>4 – <b>5</b></span></td><td class="match-team winner">Veterankraft</td></tr>
+            <tr><td class="match-time">21:00</td><td class="match-team winner">Veterankraft</td><td class="match-score"><span><b>4</b> – 3</span></td><td class="match-team">Sunne IK Esport</td></tr>
+            <tr><td class="match-time">21:30</td><td class="match-team winner">Sunne IK Esport</td><td class="match-score"><span><b>5</b> – 3</span></td><td class="match-team">Veterankraft</td></tr>
+            <tr><td class="match-time">22:00</td><td class="match-team winner">Veterankraft</td><td class="match-score"><span><b>3</b> – 2</span></td><td class="match-team">Sunne IK Esport</td></tr>
+          </table>
+        </div>
+      </div>`;
+      };
+
+      // --- Fliklogik ---
+      tabs.forEach(btn => {
+        btn.addEventListener("click", () => {
+          tabs.forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          const mode = btn.dataset.mode;
+          if (mode === "matcher") loadMatches();
+          else loadStats(mode);
+        });
+      });
+
+      // Default: gruppspel
+      loadStats("gruppspel");
+    })();
+    </script>
+    
+  </div>
+
+  <!-- 🟩 Surte Sisu HC -->
+  <div id="team-surte" class="team-panel" style="display:none;">
+    <button type="button" class="back-to-lag">← Tillbaka till lagsidan</button>
+    <div class="team-hero">
+      <img src="https://drive.google.com/thumbnail?id=1qRkJLEFmS-npNei6bs09fsy0QLmmrvpB&sz=w1000" class="team-hero-logo" alt="Surte Sisu HC">
+      <h2>Surte Sisu HC</h2>
+      <p class="team-roster"><strong>C:</strong> FezH___ &nbsp; <strong>A:</strong> fakespear, –</p>
+    </div>
+    <div class="stat-tabs">
+      <button class="tab active" data-mode="gruppspel">Gruppspel</button>
+      <button class="tab" data-mode="slutspel">Slutspel</button>
+      <button class="tab" data-mode="matcher">Matcher</button>
+    </div>
+
+    <div class="team-view" style="max-width:980px;margin:auto"></div>
+    <script>
+    (function(){
+      const panel = document.getElementById("team-surte");
+      if (!panel) return;
+      const host = panel.querySelector(".team-view");
+      const tabs = panel.querySelectorAll(".stat-tabs .tab");
+      const API = "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec";
+      const TEAM = "SS";
+      const TEAM_NAME = "Surte Sisu HC";
+
+      // --- Tabellbyggare ---
+      const makeTable = (rows, type) => {
+        const table = document.createElement("table");
+        const thead = document.createElement("thead");
+        if (type === "goalie") {
+          thead.innerHTML = `<tr><th>#</th><th>Goalie</th><th>GP</th><th>SA</th><th>GA</th><th>SV</th><th>GAA</th><th>SV%</th><th>SO</th></tr>`;
+        } else {
+          thead.innerHTML = `<tr><th>#</th><th>Player</th><th>GP</th><th>G</th><th>A</th><th>PTS</th><th>PIM</th></tr>`;
+        }
+        const tbody = document.createElement("tbody");
+        rows.forEach((r, i) => {
+          if (type === "goalie") {
+            tbody.innerHTML += `<tr><td>${i+1}</td><td>${r.goalies||""}</td><td>${r.gp||""}</td><td>${r.sa||""}</td><td>${r.ga||""}</td><td>${r.sv||""}</td><td>${r.gaa||""}</td><td>${r.svp||""}</td><td>${r.so||""}</td></tr>`;
+          } else {
+            tbody.innerHTML += `<tr><td>${i+1}</td><td>${r.players||r.player||""}</td><td>${r.gp||""}</td><td>${r.g||""}</td><td>${r.a||""}</td><td>${r.pts||""}</td><td>${r.pim||""}</td></tr>`;
+          }
+        });
+        table.append(thead, tbody);
+        return table;
+      };
+
+      // --- Gruppspel & Slutspel ---
+      const loadStats = (mode) => {
+        if (!host) return;
+        host.innerHTML = `<div style="padding:12px">Laddar ${mode}...</div>`;
+        const sheetSkaters = mode === "slutspel" ? "Spelarstats slut 19.5" : "Spelarstats";
+        const sheetGoalies = mode === "slutspel" ? "Målvaktsstats slut 19.5" : "Målvaktsstats";
+        Promise.all([
+          fetch(API + `?sheet=${encodeURIComponent(sheetGoalies)}`).then(r => r.json()),
+          fetch(API + `?sheet=${encodeURIComponent(sheetSkaters)}`).then(r => r.json())
+        ]).then(([g, s]) => {
+          const goalies = g.filter(r => String(r.team||"").trim() === TEAM);
+          const skaters = s.filter(r => String(r.team||"").trim() === TEAM);
+          host.innerHTML = "";
+          const h2g = document.createElement("h2");
+          h2g.textContent = `${TEAM_NAME} – Målvakter ${mode === "slutspel" ? "(Slutspel)" : ""}`;
+          const wrap1 = document.createElement("div");
+          wrap1.className = "wrap";
+          wrap1.append(makeTable(goalies, "goalie"));
+          const h2s = document.createElement("h2");
+          h2s.textContent = `${TEAM_NAME} – Spelare ${mode === "slutspel" ? "(Slutspel)" : ""}`;
+          const wrap2 = document.createElement("div");
+          wrap2.className = "wrap";
+          wrap2.append(makeTable(skaters, "skater"));
+          const sep = document.createElement("div");
+          sep.className = "sep";
+          host.append(h2g, wrap1, sep, h2s, wrap2);
+        }).catch(err => {
+          host.innerHTML = `<div style="padding:12px;color:#f66;">Fel vid hämtning av statistik: ${err}</div>`;
+        });
+      };
+
+      // --- Matcher (från statisk HTML) ---
+      const loadMatches = () => {
+        if (!host) return;
+        host.innerHTML = `      <div class="match-container">
+        <div class="match-block">
+          <div class="match-date">📅 Söndag 12 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team winner">Modo Hockey</td><td class="match-score"><span><b>4</b> – 0</span></td><td class="match-team">Surte Sisu HC</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team">Surte Sisu HC</td><td class="match-score"><span>0 – <b>1</b></span><span class="ot">OT</span></td><td class="match-team winner">Modo Hockey</td></tr>
+          </table>
+        </div>
+
+        <div class="match-block">
+          <div class="match-date">📅 Onsdag 15 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team winner">Veterankraft</td><td class="match-score"><span><b>4</b> – 2</span></td><td class="match-team">Surte Sisu HC</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team winner">Surte Sisu HC</td><td class="match-score"><span><b>5</b> – 2</span></td><td class="match-team">Veterankraft</td></tr>
+          </table>
+        </div>
+
+        <div class="match-block">
+          <div class="match-date">📅 Torsdag 16 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">21:00</td><td class="match-team">SSK Academy</td><td class="match-score"><span>0 – <b>1</b></span></td><td class="match-team winner">Surte Sisu HC</td></tr>
+            <tr><td class="match-time">21:30</td><td class="match-team">Surte Sisu HC</td><td class="match-score"><span>0 – <b>5</b></span></td><td class="match-team winner">SSK Academy</td></tr>
+          </table>
+        </div>
+
+        <div class="match-block">
+          <div class="match-date">📅 Söndag 19 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team">Surte Sisu HC</td><td class="match-score"><span>0 – <b>6</b></span></td><td class="match-team winner">Sunne IK Esport</td></tr>
+            <tr><td class="match-time">20:00</td><td class="match-team">Surte Sisu HC</td><td class="match-score"><span>4 – <b>5</b></span></td><td class="match-team winner">vNexs Vipers</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team winner">Sunne IK Esport</td><td class="match-score"><span><b>5</b> – 3</span></td><td class="match-team">Surte Sisu HC</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team winner">vNexs Vipers</td><td class="match-score"><span><b>8</b> – 4</span></td><td class="match-team">Surte Sisu HC</td></tr>
+          </table>
+        </div>
+      </div>`;
+      };
+
+      // --- Fliklogik ---
+      tabs.forEach(btn => {
+        btn.addEventListener("click", () => {
+          tabs.forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          const mode = btn.dataset.mode;
+          if (mode === "matcher") loadMatches();
+          else loadStats(mode);
+        });
+      });
+
+      // Default: gruppspel
+      loadStats("gruppspel");
+    })();
+    </script>
+    
+  </div>
+
+  <!-- 🟧 Veterankraft -->
+  <div id="team-veteran" class="team-panel" style="display:none;">
+    <button type="button" class="back-to-lag">← Tillbaka till lagsidan</button>
+    <div class="team-hero">
+      <img src="https://drive.google.com/thumbnail?id=18GqojyIKrdOcvfNJdhrlNF_-mB-XVmjH&sz=w1000" class="team-hero-logo" alt="Veterankraft">
+      <h2>Veterankraft</h2>
+      <p class="team-roster"><strong>C:</strong> I-Buffy-l &nbsp; <strong>A:</strong> Supremski, Prolane-</p>
+    </div>
+    <div class="stat-tabs">
+      <button class="tab active" data-mode="gruppspel">Gruppspel</button>
+      <button class="tab" data-mode="slutspel">Slutspel</button>
+      <button class="tab" data-mode="matcher">Matcher</button>
+    </div>
+
+    <div class="team-view" style="max-width:980px;margin:auto"></div>
+    <script>
+    (function(){
+      const panel = document.getElementById("team-veteran");
+      if (!panel) return;
+      const host = panel.querySelector(".team-view");
+      const tabs = panel.querySelectorAll(".stat-tabs .tab");
+      const API = "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec";
+      const TEAM = "hmm";
+      const TEAM_NAME = "Veterankraft";
+
+      // --- Tabellbyggare ---
+      const makeTable = (rows, type) => {
+        const table = document.createElement("table");
+        const thead = document.createElement("thead");
+        if (type === "goalie") {
+          thead.innerHTML = `<tr><th>#</th><th>Goalie</th><th>GP</th><th>SA</th><th>GA</th><th>SV</th><th>GAA</th><th>SV%</th><th>SO</th></tr>`;
+        } else {
+          thead.innerHTML = `<tr><th>#</th><th>Player</th><th>GP</th><th>G</th><th>A</th><th>PTS</th><th>PIM</th></tr>`;
+        }
+        const tbody = document.createElement("tbody");
+        rows.forEach((r, i) => {
+          if (type === "goalie") {
+            tbody.innerHTML += `<tr><td>${i+1}</td><td>${r.goalies||""}</td><td>${r.gp||""}</td><td>${r.sa||""}</td><td>${r.ga||""}</td><td>${r.sv||""}</td><td>${r.gaa||""}</td><td>${r.svp||""}</td><td>${r.so||""}</td></tr>`;
+          } else {
+            tbody.innerHTML += `<tr><td>${i+1}</td><td>${r.players||r.player||""}</td><td>${r.gp||""}</td><td>${r.g||""}</td><td>${r.a||""}</td><td>${r.pts||""}</td><td>${r.pim||""}</td></tr>`;
+          }
+        });
+        table.append(thead, tbody);
+        return table;
+      };
+
+      // --- Gruppspel & Slutspel ---
+      const loadStats = (mode) => {
+        if (!host) return;
+        host.innerHTML = `<div style="padding:12px">Laddar ${mode}...</div>`;
+        const sheetSkaters = mode === "slutspel" ? "Spelarstats slut 19.5" : "Spelarstats";
+        const sheetGoalies = mode === "slutspel" ? "Målvaktsstats slut 19.5" : "Målvaktsstats";
+        Promise.all([
+          fetch(API + `?sheet=${encodeURIComponent(sheetGoalies)}`).then(r => r.json()),
+          fetch(API + `?sheet=${encodeURIComponent(sheetSkaters)}`).then(r => r.json())
+        ]).then(([g, s]) => {
+          const goalies = g.filter(r => String(r.team||"").trim() === TEAM);
+          const skaters = s.filter(r => String(r.team||"").trim() === TEAM);
+          host.innerHTML = "";
+          const h2g = document.createElement("h2");
+          h2g.textContent = `${TEAM_NAME} – Målvakter ${mode === "slutspel" ? "(Slutspel)" : ""}`;
+          const wrap1 = document.createElement("div");
+          wrap1.className = "wrap";
+          wrap1.append(makeTable(goalies, "goalie"));
+          const h2s = document.createElement("h2");
+          h2s.textContent = `${TEAM_NAME} – Spelare ${mode === "slutspel" ? "(Slutspel)" : ""}`;
+          const wrap2 = document.createElement("div");
+          wrap2.className = "wrap";
+          wrap2.append(makeTable(skaters, "skater"));
+          const sep = document.createElement("div");
+          sep.className = "sep";
+          host.append(h2g, wrap1, sep, h2s, wrap2);
+        }).catch(err => {
+          host.innerHTML = `<div style="padding:12px;color:#f66;">Fel vid hämtning av statistik: ${err}</div>`;
+        });
+      };
+
+      // --- Matcher (från statisk HTML) ---
+      const loadMatches = () => {
+        if (!host) return;
+        host.innerHTML = `      <div class="match-container">
+        <div class="match-block">
+          <div class="match-date">📅 Onsdag 8 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team">Sunne IK Esport</td><td class="match-score"><span>2 – <b>4</b></span></td><td class="match-team winner">Veterankraft</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team">Veterankraft</td><td class="match-score"><span>2 – <b>5</b></span></td><td class="match-team winner">Sunne IK Esport</td></tr>
+            <tr><td class="match-time">21:00</td><td class="match-team winner">vNexs Vipers</td><td class="match-score"><span><b>4</b> – 3</span></td><td class="match-team">Veterankraft</td></tr>
+            <tr><td class="match-time">21:30</td><td class="match-team">Veterankraft</td><td class="match-score"><span>2 – <b>3</b></span></td><td class="match-team winner">vNexs Vipers</td></tr>
+          </table>
+        </div>
+
+        <div class="match-block">
+          <div class="match-date">📅 Torsdag 9 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team">Modo Hockey</td><td class="match-score"><span>2 – <b>3</b></span><span class="ot">OT</span></td><td class="match-team winner">Veterankraft</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team winner">Veterankraft</td><td class="match-score"><span><b>5</b> – 2</span></td><td class="match-team">Modo Hockey</td></tr>
+          </table>
+        </div>
+
+        <div class="match-block">
+          <div class="match-date">📅 Söndag 12 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team winner">Veterankraft</td><td class="match-score"><span><b>3</b> – 2</span></td><td class="match-team">SSK Academy</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team">SSK Academy</td><td class="match-score"><span>4 – <b>7</b></span></td><td class="match-team winner">Veterankraft</td></tr>
+          </table>
+        </div>
+
+        <div class="match-block">
+          <div class="match-date">📅 Onsdag 15 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team winner">Veterankraft</td><td class="match-score"><span><b>4</b> – 2</span></td><td class="match-team">Surte Sisu HC</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team winner">Surte Sisu HC</td><td class="match-score"><span><b>5</b> – 2</span></td><td class="match-team">Veterankraft</td></tr>
+          </table>
+        </div>
+
+        <div class="match-block">
+          <div class="match-date">🥈 Semifinaler📅 Tisdag 21 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team">Veterankraft</td><td class="match-score"><span>0 – <b>3</b></span></td><td class="match-team winner">Sunne IK Esport</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team">Sunne IK Esport</td><td class="match-score"><span>4 – <b>5</b></span></td><td class="match-team winner">Veterankraft</td></tr>
+            <tr><td class="match-time">21:00</td><td class="match-team winner">Veterankraft</td><td class="match-score"><span><b>4</b> – 3</span></td><td class="match-team">Sunne IK Esport</td></tr>
+            <tr><td class="match-time">21:30</td><td class="match-team winner">Sunne IK Esport</td><td class="match-score"><span><b>5</b> – 3</span></td><td class="match-team">Veterankraft</td></tr>
+            <tr><td class="match-time">22:00</td><td class="match-team winner">Veterankraft</td><td class="match-score"><span><b>3</b> – 2</span></td><td class="match-team">Sunne IK Esport</td></tr>
+          </table>
+        </div>
+
+        <div class="match-block">
+          <div class="match-date">🥇 Final📅 Söndag 26 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team">Veterankraft</td><td class="match-score"><span>1 – <b>5</b></span></td><td class="match-team winner">vNexs Vipers</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team winner">vNexs Vipers</td><td class="match-score"><span><b>4</b> – 2</span></td><td class="match-team">Veterankraft</td></tr>
+            <tr><td class="match-time">21:00</td><td class="match-team winner">Veterankraft</td><td class="match-score"><span><b>3</b> – 2</span></td><td class="match-team">vNexs Vipers</td></tr>
+            <tr><td class="match-time">21:30</td><td class="match-team winner">vNexs Vipers</td><td class="match-score"><span><b>3</b> – 2</span></td><td class="match-team">Veterankraft</td></tr>
+          </table>
+        </div>
+      </div>`;
+      };
+
+      // --- Fliklogik ---
+      tabs.forEach(btn => {
+        btn.addEventListener("click", () => {
+          tabs.forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          const mode = btn.dataset.mode;
+          if (mode === "matcher") loadMatches();
+          else loadStats(mode);
+        });
+      });
+
+      // Default: gruppspel
+      loadStats("gruppspel");
+    })();
+    </script>
+    
+  </div>
+
+  <!-- 🟪 vNexs Vipers -->
+  <div id="team-vnexs" class="team-panel" style="display:none;">
+    <button type="button" class="back-to-lag">← Tillbaka till lagsidan</button>
+    <div class="team-hero">
+      <img src="https://drive.google.com/thumbnail?id=1lM9wrVIDUgc1ri4ZSQmErsb9aGZo5wBM&sz=w1000" class="team-hero-logo" alt="vNexs Vipers">
+      <h2>vNexs Vipers</h2>
+      <p class="team-roster"><strong>C:</strong> Hescoores &nbsp; <strong>A:</strong> Dan9105, Jonsson03</p>
+    </div>
+    <div class="stat-tabs">
+      <button class="tab active" data-mode="gruppspel">Gruppspel</button>
+      <button class="tab" data-mode="slutspel">Slutspel</button>
+      <button class="tab" data-mode="matcher">Matcher</button>
+    </div>
+
+    <div class="team-view" style="max-width:980px;margin:auto"></div>
+    <script>
+    (function(){
+      const panel = document.getElementById("team-vnexs");
+      if (!panel) return;
+      const host = panel.querySelector(".team-view");
+      const tabs = panel.querySelectorAll(".stat-tabs .tab");
+      const API = "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec";
+      const TEAM = "vNV";
+      const TEAM_NAME = "vNexs Vipers";
+
+      // --- Tabellbyggare ---
+      const makeTable = (rows, type) => {
+        const table = document.createElement("table");
+        const thead = document.createElement("thead");
+        if (type === "goalie") {
+          thead.innerHTML = `<tr><th>#</th><th>Goalie</th><th>GP</th><th>SA</th><th>GA</th><th>SV</th><th>GAA</th><th>SV%</th><th>SO</th></tr>`;
+        } else {
+          thead.innerHTML = `<tr><th>#</th><th>Player</th><th>GP</th><th>G</th><th>A</th><th>PTS</th><th>PIM</th></tr>`;
+        }
+        const tbody = document.createElement("tbody");
+        rows.forEach((r, i) => {
+          if (type === "goalie") {
+            tbody.innerHTML += `<tr><td>${i+1}</td><td>${r.goalies||""}</td><td>${r.gp||""}</td><td>${r.sa||""}</td><td>${r.ga||""}</td><td>${r.sv||""}</td><td>${r.gaa||""}</td><td>${r.svp||""}</td><td>${r.so||""}</td></tr>`;
+          } else {
+            tbody.innerHTML += `<tr><td>${i+1}</td><td>${r.players||r.player||""}</td><td>${r.gp||""}</td><td>${r.g||""}</td><td>${r.a||""}</td><td>${r.pts||""}</td><td>${r.pim||""}</td></tr>`;
+          }
+        });
+        table.append(thead, tbody);
+        return table;
+      };
+
+      // --- Gruppspel & Slutspel ---
+      const loadStats = (mode) => {
+        if (!host) return;
+        host.innerHTML = `<div style="padding:12px">Laddar ${mode}...</div>`;
+        const sheetSkaters = mode === "slutspel" ? "Spelarstats slut 19.5" : "Spelarstats";
+        const sheetGoalies = mode === "slutspel" ? "Målvaktsstats slut 19.5" : "Målvaktsstats";
+        Promise.all([
+          fetch(API + `?sheet=${encodeURIComponent(sheetGoalies)}`).then(r => r.json()),
+          fetch(API + `?sheet=${encodeURIComponent(sheetSkaters)}`).then(r => r.json())
+        ]).then(([g, s]) => {
+          const goalies = g.filter(r => String(r.team||"").trim() === TEAM);
+          const skaters = s.filter(r => String(r.team||"").trim() === TEAM);
+          host.innerHTML = "";
+          const h2g = document.createElement("h2");
+          h2g.textContent = `${TEAM_NAME} – Målvakter ${mode === "slutspel" ? "(Slutspel)" : ""}`;
+          const wrap1 = document.createElement("div");
+          wrap1.className = "wrap";
+          wrap1.append(makeTable(goalies, "goalie"));
+          const h2s = document.createElement("h2");
+          h2s.textContent = `${TEAM_NAME} – Spelare ${mode === "slutspel" ? "(Slutspel)" : ""}`;
+          const wrap2 = document.createElement("div");
+          wrap2.className = "wrap";
+          wrap2.append(makeTable(skaters, "skater"));
+          const sep = document.createElement("div");
+          sep.className = "sep";
+          host.append(h2g, wrap1, sep, h2s, wrap2);
+        }).catch(err => {
+          host.innerHTML = `<div style="padding:12px;color:#f66;">Fel vid hämtning av statistik: ${err}</div>`;
+        });
+      };
+
+      // --- Matcher (från statisk HTML) ---
+      const loadMatches = () => {
+        if (!host) return;
+        host.innerHTML = `      <div class="match-container">
+        <div class="match-block">
+          <div class="match-date">📅 Onsdag 8 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team">SSK Academy</td><td class="match-score"><span>2 – <b>6</b></span></td><td class="match-team winner">vNexs Vipers</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team winner">vNexs Vipers</td><td class="match-score"><span><b>4</b> – 1</span></td><td class="match-team">SSK Academy</td></tr>
+            <tr><td class="match-time">21:00</td><td class="match-team winner">vNexs Vipers</td><td class="match-score"><span><b>4</b> – 3</span></td><td class="match-team">Veterankraft</td></tr>
+            <tr><td class="match-time">21:30</td><td class="match-team">Veterankraft</td><td class="match-score"><span>2 – <b>3</b></span></td><td class="match-team winner">vNexs Vipers</td></tr>
+          </table>
+        </div>
+
+        <div class="match-block">
+          <div class="match-date">📅 Söndag 12 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team">Sunne IK Esport</td><td class="match-score"><span>3 – <b>4</b></span><span class="ot">OT</span></td><td class="match-team winner">vNexs Vipers</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team winner">vNexs Vipers</td><td class="match-score"><span><b>3</b> – 1</span></td><td class="match-team">Sunne IK Esport</td></tr>
+            <tr><td class="match-time">21:00</td><td class="match-team winner">vNexs Vipers</td><td class="match-score"><span><b>6</b> – 4</span></td><td class="match-team">Modo Hockey</td></tr>
+            <tr><td class="match-time">21:30</td><td class="match-team winner">Modo Hockey</td><td class="match-score"><span><b>5</b> – 1</span></td><td class="match-team">vNexs Vipers</td></tr>
+          </table>
+        </div>
+
+        <div class="match-block">
+          <div class="match-date">📅 Söndag 19 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team">Surte Sisu HC</td><td class="match-score"><span>4 – <b>5</b></span></td><td class="match-team winner">vNexs Vipers</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team winner">vNexs Vipers</td><td class="match-score"><span><b>8</b> – 4</span></td><td class="match-team">Surte Sisu HC</td></tr>
+          </table>
+        </div>
+
+        <div class="match-block">
+          <div class="match-date">🥈 Semifinaler📅 Tisdag 21 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team">Modo Hockey</td><td class="match-score"><span>0 – <b>6</b></span></td><td class="match-team winner">vNexs Vipers</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team winner">vNexs Vipers</td><td class="match-score"><span><b>3</b> – 2</span></td><td class="match-team">Modo Hockey</td></tr>
+            <tr><td class="match-time">21:00</td><td class="match-team">Modo Hockey</td><td class="match-score"><span>1 – <b>3</b></span></td><td class="match-team winner">vNexs Vipers</td></tr>
+          </table>
+        </div>
+
+        <div class="match-block">
+          <div class="match-date">🥇 Final📅 Söndag 26 oktober 2025</div>
+          <table class="match-table">
+            <tr><td class="match-time">20:00</td><td class="match-team">Veterankraft</td><td class="match-score"><span>1 – <b>5</b></span></td><td class="match-team winner">vNexs Vipers</td></tr>
+            <tr><td class="match-time">20:30</td><td class="match-team winner">vNexs Vipers</td><td class="match-score"><span><b>4</b> – 2</span></td><td class="match-team">Veterankraft</td></tr>
+            <tr><td class="match-time">21:00</td><td class="match-team winner">Veterankraft</td><td class="match-score"><span><b>3</b> – 2</span></td><td class="match-team">vNexs Vipers</td></tr>
+            <tr><td class="match-time">21:30</td><td class="match-team winner">vNexs Vipers</td><td class="match-score"><span><b>3</b> – 2</span></td><td class="match-team">Veterankraft</td></tr>
+          </table>
+        </div>
+      </div>`;
+      };
+
+      // --- Fliklogik ---
+      tabs.forEach(btn => {
+        btn.addEventListener("click", () => {
+          tabs.forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          const mode = btn.dataset.mode;
+          if (mode === "matcher") loadMatches();
+          else loadStats(mode);
+        });
+      });
+
+      // Default: gruppspel
+      loadStats("gruppspel");
+    })();
+    </script>
+    
+  </div>
+
+ <!-- 🧩 Script for team navigation -->
+<script>
+  const teamCards = document.querySelectorAll('.team-card');
+  const lagMain = document.querySelector('#lag > .team-grid');
+  const teamPanels = document.querySelectorAll('#lag .team-panel');
+
+  teamCards.forEach(card => {
+    card.addEventListener('click', () => {
+      lagMain.style.display = 'none';
+      teamPanels.forEach(p => p.style.display = 'none');
+      document.getElementById('team-' + card.dataset.team).style.display = 'block';
+      document.getElementById('lag').classList.add('show-team'); // 👈 Lägg till denna rad
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
+  document.querySelectorAll('.back-to-lag').forEach(btn => {
+    btn.addEventListener('click', () => {
+      teamPanels.forEach(p => p.style.display = 'none');
+      lagMain.style.display = 'grid';
+      document.getElementById('lag').classList.remove('show-team'); // 👈 Lägg till denna rad
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
+  document.querySelectorAll('.team-subtabs').forEach(tabset => {
+    const tabs = tabset.querySelectorAll('.team-tab');
+    tabs.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        const target = btn.dataset.target;
+        const panels = tabset.parentElement.querySelectorAll('.team-subpanel');
+        panels.forEach(p => p.classList.toggle('active', p.id === target));
+      });
+    });
+  });
+  document.querySelectorAll('.team-subtabs').forEach(tabset => {
+    const tabs = tabset.querySelectorAll('.team-tab');
+    tabs.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        const target = btn.dataset.target;
+        const panels = tabset.parentElement.querySelectorAll('.team-subpanel');
+        panels.forEach(p => p.classList.toggle('active', p.id === target));
+      });
+    });
+  });
+
+  // 🔁 Återställ till huvudsidan när man klickar på "LAG" i toppmenyn
+  document.querySelectorAll('a[href="#lag"], [data-target="lag"], [data-panel="lag"]').forEach(link => {
+    link.addEventListener('click', () => {
+      const lagMain = document.querySelector('#lag > .team-grid');
+      const teamPanels = document.querySelectorAll('.team-panel');
+      if (!lagMain) return;
+
+      teamPanels.forEach(p => p.style.display = 'none');
+      lagMain.style.display = 'grid';
+      const lagSection = document.getElementById('lag');
+      if (lagSection) lagSection.classList.remove('show-team');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+</script>
+
+
+</script>
+
+</div>
+
+
+
+<!-- 🔹 TABELL -->
+<div id="tabell" class="tab-panel">
+  <h2>📊 Gruppspelstabell</h2>
+  <p>Aktuell tabell för <strong>Svenska eHockey Cupen 19.5</strong> – topp fyra lag går till slutspel 🏆</p>
+
+  <div id="sec-standings" style="max-width:950px;margin:auto;"></div>
+
+<script>
+(function() {
+  const host = document.getElementById('sec-standings');
+  host.innerHTML = '<div style="padding:12px;font-family:Inter,Arial;color:#ccc;">Laddar …</div>';
+
+  // 🔗 Ditt Google Sheet API
+  const API = "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec?sheet=Standings";
+  const url = API + (API.indexOf('?')>-1 ? '&' : '?') + '_t=' + Date.now();
+
+  let rows = [];
+  let currentSort = { key: 'p', dir: 'desc' };
+
+  fetch(url)
+    .then(r => r.json())
+    .then(data => {
+      rows = data;
+      renderTable();
+    })
+    .catch(err => {
+      host.innerHTML = '<div style="color:#f66;padding:12px;">Kunde inte ladda tabellen.<br>'+err+'</div>';
+    });
+
+  function sortRows() {
+    const { key, dir } = currentSort;
+    const num = n => Number(String(n||0).replace(/[−–—]/g, '-'));
+    rows.sort((a,b)=>{
+      if (key === 'team_name') return (a[key]||'').localeCompare(b[key]||'') * (dir==='asc'?1:-1);
+      return (num(a[key]) - num(b[key])) * (dir==='asc'?1:-1);
+    });
+  }
+
+  function renderTable() {
+    sortRows();
+
+    const table = document.createElement('table');
+    table.className = 'sec-table sortable';
+
+    const headers = [
+      { label:'#', key:'rank', sortable:false },
+      { label:'Lag', key:'team_name', sortable:false },
+      { label:'GP', key:'gp', sortable:true },
+      { label:'W', key:'w', sortable:true },
+      { label:'OTW', key:'otw', sortable:true },
+      { label:'L', key:'l', sortable:true },
+      { label:'OTL', key:'otl', sortable:true },
+      { label:'GD', key:'gd', sortable:true },
+      { label:'P', key:'p', sortable:true }
+    ];
+
+    const thead = document.createElement('thead');
+    const trHead = document.createElement('tr');
+    headers.forEach(h => {
+      const th = document.createElement('th');
+      th.textContent = h.label;
+      if (h.sortable) {
+        th.classList.add('sortable-header');
+        th.style.cursor = 'pointer';
+        th.addEventListener('click', () => {
+          if (currentSort.key === h.key) {
+            currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+          } else {
+            currentSort.key = h.key;
+            currentSort.dir = 'desc';
+          }
+          renderTable();
+        });
+
+        // 🔽🔼 symbol
+        if (currentSort.key === h.key) {
+          const arrow = document.createElement('span');
+          arrow.textContent = currentSort.dir === 'asc' ? ' 🔼' : ' 🔽';
+          th.appendChild(arrow);
+        }
+      }
+      trHead.appendChild(th);
+    });
+    thead.appendChild(trHead);
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    rows.forEach((r,i)=>{
+      const tr = document.createElement('tr');
+      if(i < 4) tr.classList.add('top4');
+
+      const tdRank = document.createElement('td');
+      tdRank.textContent = i+1;
+      tr.appendChild(tdRank);
+
+      const tdTeam = document.createElement('td');
+      tdTeam.innerHTML = `
+        <div class="team-cell">
+          <img src="${r.logo_url||''}" alt="${r.team_name||''}">
+          <span>${r.team_name||r.team||''}</span>
+        </div>`;
+      tr.appendChild(tdTeam);
+
+      ['gp','w','otw','l','otl','gd','p'].forEach(k=>{
+        const td = document.createElement('td');
+        td.textContent = r[k] ?? '';
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+host.innerHTML = '';
+const wrapper = document.createElement('div');
+wrapper.className = 'table-wrapper';
+wrapper.appendChild(table);
+host.appendChild(wrapper);
+
+  }
+})();
+</script>
+
+</div>
+
+<style>
+/* === TABELLSTIL (SEC 19.5 Dark Edition) === */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 14px;
+}
+
+/* --- Scroll design --- */
+.table-wrapper table {
+  min-width: 650px; /* gör att den scrollar snyggt på mobil */
+  width: 100%;
+}
+.table-wrapper::-webkit-scrollbar {
+  height: 8px;
+}
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(255, 215, 0, 0.35);
+  border-radius: 4px;
+}
+.table-wrapper::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* --- Själva tabellen --- */
+.sec-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 24px;
+  font-family: 'Inter', Arial, sans-serif;
+  font-size: 15px;
+  background: linear-gradient(180deg, rgba(12,18,34,0.98), rgba(18,22,45,0.98));
+  color: #ddd;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 0 22px rgba(255,215,0,0.05);
+  animation: fadeIn 0.5s ease;
+}
+
+/* --- Rubriker --- */
+.sec-table thead th {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: linear-gradient(90deg, rgba(30,30,45,1), rgba(45,38,18,0.7));
+  color: #e5c56a;
+  font-weight: 600;
+  padding: 12px 10px;
+  border-bottom: 1px solid rgba(255,215,0,0.1);
+  cursor: default;
+  text-align: right;
+  user-select: none;
+}
+.sec-table thead th:first-child,
+.sec-table thead th:nth-child(2) { text-align: left; }
+
+.sec-table thead th.sortable-header:hover {
+  background: rgba(255,215,0,0.12);
+  cursor: pointer;
+}
+
+/* --- Celler --- */
+.sec-table td {
+  padding: 10px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  text-align: right;
+}
+.sec-table td:first-child,
+.sec-table td:nth-child(2) { text-align: left; }
+
+/* --- Top 4 Highlight --- */
+.sec-table tr.top4 {
+  background: rgba(214,177,95,0.1);
+  font-weight: 600;
+}
+.sec-table tr.top4 td {
+  color: #ffdb7a;
+}
+
+/* --- Hover --- */
+.sec-table tbody tr:hover {
+  background: rgba(255,215,0,0.08);
+  transition: background 0.2s ease;
+}
+
+/* --- Lagkolumn med logga --- */
+.team-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.team-cell img {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  object-fit: contain;
+  border: 1px solid rgba(255,215,0,0.15);
+}
+
+/* --- Fade Animation --- */
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(10px);}
+  to {opacity: 1; transform: translateY(0);}
+}
+</style>
+
+
+
+<!-- 🔹 SLUTSPEL -->
+<div id="slutspel" class="tab-panel">
+  <h2>🏆 Slutspel</h2>
+  <p>Här hittar du resultat från semifinaler och final i Svenska eHockey Cupen 19.5.</p>
+
+  <div id="playoff-container" style="max-width:1100px;margin:auto;display:grid;gap:24px;"></div>
+
+
+
+<script>
+(function() {
+  const sheetURL = "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec?sheet=matcherSEC19_5";
+  const container = document.getElementById("playoff-container");
+
+  const logos = {
+    "Modo Hockey": "https://drive.google.com/thumbnail?id=1Pbr3B5ZSRjbluKEpNXvz6e4xnj0oB0Pw&sz=w1000",
+    "SSK Academy": "https://drive.google.com/thumbnail?id=1kdxwWivlii1hCK3doJY8I44dIQ_hQzYo&sz=w1000",
+    "Sunne IK Esport": "https://drive.google.com/thumbnail?id=15oE3SXfRAA3VK0nciLqYZ2FL6D8GUBtG&sz=w1000",
+    "Surte Sisu HC": "https://drive.google.com/thumbnail?id=1qRkJLEFmS-npNei6bs09fsy0QLmmrvpB&sz=w1000",
+    "Veterankraft": "https://drive.google.com/thumbnail?id=18GqojyIKrdOcvfNJdhrlNF_-mB-XVmjH&sz=w1000",
+    "vNexs Vipers": "https://drive.google.com/thumbnail?id=1lM9wrVIDUgc1ri4ZSQmErsb9aGZo5wBM&sz=w1000"
+  };
+
+  fetch(sheetURL)
+    .then(r => r.json())
+    .then(data => {
+      let currentRound = "";
+      const playoffs = [];
+
+      data.forEach(row => {
+        const time = (row.date__time || "").trim();
+        if (/round/i.test(time)) currentRound = time;
+        else if (row.home_team && row.away_team && row.home_score && row.away_score) {
+          playoffs.push({
+            round: currentRound,
+            home_team: row.home_team.trim(),
+            away_team: row.away_team.trim(),
+            home_score: Number(row.home_score),
+            away_score: Number(row.away_score)
+          });
+        }
+      });
+
+      const playoffsOnly = playoffs.filter(m =>
+        /round 1|round 2/i.test(m.round || "")
+      );
+      renderPlayoffBracket(playoffsOnly);
+    })
+    .catch(err => {
+      container.innerHTML = `<div style="color:#f66;padding:12px;">Fel vid hämtning av slutspelsdata: ${err}</div>`;
+    });
+
+  function renderPlayoffBracket(rows) {
+    if (!rows || !rows.length) {
+      container.innerHTML = "<div style='color:#ccc;padding:12px;'>Ingen slutspelsdata hittades.</div>";
+      return;
+    }
+
+    const groupedByRound = {};
+    rows.forEach(m => {
+      if (!groupedByRound[m.round]) groupedByRound[m.round] = [];
+      groupedByRound[m.round].push(m);
+    });
+
+    let html = "";
+    let champion = "";
+
+    // --- Funktion för att räkna matchserie ---
+    function calculateSeries(matches) {
+      const scoreMap = {};
+      matches.forEach(m => {
+        if (!scoreMap[m.home_team]) scoreMap[m.home_team] = 0;
+        if (!scoreMap[m.away_team]) scoreMap[m.away_team] = 0;
+
+        if (m.home_score > m.away_score) scoreMap[m.home_team]++;
+        else if (m.away_score > m.home_score) scoreMap[m.away_team]++;
+      });
+
+      const teams = Object.keys(scoreMap);
+      return {
+        teamA: teams[0],
+        teamB: teams[1],
+        winsA: scoreMap[teams[0]],
+        winsB: scoreMap[teams[1]],
+        winner: scoreMap[teams[0]] > scoreMap[teams[1]] ? teams[0] : teams[1]
+      };
+    }
+
+    // --- Semifinaler ---
+    const semis = groupedByRound["ROUND 1 - SEMIFINAL"] || [];
+    const seriesMap = {};
+    semis.forEach(m => {
+      const key = [m.home_team, m.away_team].sort().join("_");
+      if (!seriesMap[key]) seriesMap[key] = [];
+      seriesMap[key].push(m);
+    });
+
+    const semiResults = Object.values(seriesMap).map(series => calculateSeries(series));
+    const semiHTML = semiResults.map(s => playoffCard(s.teamA, s.teamB, s.winsA, s.winsB)).join("");
+
+    // --- Final ---
+    const finals = groupedByRound["ROUND 2 - FINAL"] || [];
+    const finalMap = {};
+    finals.forEach(m => {
+      const key = [m.home_team, m.away_team].sort().join("_");
+      if (!finalMap[key]) finalMap[key] = [];
+      finalMap[key].push(m);
+    });
+
+    let finalHTML = "";
+    Object.values(finalMap).forEach(series => {
+      const s = calculateSeries(series);
+      champion = s.winner;
+      finalHTML = playoffCard(s.teamA, s.teamB, s.winsA, s.winsB);
+    });
+
+    html += `
+      <div class="bracket">
+        <div class="semifinals">
+          <h3>🏒 Semifinaler</h3>
+          <div class="semi-pair">${semiHTML}</div>
+        </div>
+
+        <div class="final-section">
+          <h3>🥇 Final</h3>
+          <div class="final">${finalHTML}</div>
+        </div>
+
+   <div class="champion-box">
+  <img src="${logos[champion] || ''}" alt="${champion}">
+  🏆 <strong>Mästare: ${champion}</strong>
+</div>
+
+    `;
+
+    container.innerHTML = html;
+  }
+
+  // --- Kortdesign ---
+  function playoffCard(teamA, teamB, winsA, winsB) {
+    return `
+      <div class="series-card">
+        <div class="team-line">
+          <img src="${logos[teamA] || ''}" alt="${teamA}">
+          <span>${teamA}</span>
+        </div>
+        <div class="score">${winsA} - ${winsB}</div>
+        <div class="team-line">
+          <span>${teamB}</span>
+          <img src="${logos[teamB] || ''}" alt="${teamB}">
+        </div>
+      </div>`;
+  }
+})();
+</script>
+
+<style>
+#playoff-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+}
+
+/* --- Layout --- */
+.bracket {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 60px;
+}
+
+.semi-pair {
+  display: flex;
+  gap: 100px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.final-section {
+  text-align: center;
+  width: 100%;
+}
+
+.final {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* --- Kortdesign --- */
+.series-card {
+  background: linear-gradient(145deg, rgba(255,215,0,0.06), rgba(255,215,0,0.1));
+  border: 1px solid rgba(255,215,0,0.25);
+  border-radius: 18px;
+  padding: 22px 28px;
+  text-align: center;
+  min-width: 320px;
+  color: #fff;
+  box-shadow: 0 0 18px rgba(255, 215, 0, 0.12);
+  transition: transform 0.25s, box-shadow 0.25s;
+  position: relative;
+}
+.series-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 22px rgba(255, 215, 0, 0.3);
+}
+.series-card img {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+.series-card .team-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.series-card .score {
+  font-weight: bold;
+  font-size: 1.5em;
+  margin: 12px 0;
+  color: #e5c56a;
+}
+
+/* --- Finalkort --- */
+.final .series-card {
+  width: 80%;
+  max-width: 650px;
+  padding: 30px 40px;
+  border: 1px solid rgba(255,215,0,0.35);
+  background: linear-gradient(160deg, rgba(255,215,0,0.1), rgba(255,215,0,0.18));
+  box-shadow: 0 0 28px rgba(255,215,0,0.25);
+}
+.final .series-card .score {
+  font-size: 1.8em;
+}
+
+/* --- Winner box --- */
+.champion-box {
+  background: linear-gradient(145deg, #0b0f2b, #11153d);
+  color: #f6d776;
+  border: 1px solid rgba(255,215,0,0.4);
+  border-radius: 18px;
+  padding: 28px 40px;
+  font-size: 1.4em;
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 0 35px rgba(255,215,0,0.4);
+  width: 60%;
+  min-width: 340px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+.champion-box img {
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 6px rgba(255,215,0,0.4));
+}
+
+/* --- Guldlinjer mellan sektioner --- */
+.final-section::before {
+  content: "";
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  width: 2px;
+  height: 40px;
+  background: rgba(255,215,0,0.3);
+  transform: translateX(-50%);
+}
+.final-section,
+.semi-pair {
+  position: relative;
+}
+
+/* --- Mobilanpassning --- */
+@media (max-width: 800px) {
+  .semi-pair {
+    flex-direction: column;
+    gap: 40px;
+    align-items: center;
+  }
+  .series-card {
+    min-width: 90%;
+  }
+  .final .series-card {
+    width: 95%;
+  }
+  .champion-box {
+    flex-direction: column;
+    width: 85%;
+    gap: 10px;
+    font-size: 1.2em;
+    padding: 20px 24px;
+  }
+  .champion-box img {
+    width:70px;
+    height:70px;
+  }
+}  /* 👈  STÄNG media-blocket här! */
+
+/* === Tabs fix === */
+.tab-panel {
+  display: none;
+}
+.tab-panel.active {
+  display: block;
+}
+</style>
+</div> <!-- 👈 Stänger bara slutspelssektionen här -->
+
+<!-- MATCHER -->
+<div id="matcher" class="tab-panel">
+  <h2>📅 Matcher</h2>
+    <p>Alla matcher i Svenska eHockey Cupen 19.5 – gruppspel och slutspel</p>
+
+  <!-- ========================================================= -->
+  <!-- 🟦 GRUPPSPEL -->
+  <!-- ========================================================= -->
+
+  <!-- 🔸 Onsdag 8 oktober 2025 -->
+  <div class="matchday">
+    <h3>📅 Onsdag 8 oktober 2025</h3>
+    <div class="match-card"><div class="time">20:00</div><div class="teams"><div class="team">Sunne IK Esport</div><div class="score">2 – 4</div><div class="team">Veterankraft</div></div></div>
+    <div class="match-card"><div class="time">20:00</div><div class="teams"><div class="team">SSK Academy</div><div class="score">2 – 6</div><div class="team">vNexs Vipers</div></div></div>
+    <div class="match-card"><div class="time">20:30</div><div class="teams"><div class="team">Veterankraft</div><div class="score">2 – 5</div><div class="team">Sunne IK Esport</div></div></div>
+    <div class="match-card"><div class="time">20:30</div><div class="teams"><div class="team">vNexs Vipers</div><div class="score">4 – 1</div><div class="team">SSK Academy</div></div></div>
+    <div class="match-card"><div class="time">21:00</div><div class="teams"><div class="team">vNexs Vipers</div><div class="score">4 – 3</div><div class="team">Veterankraft</div></div></div>
+    <div class="match-card"><div class="time">21:30</div><div class="teams"><div class="team">Veterankraft</div><div class="score">2 – 3</div><div class="team">vNexs Vipers</div></div></div>
+  </div>
+
+  <!-- 🔸 Torsdag 9 oktober -->
+  <div class="matchday">
+    <h3>📅 Torsdag 9 oktober 2025</h3>
+    <div class="match-card"><div class="time">20:00</div><div class="teams"><div class="team">Modo Hockey</div><div class="score">2 – 3 <span class="ot">OT</span></div><div class="team">Veterankraft</div></div></div>
+    <div class="match-card"><div class="time">20:30</div><div class="teams"><div class="team">Veterankraft</div><div class="score">5 – 2</div><div class="team">Modo Hockey</div></div></div>
+  </div>
+
+  <!-- 🔸 Söndag 12 oktober -->
+  <div class="matchday">
+    <h3>📅 Söndag 12 oktober 2025</h3>
+    <div class="match-card"><div class="time">20:00</div><div class="teams"><div class="team">Veterankraft</div><div class="score">3 – 2</div><div class="team">SSK Academy</div></div></div>
+    <div class="match-card"><div class="time">20:00</div><div class="teams"><div class="team">Modo Hockey</div><div class="score">4 – 0</div><div class="team">Surte Sisu HC</div></div></div>
+    <div class="match-card"><div class="time">20:00</div><div class="teams"><div class="team">Sunne IK Esport</div><div class="score">3 – 4 <span class="ot">OT</span></div><div class="team">vNexs Vipers</div></div></div>
+    <div class="match-card"><div class="time">20:30</div><div class="teams"><div class="team">SSK Academy</div><div class="score">4 – 7</div><div class="team">Veterankraft</div></div></div>
+    <div class="match-card"><div class="time">20:30</div><div class="teams"><div class="team">Surte Sisu HC</div><div class="score">0 – 1 <span class="ot">OT</span></div><div class="team">Modo Hockey</div></div></div>
+    <div class="match-card"><div class="time">20:30</div><div class="teams"><div class="team">vNexs Vipers</div><div class="score">3 – 1</div><div class="team">Sunne IK Esport</div></div></div>
+    <div class="match-card"><div class="time">21:00</div><div class="teams"><div class="team">vNexs Vipers</div><div class="score">6 – 4</div><div class="team">Modo Hockey</div></div></div>
+    <div class="match-card"><div class="time">21:30</div><div class="teams"><div class="team">Modo Hockey</div><div class="score">5 – 1</div><div class="team">vNexs Vipers</div></div></div>
+  </div>
+
+  <!-- 🔸 Onsdag 15 oktober -->
+  <div class="matchday">
+    <h3>📅 Onsdag 15 oktober 2025</h3>
+    <div class="match-card"><div class="time">20:00</div><div class="teams"><div class="team">Veterankraft</div><div class="score">4 – 2</div><div class="team">Surte Sisu HC</div></div></div>
+    <div class="match-card"><div class="time">20:30</div><div class="teams"><div class="team">Surte Sisu HC</div><div class="score">5 – 2</div><div class="team">Veterankraft</div></div></div>
+  </div>
+
+  <!-- 🔸 Torsdag 16 oktober -->
+  <div class="matchday">
+    <h3>📅 Torsdag 16 oktober 2025</h3>
+    <div class="match-card"><div class="time">20:00</div><div class="teams"><div class="team">SSK Academy</div><div class="score">1 – 3</div><div class="team">Modo Hockey</div></div></div>
+    <div class="match-card"><div class="time">20:30</div><div class="teams"><div class="team">Modo Hockey</div><div class="score">3 – 0</div><div class="team">SSK Academy</div></div></div>
+    <div class="match-card"><div class="time">21:00</div><div class="teams"><div class="team">SSK Academy</div><div class="score">0 – 1</div><div class="team">Surte Sisu HC</div></div></div>
+    <div class="match-card"><div class="time">21:30</div><div class="teams"><div class="team">Surte Sisu HC</div><div class="score">0 – 5</div><div class="team">SSK Academy</div></div></div>
+  </div>
+
+  <!-- 🔸 Söndag 19 oktober -->
+  <div class="matchday">
+    <h3>📅 Söndag 19 oktober 2025</h3>
+    <div class="match-card"><div class="time">20:00</div><div class="teams"><div class="team">Surte Sisu HC</div><div class="score">0 – 6</div><div class="team">Sunne IK Esport</div></div></div>
+    <div class="match-card"><div class="time">20:00</div><div class="teams"><div class="team">Surte Sisu HC</div><div class="score">4 – 5</div><div class="team">vNexs Vipers</div></div></div>
+    <div class="match-card"><div class="time">20:00</div><div class="teams"><div class="team">Sunne IK Esport</div><div class="score">5 – 4 <span class="ot">OT</span></div><div class="team">SSK Academy</div></div></div>
+    <div class="match-card"><div class="time">20:00</div><div class="teams"><div class="team">Modo Hockey</div><div class="score">1 – 6</div><div class="team">Sunne IK Esport</div></div></div>
+    <div class="match-card"><div class="time">20:30</div><div class="teams"><div class="team">Sunne IK Esport</div><div class="score">5 – 3</div><div class="team">Surte Sisu HC</div></div></div>
+    <div class="match-card"><div class="time">20:30</div><div class="teams"><div class="team">vNexs Vipers</div><div class="score">8 – 4</div><div class="team">Surte Sisu HC</div></div></div>
+    <div class="match-card"><div class="time">20:30</div><div class="teams"><div class="team">SSK Academy</div><div class="score">6 – 2</div><div class="team">Sunne IK Esport</div></div></div>
+    <div class="match-card"><div class="time">20:30</div><div class="teams"><div class="team">Sunne IK Esport</div><div class="score">3 – 2</div><div class="team">Modo Hockey</div></div></div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- 🟨 SLUTSPEL -->
+  <!-- ========================================================= -->
+
+  <div class="playoff-section">
+    <h2>🏆 Slutspel</h2>
+    <p>Semifinaler och final i Svenska eHockey Cupen 19.5</p>
+
+    <!-- 🥈 Semifinaler -->
+    <div class="matchday">
+      <h3>🥈 Semifinaler<br><span>📅 Tisdag 21 oktober 2025</span></h3>
+      <div class="match-card playoff"><div class="time">20:00</div><div class="teams"><div class="team">Modo Hockey</div><div class="score">0 – 6</div><div class="team">vNexs Vipers</div></div></div>
+      <div class="match-card playoff"><div class="time">20:00</div><div class="teams"><div class="team">Veterankraft</div><div class="score">0 – 3</div><div class="team">Sunne IK Esport</div></div></div>
+      <div class="match-card playoff"><div class="time">20:30</div><div class="teams"><div class="team">vNexs Vipers</div><div class="score">3 – 2</div><div class="team">Modo Hockey</div></div></div>
+      <div class="match-card playoff"><div class="time">20:30</div><div class="teams"><div class="team">Sunne IK Esport</div><div class="score">4 – 5</div><div class="team">Veterankraft</div></div></div>
+      <div class="match-card playoff"><div class="time">21:00</div><div class="teams"><div class="team">Modo Hockey</div><div class="score">1 – 3</div><div class="team">vNexs Vipers</div></div></div>
+      <div class="match-card playoff"><div class="time">21:00</div><div class="teams"><div class="team">Veterankraft</div><div class="score">4 – 3</div><div class="team">Sunne IK Esport</div></div></div>
+      <div class="match-card playoff"><div class="time">21:30</div><div class="teams"><div class="team">Sunne IK Esport</div><div class="score">5 – 3</div><div class="team">Veterankraft</div></div></div>
+      <div class="match-card playoff"><div class="time">22:00</div><div class="teams"><div class="team">Veterankraft</div><div class="score">3 – 2</div><div class="team">Sunne IK Esport</div></div></div>
+    </div>
+
+    <!-- 🥇 Final -->
+    <div class="matchday">
+      <h3>🥇 Final<br><span>📅 Söndag 26 oktober 2025</span></h3>
+      <div class="match-card playoff"><div class="time">20:00</div><div class="teams"><div class="team">Veterankraft</div><div class="score">1 – 5</div><div class="team">vNexs Vipers</div></div></div>
+      <div class="match-card playoff"><div class="time">20:30</div><div class="teams"><div class="team">vNexs Vipers</div><div class="score">4 – 2</div><div class="team">Veterankraft</div></div></div>
+      <div class="match-card playoff"><div class="time">21:00</div><div class="teams"><div class="team">Veterankraft</div><div class="score">3 – 2</div><div class="team">vNexs Vipers</div></div></div>
+      <div class="match-card playoff"><div class="time">21:30</div><div class="teams"><div class="team">vNexs Vipers</div><div class="score">3 – 2</div><div class="team">Veterankraft</div></div></div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ================================
+   DARK MODE SFC-MATCHER STYLE FIX
+   ================================ */
+
+#matcher {
+  background: #0a0d18; /* Samma ton som andra boxar */
+  color: #e8e8e8;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: inset 0 0 25px rgba(255, 215, 0, 0.05);
+  border: 1px solid rgba(255, 215, 0, 0.05);
+}
+
+/* Rubrik */
+#matcher h2 {
+  color: #f6d66b;
+  font-weight: 800;
+  font-size: 26px;
+  text-align: center;
+  margin-bottom: 10px;
+  text-shadow: 0 0 12px rgba(255, 215, 0, 0.35);
+}
+#matcher p {
+  color: #bbb;
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 15px;
+}
+
+/* Matchdag */
+.matchday {
+  margin-top: 32px;
+  padding: 12px 0;
+}
+.matchday h3 {
+  background: rgba(10, 18, 40, 0.9);
+  color: #f6d66b;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 17px;
+  font-weight: 700;
+  display: inline-block;
+  box-shadow: 0 0 14px rgba(255, 215, 0, 0.25);
+  border: 1px solid rgba(255, 215, 0, 0.15);
+}
+
+/* Matchkort */
+.match-card {
+  background: radial-gradient(circle at top, #0b0e1a 0%, #070910 100%);
+  border: 1px solid rgba(255, 215, 0, 0.1);
+  border-radius: 12px;
+  margin: 14px 0;
+  padding: 14px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.25s ease;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+}
+.match-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+}
+
+/* Tid och lag */
+.match-card .time {
+  font-weight: 600;
+  color: #f6d66b;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+}
+..teams {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* centrera allt horisontellt */
+  gap: 12px;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+/* Lagen ligger på vardera sida om resultatet */
+.team {
+  flex: 1; /* gör att lagen trycks ut mot kanterna */
+  font-weight: 600;
+  color: #eaeaea;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.05);
+}
+
+/* Vänstra laget högerjusteras, högra vänsterjusteras */
+.team:first-child {
+  text-align: right;
+  padding-right: 10px;
+}
+.team:last-child {
+  text-align: left;
+  padding-left: 10px;
+}
+
+/* Resultatet i mitten */
+.score {
+  min-width: 80px;
+  text-align: center;
+  font-weight: 700;
+  color: #fff;
+  font-size: 17px;
+  letter-spacing: 1px;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
+  position: relative;
+}
+
+.ot {
+  color: #d6b15f;
+  font-weight: 600;
+  font-size: 12px;
+  margin-left: 4px;
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.4);
+}
+
+/* Slutspel */
+.playoff-section {
+  margin-top: 60px;
+  padding-top: 25px;
+  border-top: 2px solid rgba(255, 215, 0, 0.25);
+}
+.playoff-section h2 {
+  font-size: 24px;
+  color: #f6d66b;
+  margin-bottom: 8px;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+#matcher .match-card.playoff {
+  border-left: 3px solid #f6d66b;
+  background: linear-gradient(180deg, #111428, #090d1b);
+}
+
+/* Mobilanpassning */
+@media (max-width: 700px) {
+  .teams { flex-direction: column; gap: 6px; align-items: center; }
+  .score { font-size: 15px; }
+  .matchday h3 { font-size: 15px; }
+}
+</style>
+
+
+
+<!-- STATISTIK -->
+<div id="statistik" class="tab-panel">
+  <h2>📈 Statistik</h2>
+  <p>Individuell statistik för utespelare och målvakter i turneringen.</p>
+  <!-- 🔹 NIVÅ 1 – DROPDOWN FÖR KATEGORI -->
+  <div class="category-select">
+    <label for="categoryDropdown">🎯 Välj fas:</label>
+    <select id="categoryDropdown">
+      <option value="group" selected>Gruppspel</option>
+      <option value="playoff">Slutspel</option>
+    </select>
+  </div>
+
+  <!-- 🔹 SEKTOR: GRUPPSPEL -->
+  <div id="stat-group" class="stat-section active">
+  
+    <div class="sec-subnav level2">
+      <nav class="tabs">
+        <button class="tab stat-l2 is-active" data-target="group-skaters" type="button">UTESPELARE</button>
+        <button class="tab stat-l2" data-target="group-goalies" type="button">MÅLVAKTER</button>
+      </nav>
+    </div>
+
+    <div id="group-skaters" class="stat-subsection active">
+      <div class="header-box">
+        <h2>🏒 Gruppspel – Utespelarstatistik</h2>
+        <input type="text" id="searchGroupSkaters" placeholder="🔍 Sök spelare eller lag...">
+      </div>
+      <div id="group-player-stats"></div>
+      <p id="updated-group-skaters" class="lastUpdated"></p>
+    </div>
+
+    <div id="group-goalies" class="stat-subsection">
+      <div class="header-box">
+        <h2>🥅 Gruppspel – Målvaktsstatistik</h2>
+        <input type="text" id="searchGroupGoalies" placeholder="🔍 Sök målvakt eller lag...">
+      </div>
+      <div id="group-goalie-stats"></div>
+      <p id="updated-group-goalies" class="lastUpdated"></p>
+    </div>
+  </div>
+
+  <!-- 🔹 SEKTOR: SLUTSPEL -->
+  <div id="stat-playoff" class="stat-section">
+ 
+    <div class="sec-subnav level2">
+      <nav class="tabs">
+        <button class="tab stat-l2 is-active" data-target="playoff-skaters" type="button">UTESPELARE</button>
+        <button class="tab stat-l2" data-target="playoff-goalies" type="button">MÅLVAKTER</button>
+      </nav>
+    </div>
+
+    <div id="playoff-skaters" class="stat-subsection active">
+      <div class="header-box">
+        <h2>🏒 Slutspel 19.5 – Utespelarstatistik</h2>
+        <input type="text" id="searchPlayoffSkaters" placeholder="🔍 Sök spelare eller lag...">
+      </div>
+      <div id="playoff-player-stats"></div>
+      <p id="updated-playoff-skaters" class="lastUpdated"></p>
+    </div>
+
+    <div id="playoff-goalies" class="stat-subsection">
+      <div class="header-box">
+        <h2>🥅 Slutspel 19.5 – Målvaktsstatistik</h2>
+        <input type="text" id="searchPlayoffGoalies" placeholder="🔍 Sök målvakt eller lag...">
+      </div>
+      <div id="playoff-goalie-stats"></div>
+      <p id="updated-playoff-goalies" class="lastUpdated"></p>
+    </div>
+  </div>
+</div>
+
+<!-- 🔹 STIL -->
+<!-- ========================================================= -->
+<!-- 💅 DARK MODE DESIGN – STATISTIK -->
+<!-- ========================================================= -->
+<style>
+#statistik {
+  max-width: 980px;
+  margin: 50px auto;
+  background: #0a0d18;
+  border-radius: 20px;
+  padding: 36px 40px;
+  box-shadow: inset 0 0 25px rgba(255, 215, 0, 0.05);
+  border: 1px solid rgba(255, 215, 0, 0.05);
+  color: #e4e4e4;
+}
+
+/* 🏒 Rubriker */
+#statistik h2 {
+  color: #f6d66b;
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0 0 10px;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.35);
+}
+#statistik p {
+  color: #bbb;
+  font-size: 15.5px;
+  line-height: 1.7;
+}
+
+/* 🎯 Dropdown – välj fas */
+.category-select {
+  margin: 14px 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.category-select label {
+  font-weight: 600;
+  color: #f6d66b;
+  font-size: 15px;
+}
+#categoryDropdown {
+  font-family: Inter, system-ui, Arial, sans-serif;
+  font-size: 14.5px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border: 2px solid rgba(255, 215, 0, 0.25);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #0f142b 0%, #090d1b 100%);
+  color: #fff;
+  cursor: pointer;
+  transition: all .25s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23f6d66b' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+  padding-right: 32px;
+}
+#categoryDropdown:hover {
+  border-color: #f6d66b;
+  box-shadow: 0 0 0 2px rgba(214, 177, 95, 0.25);
+}
+#categoryDropdown:focus {
+  outline: none;
+  border-color: #f6d66b;
+  box-shadow: 0 0 0 3px rgba(214, 177, 95, 0.25);
+}
+
+/* 🧭 Flikar (UTESPELARE / MÅLVAKTER) */
+#statistik .tabs {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+#statistik .tab {
+  border: 1.5px solid rgba(255, 215, 0, 0.25);
+  color: #f6d66b;
+  background: linear-gradient(180deg, #0f142b 0%, #090d1b 100%);
+  border-radius: 10px;
+  padding: 10px 22px;
+  font: 600 14px/1 Inter, system-ui, Arial, sans-serif;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+#statistik .tab:hover {
+  background: #111a38;
+  transform: translateY(-1px);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.15);
+}
+#statistik .tab.is-active {
+  background: linear-gradient(180deg, #f6d66b 0%, #e0c160 100%);
+  color: #0a0d18;
+  border-color: #f6d66b;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.25);
+}
+
+/* 🎯 Rubrik + sökfält */
+.header-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 10px 0 20px;
+}
+.header-box h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f6d66b;
+  text-shadow: 0 0 6px rgba(255, 215, 0, 0.3);
+}
+.header-box input {
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 8px;
+  min-width: 240px;
+  background: #0b0e1a;
+  color: #fff;
+  outline: none;
+  transition: border-color .2s;
+}
+.header-box input:focus {
+  border-color: #f6d66b;
+}
+@media (max-width: 700px) {
+  .header-box {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .header-box input {
+    width: 100%;
+  }
+}
+
+/* 📊 Tabellen */
+#statistik .wrap {
+  background: #0b0e1a;
+  border-radius: 12px;
+  overflow-x: auto;
+  box-shadow: 0 0 18px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 215, 0, 0.1);
+}
+#statistik table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font: 14px/1.4 Inter, system-ui, Arial, sans-serif;
+}
+#statistik thead th {
+  position: sticky;
+  top: 0;
+  background: #101b40;
+  color: #f6d66b;
+  padding: 10px 8px;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+  text-align: center;
+  cursor: pointer;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+#statistik tbody td {
+  padding: 10px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  text-align: center;
+  color: #e4e4e4;
+  white-space: nowrap;
+}
+#statistik tbody tr:hover {
+  background: rgba(255, 215, 0, 0.06);
+  transition: background 0.2s;
+}
+
+/* Spelarnamn & lag vänsterjusterade */
+#statistik tbody td[data-label="PLAYERS"],
+#statistik tbody td[data-label="GOALIES"],
+#statistik tbody td[data-label="TEAM"] {
+  text-align: left !important;
+  padding-left: 14px;
+}
+
+/* ⏳ Loader */
+.loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+  color: #f6d66b;
+}
+.loader .puck {
+  font-size: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 8px;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Sektioner synlighet */
+.stat-section { display: none; }
+.stat-section.active { display: block; }
+.stat-subsection { display: none; }
+.stat-subsection.active { display: block; }
+</style>
+
+<!-- 🔹 SCRIPT -->
+<script>
+const dropdown = document.getElementById("categoryDropdown");
+const sections = {
+  group: document.getElementById("stat-group"),
+  playoff: document.getElementById("stat-playoff")
+};
+const saved = localStorage.getItem("sec-last-category") || "group";
+dropdown.value = saved;
+toggleCategory(saved);
+dropdown.addEventListener("change", (e)=>{
+  const val = e.target.value;
+  localStorage.setItem("sec-last-category", val);
+  toggleCategory(val);
+});
+function toggleCategory(key){
+  Object.keys(sections).forEach(k=>{
+    sections[k].classList.toggle("active", k===key);
+  });
+}
+
+document.querySelectorAll('#statistik .stat-section').forEach(section=>{
+  const tabs = section.querySelectorAll('.stat-l2');
+  const subs = section.querySelectorAll('.stat-subsection');
+  tabs.forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const target = btn.dataset.target;
+      tabs.forEach(t=>t.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      subs.forEach(s=>s.classList.toggle('active', s.id===target));
+    });
+  });
+});
+
+const API_BASE="https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec";
+const TEAM_MAP={'hmm':'Veterankraft','vNV':'vNexs Vipers','VNV':'vNexs Vipers','vNv':'vNexs Vipers','MOD':'Modo Hockey','SES':'Sunne IK Esport','SA':'SSK Academy','SS':'Surte Sisu HC'};
+const FLAG={SE:'🇸🇪',FI:'🇫🇮',NO:'🇳🇴',DK:'🇩🇰',IS:'🇮🇸',GB:'🇬🇧',DE:'🇩🇪',PL:'🇵🇱',FR:'🇫🇷',US:'🇺🇸',CA:'🇨🇦'};
+
+function flagify(name){
+  if(!name)return{text:'',flag:''};
+  let clean=String(name).trim();
+  let match=/,\s*([A-Za-z]{2,3})$/i.exec(clean);
+  let code=match?match[1].toUpperCase():'';
+  const MAP={SWE:'SE',FIN:'FI',NOR:'NO',DNK:'DK',ISL:'IS',GBR:'GB',DEU:'DE',USA:'US',CAN:'CA'};
+  if(MAP[code])code=MAP[code];
+  const f=FLAG[code]||'';
+  return{text:clean.replace(/,\s*[A-Za-z]{2,3}$/,''),flag:f};
+}
+function mapTeam(code){const c=String(code||'').trim();return TEAM_MAP[c]||c||'';}
+
+function renderTable(hostId,searchId,updatedId,sheetName,sortFunc){
+  const host=document.getElementById(hostId);
+  const search=document.getElementById(searchId);
+  const updated=document.getElementById(updatedId);
+  host.innerHTML='<div class="loader"><div class="puck">🏒</div><div>Laddar statistik...</div></div>';
+  fetch(API_BASE+'?sheet='+encodeURIComponent(sheetName)+'&_t='+Date.now())
+    .then(r=>r.json())
+    .then(rows=>{
+      if(!rows||!rows.length){host.textContent="Ingen data.";return;}
+      if(sortFunc)rows.sort(sortFunc);
+      const headers=Object.keys(rows[0]);
+      const table=document.createElement('table');
+      const thead=document.createElement('thead');
+      const hr=document.createElement('tr');
+      hr.innerHTML='<th>#</th>'+headers.map(h=>`<th>${h.toUpperCase()}</th>`).join('');
+      thead.appendChild(hr);
+      table.appendChild(thead);
+      const tbody=document.createElement('tbody');
+      rows.forEach((r,i)=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML='<td>'+(i+1)+'</td>'+headers.map(k=>{
+          let v=r[k];
+          if(/player|goalie/i.test(k)){
+            const info=flagify(v);
+            v=(info.flag?info.flag+' ':'')+info.text;
+          }
+          if(k.toLowerCase()==='team')v=mapTeam(v);
+          return `<td data-label="${k.toUpperCase()}">${v||''}</td>`;
+        }).join('');
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      host.innerHTML='';
+      const wrap=document.createElement('div');
+      wrap.className='wrap';
+      wrap.appendChild(table);
+      host.appendChild(wrap);
+      updated.textContent="Senast uppdaterad: "+new Date().toLocaleString("sv-SE");
+      search.addEventListener('input',()=>[...tbody.rows].forEach(tr=>{
+        const match=[...tr.cells].some(td=>td.textContent.toLowerCase().includes(search.value.toLowerCase()));
+        tr.style.display=match?'':'none';
+      }));
+    })
+    .catch(err=>{
+      host.textContent="Fel vid laddning: "+err.message;
+      console.error(err);
+    });
+}
+
+/* Gruppspel */
+renderTable('group-player-stats','searchGroupSkaters','updated-group-skaters','Spelarstats',
+  (a,b)=>(+b.pts||0)-(+a.pts||0)||(+b.g||0)-(+a.g||0));
+renderTable('group-goalie-stats','searchGroupGoalies','updated-group-goalies','Målvaktsstats',
+  (a,b)=>(parseFloat(b['SVP']||0)||0)-(parseFloat(a['SVP']||0)||0));
+
+/* Slutspel */
+renderTable('playoff-player-stats','searchPlayoffSkaters','updated-playoff-skaters','Spelarstats slut 19.5',
+  (a,b)=>(+b.pts||0)-(+a.pts||0)||(+b.g||0)-(+a.g||0));
+renderTable('playoff-goalie-stats','searchPlayoffGoalies','updated-playoff-goalies','Målvaktsstats slut 19.5',
+  (a,b)=>(parseFloat(b['SVP']||0)||0)-(parseFloat(a['SVP']||0)||0));
+</script>
+
+<!-- 🔹 REGLER -->
+<div id="regler" class="tab-panel">
+
+
+  <h2>📜 Regler – SEC Vinter-Uppvärmning 26</h2>
+  <p>Officiella regler och riktlinjer för Svenska eHockey Cupens vinterturnering. Alla deltagare förväntas känna till och följa dessa regler under hela cupens gång.</p>
+
+  <div class="info-card" style="padding:18px 20px;margin-top:18px;line-height:1.55;">
+
+    <h3>⚡ Snabbinfo</h3>
+    <ul>
+      <li><strong>Krav:</strong> Tre (3) skandinaviska kaptener, minst sju (7) spelare.</li>
+      <li><strong>Max:</strong> tolv (12) spelare per lag.</li>
+      <li>Fritt deltagande – inga restriktioner för högre divisioner eller utländska spelare (så länge laget är skandinaviskt).</li>
+      <li><strong>Datum:</strong> Gruppspel 7–19 okt | Transfer-deadline 10 okt 23:59 | Slutspel 20–26 okt.</li>
+      <li><strong>Slutspel:</strong> Top 4-lag går vidare | Best-of-5-format.</li>
+    </ul>
+
+    <h3>📘 Förord</h3>
+    <p>Välkommen till de officiella reglerna för SEC Vinter-Uppvärmning 26. Turneringen följer <em>ECL ’25: Spring-regelverket</em> med egna tillägg. Cupens administration (CA) ansvarar för att tolka och tillämpa reglerna rättvist. Alla lagkaptener ska känna till regelverket i sin helhet.</p>
+
+    <h3>🧾 Medlemsregistrering</h3>
+    <ul>
+      <li>Alla spelare måste ha ett konto på SportsGamer.gg med korrekt PSN-ID eller Gamertag.</li>
+      <li>Kontonamn får inte vara stötande eller olämpliga.</li>
+      <li>Genom att ansluta sig till ett lag godkänner spelaren alla regler.</li>
+      <li>Endast ett konto per spelare är tillåtet.</li>
+      <li>Spelare i samma hushåll ska meddela CA om de delar IP-adress.</li>
+      <li>Alla ska ha korrekt nationalitet angiven på Playercard.</li>
+    </ul>
+
+    <h3>🏒 Lagregistrering</h3>
+    <ul>
+      <li>Endast svenska, norska och danska medlemmar får registrera lag.</li>
+      <li>Lag ska ha minst 7 och max 12 spelare, varav 3 skandinaviska kaptener.</li>
+      <li>Spelare avstängda av SWEEHOCKEY eller SportsGamer får inte delta.</li>
+      <li>Registreringar blir bindande efter deadline.</li>
+      <li>Lag som vill dra sig ur måste meddela CA innan anmälningstiden gått ut.</li>
+      <li>Genom anmälan godkänner laget att logotyper och bilder får användas i sändning och marknadsföring.</li>
+      <li>Sponsorer får inte stå i konflikt med SportsGamers värderingar eller vara verksamma inom alkohol-, tobak-, spel- eller vuxenunderhållning.</li>
+    </ul>
+
+    <h3>🤝 Uppförandekod</h3>
+    <p>Alla deltagare ska uppträda respektfullt och undvika kränkande språk. Det är förbjudet att försöka kringgå eller missleda CA. Lagkaptener ansvarar för lagets beteende och kommunikation.</p>
+
+    <h3>🧠 Lagledning & Administration</h3>
+    <ul>
+      <li>Lagledare ska schemalägga matcher, följa regler och kommunicera med CA.</li>
+      <li>Cupens administration organiserar turneringen, tolkar regler och hanterar tvister.</li>
+      <li>CA kan justera regler vid behov och fattar beslut genom majoritet.</li>
+      <li>Aktuella medlemmar: eSwahn och DobbyTheJoker_ (med reservation för ändringar).</li>
+    </ul>
+
+    <h3>📋 Lagregler</h3>
+    <ul>
+      <li>Endast registrerade spelare får användas i matcher.</li>
+      <li>Walkover (WO) kan utdelas vid uteblivet deltagande.</li>
+      <li>Matcher kan annulleras om obehöriga spelare deltar.</li>
+    </ul>
+
+    <h3>🏅 Fair Play</h3>
+    <p>Grundprincipen i SEC är sportslighet. Spelare får inte utnyttja buggar, distrahera motståndare eller uppträda osportsligt.</p>
+    <p><strong>Det är förbjudet att:</strong></p>
+    <ul>
+      <li>Utnyttja buggar (t.ex. frysningar eller de-syncs).</li>
+      <li>Initiera slagsmål före faceoff.</li>
+      <li>Lämna målgården för att störa motståndare.</li>
+      <li>Blockera spelare utan puck eller “fånga” dem bakom mål.</li>
+    </ul>
+
+    <h3>⏰ Schemaläggning</h3>
+    <ul>
+      <li>Matcher spelas enligt SportsGamer.gg-schemat.</li>
+      <li>Matcher får flyttas om båda lag godkänner det i förväg.</li>
+      <li>Lag ska försöka kontakta motståndare minst 12–24 h innan match.</li>
+      <li>Max 1 uppskjutning per match.</li>
+      <li>Matcher ska vara rapporterade senast 23:59 CET på säsongens slutdatum.</li>
+      <li>Lag som spelar färre än 80 % av matcherna riskerar diskvalificering.</li>
+      <li>Hemmalaget börjar serien på hemmaplan enligt schemat.</li>
+    </ul>
+
+    <h3>🎮 Spelregler</h3>
+    <ul>
+      <li>Alla matcher spelas 6 mot 6 (Privat Game).</li>
+      <li>Periodlängd: 4 minuter.</li>
+      <li>Poängsystem: 3 p vinst | 2 p OT-vinst | 1 p OT-förlust | 0 p förlust.</li>
+      <li>Tiebreakers: PPG → Segrar → Inbördes → GD → Gjorda mål.</li>
+      <li>Förbjudna traits: Truculence och Big Tipper.</li>
+    </ul>
+
+    <h3>🎽 Klädregler & Arenor</h3>
+    <ul>
+      <li>Lag ska ha två tröjdesigner – mörk för hemmaplan, ljus för bortaplan.</li>
+      <li>Bortalag byter vid färgkrock.</li>
+      <li>Målvakter får använda “CHEL”-utrustning fritt.</li>
+      <li>Arenorna Junior Stadium 1 och 2 är förbjudna.</li>
+      <li>Målstolpar ska vara röda (standardfärg).</li>
+      <li>Inga icke-mänskliga karaktärer är tillåtna.</li>
+    </ul>
+
+    <h3>⚙️ Matchhantering & Frånkoppling</h3>
+    <ul>
+      <li>Matcher får avbrytas inom 2 minuter vid lagg eller disconnect.</li>
+      <li>Endast 2 omstarter tillåtna – vid tredje måste matchen spelas klart.</li>
+      <li>Statistik från delade matcher ska slås samman i rapporten.</li>
+      <li>Bortkoppling av målvakt under breakaway → simulerat straff vid omstart.</li>
+      <li>Lagen ska försöka lösa problem gemensamt innan CA involveras.</li>
+    </ul>
+
+    <h3>🔄 Övergångar</h3>
+    <ul>
+      <li>Spelare får inte byta lag under SEC.</li>
+      <li>Deadline för free agents: 10 okt 23:59 CE(S)T.</li>
+      <li>Diskvalificerade lags kaptener stängs av från nästa cup som lagkaptener.</li>
+    </ul>
+
+    <h3>📊 Matchrapportering</h3>
+    <ul>
+      <li>All statistik ska motsvara spelets data exakt.</li>
+      <li>Skärmdumpar på statistik, matchhändelser och spelarstatistik ska sparas.</li>
+      <li>Rapportering ska ske inom angiven tidsgräns.</li>
+    </ul>
+  </div>
+</div>
+
+
+
+<!-- FOOTER -->
+<footer id="sec-footer-wrapper">
+  <div class="sec-footer-glow"></div>
+  <div id="sec-footer-line"></div>
+  <div id="sec-footer-text">
+    © 2026 <span>Svenska eHockey Cupen</span> | Design & utveckling av <span>SWEEHOCKEY</span>
+  </div>
+</footer>
+
+
+  </div><!-- /sec-page -->
+
+
+
+<script>
+  const tabs   = document.querySelectorAll('.cup-tabs .tab');
+  const panels = document.querySelectorAll('.tab-panel');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const targetId = tab.dataset.target;
+
+      // uppdatera knappar
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      // visa rätt panel
+      panels.forEach(p => {
+        if (p.id === targetId) {
+          p.classList.add('active');
+        } else {
+          p.classList.remove('active');
+        }
+      });
+    });
+  });
+</script>
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const footer = document.getElementById("sec-footer-wrapper");
+
+    if (!footer) return; // säkerhetskoll
+
+    const observer = new IntersectionObserver(
+      (entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            footer.classList.add("visible");
+            observer.unobserve(footer); // trigga bara en gång
+          }
+        });
+      },
+      {
+        root: null,
+        rootMargin: "0px 0px -50px 0px", // triggar lite tidigare
+        threshold: 0.1
+      }
+    );
+
+    observer.observe(footer);
+  });
+</script>
+
+</body>
+</html>
+
