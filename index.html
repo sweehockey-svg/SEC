@@ -1,2 +1,98 @@
 <!DOCTYPE html>
-<meta http-equiv="refresh" content="0; url=SEC.html">
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Svenska eHockey Cupen</title>
+  <style>
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: #000;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      background: radial-gradient(circle at top, #151b3f 0, #050614 55%, #02030a 100%);
+      padding: 40px 20px 30px;
+      border-bottom: 2px solid rgba(214, 177, 95, 0.3);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    }
+    header img {
+      width: 160px;
+    }
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #f0d58b;
+      margin-top: 12px;
+      letter-spacing: 0.1em;
+    }
+    main {
+      padding: 40px 20px;
+    }
+    .cup-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 30px;
+    }
+    .cup {
+      background: #0b0f1e;
+      border: 1px solid rgba(214, 177, 95, 0.3);
+      border-radius: 14px;
+      padding: 20px 30px;
+      text-align: center;
+      width: 260px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .cup:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 25px rgba(214, 177, 95, 0.4);
+    }
+    .cup a {
+      color: #f0d58b;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1.2rem;
+      display: block;
+      margin-top: 10px;
+    }
+    footer {
+      font-size: 0.9rem;
+      color: #888;
+      margin-top: 50px;
+      padding-bottom: 30px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="https://drive.google.com/thumbnail?id=1QybW_Uw8HO0OXo8vwQFD-zrrr-ifFrC9&sz=w1000" alt="SEC-logotyp">
+    <h1>🏒 Svenska eHockey Cupen 🏆</h1>
+  </header>
+  <main>
+    <h2>Välj turnering</h2>
+    <div class="cup-list">
+      <div class="cup">
+        <span>🧤 Pågående</span>
+        <a href="SEC19_5.html">Svenska eHockey Cupen 19.5</a>
+      </div>
+      <div class="cup">
+        <span>📜 Tidigare</span>
+        <a href="SEC18.html">Svenska eHockey Cupen 18</a>
+      </div>
+      <div class="cup">
+        <span>📜 Tidigare</span>
+        <a href="#">Svenska eHockey Cupen 17</a>
+      </div>
+    </div>
+  </main>
+  <footer>
+    © 2025 Svenska eHockey Cupen – SWEeHOCKEY
+  </footer>
+</body>
+</html>
