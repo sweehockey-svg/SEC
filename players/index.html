@@ -8,7 +8,7 @@
 <style>
     body {
         margin: 0;
-        font-family: Inter, system-ui, Arial, sans-serif;
+        font-family: Inter, sans-serif;
         background: #000;
         color: #fff;
         text-align: center;
@@ -19,22 +19,20 @@
         padding: 30px;
         font-size: 1.8rem;
         font-weight: 900;
-        letter-spacing: 0.08em;
         color: #f0d58b;
+        letter-spacing: 0.08em;
     }
 
     .player-photo {
         width: 240px;
         border-radius: 18px;
         border: 2px solid #d6b15f;
-        box-shadow: 0 0 20px rgba(214, 177, 95, 0.6);
+        box-shadow: 0 0 20px rgba(214,177,95,0.6);
         margin-top: 10px;
         opacity: 0;
         transition: 0.6s;
     }
-    .player-photo.loaded {
-        opacity: 1;
-    }
+    .player-photo.loaded { opacity: 1; }
 
     .player-name {
         font-size: 2.5rem;
@@ -47,13 +45,12 @@
 
     .no-stats {
         margin: 40px auto;
-        max-width: 600px;
         padding: 16px;
+        max-width: 600px;
         border-radius: 10px;
         background: #1a0e0e;
         border-left: 4px solid red;
         color: #ffaaaa;
-        font-size: 1rem;
     }
 
     .stats-table {
@@ -64,19 +61,9 @@
         box-shadow: 0 0 20px rgba(255,255,255,0.1);
     }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        color: #fff;
-    }
-    thead {
-        background: #141b33;
-        color: #f0d58b;
-    }
-    th, td {
-        padding: 14px;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
+    table { width: 100%; color:#fff; border-collapse: collapse; }
+    thead { background:#141b33; color:#f0d58b; }
+    th,td { padding:14px; border-bottom:1px solid rgba(255,255,255,0.1); }
 </style>
 </head>
 
@@ -84,41 +71,37 @@
 
 <div class="header">🏒 Svenska eHockey Cupen – Spelarkort</div>
 
-<img class="player-photo" id="playerPhoto" src="" alt="Spelarbild" />
-
-<h1 class="player-name" id="playerName"></h1>
+<img id="playerPhoto" class="player-photo" src="" alt="Spelarbild">
+<h1 id="playerName" class="player-name"></h1>
 
 <div id="statsOutput"></div>
 
+
 <script>
-// =======================================
-// 1️⃣ API-URL (KLISRA IN NYA DEPLOY-URL:EN)
-// =======================================
-const API_BASE = "💥 KLISRA-IN-DITT-NYA-API-HÄR/exec";
+//
+// 1️⃣ Din riktiga API-URL (klar!)
+//
+const API_BASE = "https://script.google.com/macros/s/AKfycbwRnLmS20HqkbgMbqAb7imyeVVDXTEXddCSVttjJCMcvzNVcd0EsZml77a3m_ACX/exec";
 
-
-// =======================================
-// 2️⃣ Hämta ?player=namn från URL
-// =======================================
+//
+// 2️⃣ Hämta ?player=namn
+//
 const urlParams = new URLSearchParams(window.location.search);
 const rawName = (urlParams.get("player") || "").trim().toLowerCase();
 
-if (!rawName) {
-    document.getElementById("playerName").textContent = "Ingen spelare vald";
-}
+document.getElementById("playerName").textContent = rawName || "Ingen spelare vald";
 
-
-// =======================================
-// 3️⃣ Ladda FOTO från Google Sheet (separat fotoblad)
-// =======================================
-async function loadPhoto(player) {
-    try {
+//
+// 3️⃣ Hämta foto
+//
+async function loadPhoto(){
+    try{
         const res = await fetch(`${API_BASE}?sheet=Spelarfoton`);
         const rows = await res.json();
 
         const clean = s => String(s).toLowerCase().replace(/\s+/g,"");
 
-        const match = rows.find(r => clean(r.Spelarnamn) === clean(player));
+        const match = rows.find(r => clean(r.Spelarnamn) === clean(rawName));
 
         const id = match ? match.DriveID : "1VAa79pJ-QbyeliY60autf914z6SBwmhp"; // fallback
 
@@ -131,66 +114,49 @@ async function loadPhoto(player) {
     }
 }
 
-
-// =======================================
-// 4️⃣ Hämta statistik från API
-// =======================================
-async function loadStats() {
-    const output = document.getElementById("statsOutput");
-    const nameEl = document.getElementById("playerName");
-
-    nameEl.textContent = rawName;
+//
+// 4️⃣ Hämta statistik (automatiskt letar igenom ALLA statistikblad)
+//
+async function loadStats(){
+    const out = document.getElementById("statsOutput");
 
     try {
         const res = await fetch(`${API_BASE}?player=${encodeURIComponent(rawName)}`);
-
         const data = await res.json();
-        console.log("DATA:", data);
 
-        if (data.error) {
-            output.innerHTML = `
-                <div class="no-stats">❌ Ingen statistik hittades för ${rawName}</div>
-            `;
+        if (data.error){
+            out.innerHTML = `<div class="no-stats">❌ Ingen statistik hittades för ${rawName}</div>`;
             return;
         }
 
-        // Bygg tabell
+        // Bygg tabellen
         let html = `
         <div class="stats-table">
-            <table>
-                <thead><tr><th>Stat</th><th>Värde</th></tr></thead>
-                <tbody>
+        <table>
+            <thead>
+                <tr><th>Stat</th><th>Värde</th></tr>
+            </thead>
+            <tbody>
         `;
 
-        for (const key in data) {
+        for (const key in data){
             if (key === "sheet") continue;
-            html += `
-            <tr>
-                <td>${key}</td>
-                <td>${data[key]}</td>
-            </tr>`;
+            html += `<tr><td>${key}</td><td>${data[key]}</td></tr>`;
         }
 
-        html += `
-                <tr><td>Hämtad från</td><td>${data.sheet}</td></tr>
-                </tbody></table>
-        </div>`;
+        html += `<tr><td>Hämtad från</td><td>${data.sheet}</td></tr>`;
+        html += `</tbody></table></div>`;
 
-        output.innerHTML = html;
+        out.innerHTML = html;
 
-    } catch(err) {
-        output.innerHTML = `<div class="no-stats">⚠️ Fel vid hämtning av statistik</div>`;
+    } catch(err){
         console.error(err);
+        out.innerHTML = `<div class="no-stats">⚠️ Fel vid hämtning av statistik</div>`;
     }
 }
 
-
-// =======================================
-// 5️⃣ Starta laddning
-// =======================================
-loadPhoto(rawName);
+loadPhoto();
 loadStats();
-
 </script>
 
 </body>
