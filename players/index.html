@@ -1,150 +1,197 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Spelarkort | Svenska eHockey Cupen</title>
-  <style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Spelarkort – Svenska eHockey Cupen</title>
+
+<style>
     body {
-      font-family: "Poppins", sans-serif;
-      background-color: #000;
-      color: #f0d58b;
-      text-align: center;
-      margin: 0;
-      padding: 0;
+        margin: 0;
+        font-family: Inter, system-ui, Arial, sans-serif;
+        background: #000;
+        color: #fff;
+        text-align: center;
+        padding-bottom: 80px;
     }
-    h1 {
-      margin-top: 20px;
+
+    .header {
+        padding: 30px;
+        font-size: 1.8rem;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        color: #f0d58b;
     }
-    .card {
-      margin: 40px auto;
-      background: linear-gradient(135deg, #002046, #000);
-      border-radius: 16px;
-      width: 280px;
-      padding: 20px;
-      box-shadow: 0 0 20px rgba(255, 215, 100, 0.3);
+
+    .player-photo {
+        width: 240px;
+        border-radius: 18px;
+        border: 2px solid #d6b15f;
+        box-shadow: 0 0 20px rgba(214, 177, 95, 0.6);
+        margin-top: 10px;
+        opacity: 0;
+        transition: 0.6s;
     }
-    .card img {
-      width: 100%;
-      border-radius: 12px;
+    .player-photo.loaded {
+        opacity: 1;
     }
-    .name {
-      font-size: 26px;
-      font-weight: 700;
-      margin-top: 12px;
-      text-transform: capitalize;
+
+    .player-name {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin: 18px 0 8px;
+        background: linear-gradient(90deg,#fff,#f0d58b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
-    .stats {
-      margin-top: 20px;
-      font-size: 16px;
-      line-height: 1.6em;
-      color: #eee;
+
+    .no-stats {
+        margin: 40px auto;
+        max-width: 600px;
+        padding: 16px;
+        border-radius: 10px;
+        background: #1a0e0e;
+        border-left: 4px solid red;
+        color: #ffaaaa;
+        font-size: 1rem;
     }
-    .error {
-      background: #1a1a1a;
-      color: #ff5a5a;
-      border: 1px solid #ff5a5a;
-      display: inline-block;
-      padding: 12px 20px;
-      border-radius: 8px;
-      margin-top: 20px;
+
+    .stats-table {
+        margin: 40px auto;
+        max-width: 800px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 0 20px rgba(255,255,255,0.1);
     }
-  </style>
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        color: #fff;
+    }
+    thead {
+        background: #141b33;
+        color: #f0d58b;
+    }
+    th, td {
+        padding: 14px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+</style>
 </head>
+
 <body>
 
-  <h1>🏒 Svenska eHockey Cupen</h1>
-  <div id="playerCard" class="card">
-    <img id="playerPhoto" src="" alt="Spelarbild" />
-    <div id="playerName" class="name"></div>
-    <div id="playerStats" class="stats"></div>
-  </div>
-  <div id="errorBox" class="error" style="display:none;"></div>
+<div class="header">🏒 Svenska eHockey Cupen – Spelarkort</div>
+
+<img class="player-photo" id="playerPhoto" src="" alt="Spelarbild" />
+
+<h1 class="player-name" id="playerName"></h1>
+
+<div id="statsOutput"></div>
 
 <script>
-const API_BASE = "https://script.google.com/macros/s/AKfycbwa8AFYn3nhHfAXsTRCUkKtsCWt80UfS-chFI8vkU5ZUeuQL1YZSNiHAeFUPEIl-oFE/exec";
+// =======================================
+// 1️⃣ API-URL (KLISRA IN NYA DEPLOY-URL:EN)
+// =======================================
+const API_BASE = "💥 KLISRA-IN-DITT-NYA-API-HÄR/exec";
+
+
+// =======================================
+// 2️⃣ Hämta ?player=namn från URL
+// =======================================
 const urlParams = new URLSearchParams(window.location.search);
-const playerName = (urlParams.get("player") || "").trim().toLowerCase();
+const rawName = (urlParams.get("player") || "").trim().toLowerCase();
 
-async function loadPlayer() {
-  if (!playerName) {
-    showError("Ingen spelare angiven i URL:en.");
-    return;
-  }
+if (!rawName) {
+    document.getElementById("playerName").textContent = "Ingen spelare vald";
+}
 
-  try {
-    // 🔹 Hämta både spelare och målvakter
-    const [skaterRes, goalieRes] = await Promise.all([
-      fetch(API_BASE + "?sheet=Spelarstats"),
-      fetch(API_BASE + "?sheet=Målvaktsstats")
-    ]);
 
-    const [skaters, goalies] = await Promise.all([
-      skaterRes.json(),
-      goalieRes.json()
-    ]);
+// =======================================
+// 3️⃣ Ladda FOTO från Google Sheet (separat fotoblad)
+// =======================================
+async function loadPhoto(player) {
+    try {
+        const res = await fetch(`${API_BASE}?sheet=Spelarfoton`);
+        const rows = await res.json();
 
-    // 🔹 Leta upp spelaren i båda dataset
-    const player = skaters.find(p =>
-      (p.players || "").toLowerCase().replace(/\s+/g, "") === playerName.replace(/\s+/g, "")
-    );
-    const goalie = goalies.find(p =>
-      (p.Goalie || "").toLowerCase().replace(/\s+/g, "") === playerName.replace(/\s+/g, "")
-    );
+        const clean = s => String(s).toLowerCase().replace(/\s+/g,"");
 
-    let statsHTML = "";
-    let name = "";
-    let imgName = playerName;
+        const match = rows.find(r => clean(r.Spelarnamn) === clean(player));
 
-    if (player) {
-      name = player.players;
-      statsHTML = `
-        🏒 Lag: ${player.team || "-"}<br>
-        🎯 Matcher: ${player.gp || 0}<br>
-        🥅 Mål: ${player.g || 0}<br>
-        🍎 Assist: ${player.a || 0}<br>
-        💪 Poäng: ${player.pts || 0}<br>
-        🚨 Utv.min: ${player.pim || 0}
-      `;
-    } else if (goalie) {
-      name = goalie.Goalie;
-      statsHTML = `
-        🏒 Lag: ${goalie.Team || "-"}<br>
-        🧤 Matcher: ${goalie.GP || 0}<br>
-        🧱 Räddningar: ${goalie.Saves || 0}<br>
-        💥 Insäppta mål: ${goalie.GA || 0}<br>
-        📊 Rädd%: ${goalie.SvPct || "0%"}<br>
-        🚫 Nollor: ${goalie.SO || 0}
-      `;
-    } else {
-      showError(`Ingen statistik hittades för ${playerName}`);
-      return;
+        const id = match ? match.DriveID : "1VAa79pJ-QbyeliY60autf914z6SBwmhp"; // fallback
+
+        const img = document.getElementById("playerPhoto");
+        img.src = `https://drive.google.com/thumbnail?id=${id}&sz=w1000`;
+        img.onload = () => img.classList.add("loaded");
     }
-
-    // 🔹 Visa bild
-    const photo = document.getElementById("playerPhoto");
-    photo.src = `https://raw.githubusercontent.com/sweehockey-svg/SEC/main/players/photos/${imgName}.png`;
-    photo.onerror = () => {
-      photo.src = "https://raw.githubusercontent.com/sweehockey-svg/SEC/main/players/photos/default.png";
-    };
-
-    // 🔹 Visa namn och statistik
-    document.getElementById("playerName").textContent = name;
-    document.getElementById("playerStats").innerHTML = statsHTML;
-
-  } catch (err) {
-    console.error(err);
-    showError("Kunde inte hämta spelardata.");
-  }
+    catch(err){
+        console.error("Foto-fel:", err);
+    }
 }
 
-function showError(msg) {
-  const e = document.getElementById("errorBox");
-  e.textContent = "❌ " + msg;
-  e.style.display = "inline-block";
+
+// =======================================
+// 4️⃣ Hämta statistik från API
+// =======================================
+async function loadStats() {
+    const output = document.getElementById("statsOutput");
+    const nameEl = document.getElementById("playerName");
+
+    nameEl.textContent = rawName;
+
+    try {
+        const res = await fetch(`${API_BASE}?player=${encodeURIComponent(rawName)}`);
+
+        const data = await res.json();
+        console.log("DATA:", data);
+
+        if (data.error) {
+            output.innerHTML = `
+                <div class="no-stats">❌ Ingen statistik hittades för ${rawName}</div>
+            `;
+            return;
+        }
+
+        // Bygg tabell
+        let html = `
+        <div class="stats-table">
+            <table>
+                <thead><tr><th>Stat</th><th>Värde</th></tr></thead>
+                <tbody>
+        `;
+
+        for (const key in data) {
+            if (key === "sheet") continue;
+            html += `
+            <tr>
+                <td>${key}</td>
+                <td>${data[key]}</td>
+            </tr>`;
+        }
+
+        html += `
+                <tr><td>Hämtad från</td><td>${data.sheet}</td></tr>
+                </tbody></table>
+        </div>`;
+
+        output.innerHTML = html;
+
+    } catch(err) {
+        output.innerHTML = `<div class="no-stats">⚠️ Fel vid hämtning av statistik</div>`;
+        console.error(err);
+    }
 }
 
-loadPlayer();
+
+// =======================================
+// 5️⃣ Starta laddning
+// =======================================
+loadPhoto(rawName);
+loadStats();
+
 </script>
+
 </body>
 </html>
