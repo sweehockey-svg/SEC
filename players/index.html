@@ -1,11 +1,14 @@
-<div id="playerName" style="font-size: 32px; font-weight: bold; margin: 20px 0;"></div>
+<body>
 
-<img id="playerPhoto" style="width: 200px; border-radius: 10px; opacity: 0; transition: .3s;" />
+  <!-- Obligatoriska element -->
+  <div id="playerName"></div>
 
-<div id="statsOutput" style="margin-top: 20px;"></div>
+  <img id="playerPhoto" />
 
+  <div id="statsOutput"></div>
 
-<script>
+  <!-- Ditt script -->
+  <script>
   // 1) API-URL – BYT TILL DIN NYA WEBBAPP-ADRESS
   const API_BASE = "https://script.google.com/macros/s/AKfycbxLRPhrcMG5j5G7-iDORTsEmwbYECNpKqw84Rf96gs_si3hlp53gOr05lOc9hpmcM2p/exec";
 
@@ -127,3 +130,4 @@
   loadPhoto();
   loadStats();
 </script>
+  </body>
