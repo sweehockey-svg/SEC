@@ -3113,10 +3113,12 @@ renderTable('playoff-goalie-stats','searchPlayoffGoalies','updated-playoff-goali
   });
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("🧷 Aktiverar klickbara namn (endast Spelare/Goalie-kolumner)");
+  console.log("🧷 Startar felsökning av klickbara namn...");
 
   function makeNamesClickable(table) {
     const headerCells = table.querySelectorAll("thead th");
+    console.log("📑 Rubriker hittade:", [...headerCells].map(th => th.textContent.trim()));
+
     let targetColIndexes = [];
 
     headerCells.forEach((th, i) => {
@@ -3126,9 +3128,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    if (targetColIndexes.length === 0) return; // Ingen relevant kolumn funnen
+    if (targetColIndexes.length === 0) {
+      console.warn("⚠️ Ingen namnkolumn funnen i denna tabell.");
+      return;
+    }
 
-    console.log("🎯 Hittade namnkolumner:", targetColIndexes);
+    console.log("🎯 Namnkolumner hittade:", targetColIndexes);
 
     const rows = table.querySelectorAll("tbody tr");
     rows.forEach(row => {
@@ -3139,8 +3144,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const text = cell.textContent.trim();
         if (!text || text.length < 2) return;
 
-        // Tillåt även _ och siffror (för eHockey-nicknames)
+        console.log("👀 Hittad cell:", text);
+
         if (/^[A-Za-zÅÄÖåäö0-9_ -]+$/.test(text)) {
+          console.log("✅ Lägger till länk för:", text);
           const link = document.createElement("a");
           link.href = `https://sweehockey-svg.github.io/SEC/players/?player=${encodeURIComponent(text)}`;
           link.textContent = text;
@@ -3148,7 +3155,6 @@ document.addEventListener("DOMContentLoaded", () => {
           link.style.textDecoration = "none";
           link.addEventListener("mouseover", () => link.style.textDecoration = "underline");
           link.addEventListener("mouseout", () => link.style.textDecoration = "none");
-
           cell.textContent = "";
           cell.appendChild(link);
         }
@@ -3162,13 +3168,13 @@ document.addEventListener("DOMContentLoaded", () => {
     tables.forEach(makeNamesClickable);
   }
 
-  // vänta 1 sekund så tabeller hinner laddas
-  setTimeout(activate, 1000);
+  setTimeout(activate, 1500);
 });
 </script>
 
 </body>
 </html>
+
 
 
 
