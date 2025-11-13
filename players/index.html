@@ -77,10 +77,12 @@
 <div id="statsOutput"></div>
 
 <script>
-  // 🔗 1) API-URL – BYT TILL DIN NYA WEBBAPP-ADRESS
+  // 1) API-URL – BYT TILL DIN NYA WEBBAPP-ADRESS
   const API_BASE = "https://script.google.com/macros/s/AKfycbxk4vb5ec5abX_-IeG13YyPWdSQefbPIEx4usYgDPgUmjbpXDAZ7ZuwrGCfKQ7sEzHX/exec";
 
-  // 🔎 2) Läs ?player= från URL
+  console.log("API_BASE =", API_BASE);
+
+  // 2) Läs ?player= från URL
   const urlParams = new URLSearchParams(window.location.search);
   const rawName = (urlParams.get("player") || "").trim();
   const playerNameEl = document.getElementById("playerName");
@@ -91,28 +93,28 @@
     playerNameEl.textContent = rawName;
   }
 
-  // Normalisering (eSwahn, SWE -> eswahn)
-  function norm(s){
+  function norm(s) {
     return String(s || "")
       .toLowerCase()
-      .replace(/[,]/g,"")
-      .replace(/\s+/g,"")
-      .replace(/_swe|swe|fin|nor|den|ger/g,"")
-      .replace(/[^a-z0-9_]/g,"");
+      .replace(/[,]/g, "")
+      .replace(/\s+/g, "")
+      .replace(/_swe|swe|fin|nor|den|ger/g, "")
+      .replace(/[^a-z0-9_]/g, "");
   }
 
-  // 🖼 3) Ladda foto från Spelarfoton
+  // 3) Ladda foto
   async function loadPhoto() {
     try {
-      const res = await fetch(`${API_BASE}?sheet=${encodeURIComponent("Spelarfoton")}`);
+      const res = await fetch(`${API_BASE}?sheet=${encodeURIComponent("Spelarfoton")}`, {
+        mode: "cors"
+      });
       const rows = await res.json();
-
-      console.log("Foto-rows", rows);
+      console.log("Photo rows:", rows);
 
       const target = norm(rawName);
       const match = rows.find(r => norm(r.Spelarnamn || r.Namn || r.PLAYER) === target);
 
-      const fallbackId = "1VAa79pJ-QbyeliY60autf914z6SBwmhp"; // default-bild
+      const fallbackId = "1VAa79pJ-QbyeliY60autf914z6SBwmhp";
       const driveId = match ? (match.DriveID || match.Foto || match.Bild) : fallbackId;
 
       const img = document.getElementById("playerPhoto");
@@ -123,7 +125,7 @@
     }
   }
 
-  // 📊 4) Ladda statistik via ?player=
+  // 4) Ladda statistik
   async function loadStats() {
     const out = document.getElementById("statsOutput");
 
@@ -133,10 +135,10 @@
     }
 
     try {
-      const url = `${API_BASE}?player=${encodeURIComponent(rawName)}`;
-      const res = await fetch(url);
+      const res = await fetch(`${API_BASE}?player=${encodeURIComponent(rawName)}`, {
+        mode: "cors"
+      });
       const data = await res.json();
-
       console.log("API data:", data);
 
       if (data.error) {
@@ -147,7 +149,7 @@
       const isGoalie = data.__type === "goalie";
 
       const skaterFields = [
-        ["Team", "Team"],
+        ["TEAM", "Team"],
         ["GP", "GP"],
         ["G", "Mål"],
         ["A", "Assist"],
@@ -156,7 +158,7 @@
       ];
 
       const goalieFields = [
-        ["Team", "Team"],
+        ["TEAM", "Team"],
         ["GP", "GP"],
         ["SA", "Skott mot"],
         ["GA", "Insläppta mål"],
@@ -187,7 +189,6 @@
       html += `</tbody></table></div>`;
 
       out.innerHTML = html;
-
     } catch (err) {
       console.error("Stats-fel:", err);
       out.innerHTML = `<div class="no-stats">⚠️ Fel vid hämtning av statistik</div>`;
@@ -197,6 +198,7 @@
   loadPhoto();
   loadStats();
 </script>
+
 
 </body>
 </html>
