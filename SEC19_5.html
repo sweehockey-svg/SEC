@@ -3162,11 +3162,18 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function activate() {
-    const tables = document.querySelectorAll("table");
-    console.log("📊 Totalt antal tabeller:", tables.length);
-    tables.forEach(makeNamesClickable);
-  }
+function activate() {
+  const tables = document.querySelectorAll("table");
+  console.log("📊 Totalt antal tabeller:", tables.length);
+
+  tables.forEach((table, idx) => {
+    const headers = [...table.querySelectorAll("thead th")].map(th => th.textContent.trim());
+    console.log(`📋 Tabell ${idx + 1} rubriker:`, headers);
+  });
+
+  tables.forEach(makeNamesClickable);
+}
+
 
   setTimeout(activate, 1500);
 });
@@ -3174,6 +3181,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
 
 
 
