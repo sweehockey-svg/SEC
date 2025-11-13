@@ -13,6 +13,9 @@
       margin: 0;
       padding: 0;
     }
+    h1 {
+      margin-top: 20px;
+    }
     .card {
       margin: 40px auto;
       background: linear-gradient(135deg, #002046, #000);
@@ -60,8 +63,6 @@
 
 <script>
 const API_BASE = "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec";
-
-// Hämta spelarnamn från URL
 const urlParams = new URLSearchParams(window.location.search);
 const playerName = (urlParams.get("player") || "").trim().toLowerCase();
 
@@ -72,42 +73,63 @@ async function loadPlayer() {
   }
 
   try {
-    const res = await fetch(API_BASE + "?sheet=Spelarstats");
-    const data = await res.json();
+    // 🔹 Hämta både spelare och målvakter
+    const [skaterRes, goalieRes] = await Promise.all([
+      fetch(API_BASE + "?sheet=Spelarstats"),
+      fetch(API_BASE + "?sheet=Målvaktsstats")
+    ]);
 
-    if (!Array.isArray(data)) {
-      showError("Felaktigt format på data från API.");
-      return;
-    }
+    const [skaters, goalies] = await Promise.all([
+      skaterRes.json(),
+      goalieRes.json()
+    ]);
 
-    // Leta efter spelare (matchar namn utan hänsyn till små/gemener)
-    const player = data.find(p => 
+    // 🔹 Leta upp spelaren i båda dataset
+    const player = skaters.find(p =>
       (p.players || "").toLowerCase().replace(/\s+/g, "") === playerName.replace(/\s+/g, "")
     );
+    const goalie = goalies.find(p =>
+      (p.Goalie || "").toLowerCase().replace(/\s+/g, "") === playerName.replace(/\s+/g, "")
+    );
 
-    if (!player) {
+    let statsHTML = "";
+    let name = "";
+    let imgName = playerName;
+
+    if (player) {
+      name = player.players;
+      statsHTML = `
+        🏒 Lag: ${player.team || "-"}<br>
+        🎯 Matcher: ${player.gp || 0}<br>
+        🥅 Mål: ${player.g || 0}<br>
+        🍎 Assist: ${player.a || 0}<br>
+        💪 Poäng: ${player.pts || 0}<br>
+        🚨 Utv.min: ${player.pim || 0}
+      `;
+    } else if (goalie) {
+      name = goalie.Goalie;
+      statsHTML = `
+        🏒 Lag: ${goalie.Team || "-"}<br>
+        🧤 Matcher: ${goalie.GP || 0}<br>
+        🧱 Räddningar: ${goalie.Saves || 0}<br>
+        💥 Insäppta mål: ${goalie.GA || 0}<br>
+        📊 Rädd%: ${goalie.SvPct || "0%"}<br>
+        🚫 Nollor: ${goalie.SO || 0}
+      `;
+    } else {
       showError(`Ingen statistik hittades för ${playerName}`);
       return;
     }
 
-    // Visa bild
-    document.getElementById("playerPhoto").src = `https://raw.githubusercontent.com/sweehockey-svg/SEC/main/players/photos/${playerName}.png`;
-    document.getElementById("playerPhoto").onerror = () => {
-      document.getElementById("playerPhoto").src = "https://raw.githubusercontent.com/sweehockey-svg/SEC/main/players/photos/default.png";
+    // 🔹 Visa bild
+    const photo = document.getElementById("playerPhoto");
+    photo.src = `https://raw.githubusercontent.com/sweehockey-svg/SEC/main/players/photos/${imgName}.png`;
+    photo.onerror = () => {
+      photo.src = "https://raw.githubusercontent.com/sweehockey-svg/SEC/main/players/photos/default.png";
     };
 
-    // Visa namn
-    document.getElementById("playerName").textContent = player.players;
-
-    // Visa statistik (anpassa fältnamn efter ditt ark)
-    let statsHTML = `
-      🏒 Lag: ${player.team || "-"}<br>
-      🎯 Matcher: ${player.gp || 0}<br>
-      🥅 Mål: ${player.g || 0}<br>
-      🍎 Assist: ${player.a || 0}<br>
-      💪 Poäng: ${player.pts || 0}<br>
-      🚨 Utv.min: ${player.pim || 0}
-    `;
+    // 🔹 Visa namn och statistik
+    document.getElementById("playerName").textContent = name;
     document.getElementById("playerStats").innerHTML = statsHTML;
 
   } catch (err) {
