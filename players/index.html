@@ -218,11 +218,96 @@
     const res = await fetch(`${API_BASE}?player=${encodeURIComponent(rawName)}`);
     const data = await res.json();
 
-    if (data.error) {
+    // 🔹 Om backend någon gång skickar "error"
+    if (data && data.error) {
       out.innerHTML = `<div class="no-stats">❌ ${data.error}</div>`;
       return;
     }
 
+    // 🔹 FALL 1: API skickar FLERA rader (turnerings-historik)
+    if (Array.isArray(data)) {
+      if (!data.length) {
+        out.innerHTML = `<div class="no-stats">❌ Ingen statistik hittades för spelaren.</div>`;
+        return;
+      }
+
+      const first = data[0] || {};
+      const isGoalieRows = "SA" in first || "SV" in first || "SVP" in first;
+
+      let html = `
+        <div class="stats-table">
+          <table>
+            <thead>
+      `;
+
+      if (isGoalieRows) {
+        // Målvakt – layout som Dobby-bilden
+        html += `
+          <tr>
+            <th>TURNERING</th>
+            <th>TEAM</th>
+            <th>GP</th>
+            <th>SA</th>
+            <th>GA</th>
+            <th>SV</th>
+            <th>GAA</th>
+            <th>SVP</th>
+            <th>SO</th>
+          </tr>
+        `;
+      } else {
+        // Utespelare – motsvarande layout, men med skater-stats
+        html += `
+          <tr>
+            <th>TURNERING</th>
+            <th>TEAM</th>
+            <th>GP</th>
+            <th>G</th>
+            <th>A</th>
+            <th>PTS</th>
+            <th>PIM</th>
+          </tr>
+        `;
+      }
+
+      html += `</thead><tbody>`;
+
+      data.forEach(r => {
+        if (isGoalieRows) {
+          html += `
+            <tr>
+              <td>${r.TURNERING || ""}</td>
+              <td>${r.TEAM || ""}</td>
+              <td>${r.GP || 0}</td>
+              <td>${r.SA || 0}</td>
+              <td>${r.GA || 0}</td>
+              <td>${r.SV || 0}</td>
+              <td>${r.GAA || "0.00"}</td>
+              <td>${r.SVP || "0.000"}</td>
+              <td>${r.SO || 0}</td>
+            </tr>
+          `;
+        } else {
+          html += `
+            <tr>
+              <td>${r.TURNERING || ""}</td>
+              <td>${r.TEAM || ""}</td>
+              <td>${r.GP || 0}</td>
+              <td>${r.G || 0}</td>
+              <td>${r.A || 0}</td>
+              <td>${r.PTS || 0}</td>
+              <td>${r.PIM || 0}</td>
+            </tr>
+          `;
+        }
+      });
+
+      html += `</tbody></table></div>`;
+      out.innerHTML = html;
+      return;
+    }
+
+    // 🔹 FALL 2: API skickar EN rad (som tidigare) → Stat / Värde-tabell
     const isGoalie = data.__type === "goalie";
 
     const skaterFields = [
@@ -247,7 +332,6 @@
 
     const fields = isGoalie ? goalieFields : skaterFields;
 
-    // 🔥 HTML-tabell som liknar din turneringstabell
     let html = `
       <div class="stats-table">
         <table>
@@ -261,7 +345,7 @@
     `;
 
     for (const [key, label] of fields) {
-      let value = data[key] ?? data[key.toUpperCase()] ?? "";
+      const value = data[key] ?? data[key.toUpperCase()] ?? "";
       html += `<tr><td>${label}</td><td>${value}</td></tr>`;
     }
 
@@ -275,6 +359,7 @@
     out.innerHTML = `<div class="no-stats">⚠️ Fel vid hämtning av statistik</div>`;
   }
 }
+
 
 
   loadPhoto();
