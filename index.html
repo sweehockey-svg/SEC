@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Svenska eHockey Cupen</title>
+
   <style>
     body {
       font-family: Inter, system-ui, sans-serif;
@@ -11,88 +12,315 @@
       color: #fff;
       margin: 0;
       padding: 0;
+    }
+
+    a { text-decoration: none; }
+
+    /* === HERO HEADER — som SEC 19.5 === */
+    .hero {
+      margin: 40px auto 25px;
+      max-width: 900px;
+      padding: 70px 20px 60px;
+      background: radial-gradient(circle at top, #1a2247 0%, #0a0d1f 50%, #050614 100%);
+      border: 2px solid rgba(214, 177, 95, 0.35);
+      border-radius: 22px;
+      box-shadow:
+        0 0 25px rgba(214, 177, 95, 0.15),
+        inset 0 0 25px rgba(0,0,0,0.6);
       text-align: center;
     }
-    header {
-      background: radial-gradient(circle at top, #151b3f 0, #050614 55%, #02030a 100%);
-      padding: 40px 20px 30px;
-      border-bottom: 2px solid rgba(214, 177, 95, 0.3);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-    }
-    header img {
+
+    .hero-logo {
       width: 160px;
+      margin-bottom: 20px;
+      filter: drop-shadow(0 0 20px rgba(240, 213, 139, 0.55));
     }
-    h1 {
-      font-size: 2.2rem;
+
+    .hero-title {
+      font-size: 2.1rem;
       font-weight: 800;
       color: #f0d58b;
-      margin-top: 12px;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.25rem;
+      text-transform: uppercase;
+      text-shadow: 0 0 12px rgba(240, 213, 139, 0.4);
     }
-    main {
-      padding: 40px 20px;
+
+    .hero-title span {
+      color: #fff;
+      letter-spacing: 0.35rem;
     }
-    .cup-list {
+
+    /* === INFO BLOCK === */
+    .info-block {
+      max-width: 900px;
+      margin: 0 auto 35px;
+      padding: 30px 30px;
+      background: linear-gradient(180deg, #0f142d 0%, #090c1a 90%);
+      border: 1px solid rgba(214, 177, 95, 0.3);
+      border-radius: 18px;
+      box-shadow:
+        0 0 18px rgba(214, 177, 95, 0.18),
+        inset 0 0 30px rgba(0, 0, 0, 0.5);
+      text-align: left;
+      line-height: 1.55;
+    }
+
+    .info-block h2 {
+      color: #f0d58b;
+      margin-bottom: 10px;
+      font-size: 1.4rem;
+    }
+
+    .info-block p {
+      color: #ddd;
+      font-size: 1rem;
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    /* === FILTER / SÖK === */
+    .controls {
+      max-width: 900px;
+      margin: 0 auto 10px;
       display: flex;
       flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-      margin-top: 30px;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 0 10px;
     }
+
+    .controls input[type="search"],
+    .controls select {
+      flex: 1;
+      min-width: 180px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(214, 177, 95, 0.4);
+      background: #060814;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .controls input::placeholder {
+      color: #777;
+    }
+
+    /* === CUP LIST === */
+    h2.section-title {
+      text-align: center;
+      margin-top: 20px;
+      color: #f0d58b;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-size: 1.1rem;
+    }
+
+    .cup-list {
+      max-width: 900px;
+      margin: 20px auto 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 20px;
+      padding: 0 10px 40px;
+    }
+
     .cup {
       background: #0b0f1e;
       border: 1px solid rgba(214, 177, 95, 0.3);
       border-radius: 14px;
-      padding: 20px 30px;
+      padding: 18px 18px 20px;
       text-align: center;
-      width: 260px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s;
+      position: relative;
+      overflow: hidden;
     }
+
+    .cup::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top, rgba(214,177,95,0.12), transparent 55%);
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      pointer-events: none; /* <<< FIX SOM GÖR LÄNKAR KLICKBARA */
+    }
+
+    .cup:hover::before {
+      opacity: 1;
+    }
+
     .cup:hover {
       transform: translateY(-5px);
       box-shadow: 0 6px 25px rgba(214, 177, 95, 0.4);
+      border-color: rgba(214, 177, 95, 0.6);
     }
+
+    .cup-logo {
+      width: 56px;
+      display: block;
+      margin: 0 auto 8px;
+      filter: drop-shadow(0 0 8px rgba(240,213,139,0.45));
+    }
+
+    .cup-meta {
+      font-size: 0.8rem;
+      color: #bbb;
+      margin-bottom: 4px;
+    }
+
     .cup a {
       color: #f0d58b;
       text-decoration: none;
       font-weight: 700;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       display: block;
-      margin-top: 10px;
+      margin-top: 4px;
     }
+
+    .cup-season {
+      font-size: 0.85rem;
+      color: #999;
+      margin-top: 4px;
+    }
+
     footer {
-      font-size: 0.9rem;
-      color: #888;
-      margin-top: 50px;
+      font-size: 0.85rem;
+      color: #777;
+      margin-top: 10px;
       padding-bottom: 30px;
+      text-align: center;
     }
   </style>
 </head>
+
 <body>
-  <header>
-    <img src="https://drive.google.com/thumbnail?id=1QybW_Uw8HO0OXo8vwQFD-zrrr-ifFrC9&sz=w1000" alt="SEC-logotyp">
-    <h1>🏒 Svenska eHockey Cupen 🏆</h1>
-  </header>
-  <main>
-    <h2>Välj turnering</h2>
-    <div class="cup-list">
-      <div class="cup">
-        <span>🧤 Pågående</span>
-        <a href="SEC19_5.html">Svenska eHockey Cupen 19.5</a>
-      </div>
-      <div class="cup">
-        <span>📜 Tidigare</span>
-        <a href="SEC18.html">Svenska eHockey Cupen 18</a>
-      </div>
-      <div class="cup">
-        <span>📜 Tidigare</span>
-        <a href="#">Svenska eHockey Cupen 17</a>
-      </div>
-    </div>
-  </main>
+
+  <!-- HEADER -->
+  <div class="hero">
+    <img src="https://drive.google.com/thumbnail?id=1QybW_Uw8HO0OXo8vwQFD-zrrr-ifFrC9&sz=w1000"
+         alt="SEC-logotyp"
+         class="hero-logo">
+    <h1 class="hero-title">
+      🏆 S V E N S K A &nbsp; E H O C K E Y &nbsp; <span>C U P E N</span> 🏒
+    </h1>
+  </div>
+
+  <!-- INFOBLOCK -->
+  <div class="info-block">
+    <h2>ℹ️ Välkommen till Svenska eHockey Cupen</h2>
+    <p>
+      Välkommen till sidan för Svenska eHockey Cupen! Här hittar ni omfattande information om svensk eHockey – allt från detaljerad statistik och historiska resultat till matchgenomgångar, tabeller, toppscorerlistor och lagpresentationer.
+    </p>
+    <p>
+      Sidan samlar allt som rör turneringarna på ett och samma ställe, oavsett år eller upplaga. Här kan ni följa utvecklingen över tid, återuppleva klassiska matcher, jämföra lagens prestationer mellan olika säsonger och ta del av fördjupade analyser kring både lag och spelare.
+    </p>
+    <p>
+      Oavsett om du är spelare, supporter eller bara nyfiken på eHockey-scenen i Sverige är detta navet där du hittar all statistik, fakta och berättelser som format Svenska eHockey Cupen genom åren.
+    </p>
+  </div>
+
+  <!-- FILTER & SÖK -->
+  <div class="controls">
+    <input
+      id="search"
+      type="search"
+      placeholder="Sök efter cup (t.ex. 19, 18, 19.5)…">
+    <select id="yearFilter">
+      <option value="all">Alla år</option>
+      <option value="19.5">Endast SEC 19.5</option>
+      <option value="19">Endast SEC 19</option>
+      <option value="18">Endast SEC 18</option>
+      <option value="17">Endast SEC 17</option>
+      <option value="16-10">SEC 16–10</option>
+      <option value="9-5">SEC 9–5</option>
+      <option value="4-1">SEC 4–1</option>
+    </select>
+  </div>
+
+  <!-- LISTA MED CUPER -->
+  <h2 class="section-title">Välj turnering</h2>
+  <div class="cup-list" id="cupList"></div>
+
   <footer>
     © 2025 Svenska eHockey Cupen – SWEeHOCKEY
   </footer>
+
+<script>
+  const cups = [];
+
+  // 19.5
+  cups.push({
+    id: "SEC19_5",
+    href: "./SEC19_5.html",
+    label: "Svenska eHockey Cupen 19.5",
+    season: 19.5,
+    status: "Tidigare"
+  });
+
+  // 19 ned till 1
+  for (let s = 19; s >= 1; s--) {
+    cups.push({
+      id: "SEC" + s,
+      href: "./SEC" + s + ".html",
+      label: "Svenska eHockey Cupen " + s,
+      season: s,
+      status: "Tidigare"
+    });
+  }
+
+  // sortera nyast först  
+  cups.sort((a, b) => b.season - a.season);
+
+  const cupListEl = document.getElementById("cupList");
+  const searchEl = document.getElementById("search");
+  const yearFilterEl = document.getElementById("yearFilter");
+
+  function matchYearFilter(cup, value) {
+    if (value === "all") return true;
+    if (value === "19.5") return cup.season === 19.5;
+    if (value === "19") return cup.season === 19;
+    if (value === "18") return cup.season === 18;
+    if (value === "17") return cup.season === 17;
+    if (value === "16-10") return cup.season <= 16 && cup.season >= 10;
+    if (value === "9-5") return cup.season <= 9 && cup.season >= 5;
+    if (value === "4-1") return cup.season <= 4 && cup.season >= 1;
+    return true;
+  }
+
+  function renderCups() {
+    const term = searchEl.value.trim().toLowerCase();
+    const yearVal = yearFilterEl.value;
+
+    cupListEl.innerHTML = "";
+
+    const filtered = cups.filter(cup => {
+      const txt = (cup.label + " " + cup.season).toLowerCase();
+      const matchSearch = !term || txt.includes(term);
+      const matchYear = matchYearFilter(cup, yearVal);
+      return matchSearch && matchYear;
+    });
+
+    filtered.forEach(cup => {
+      const div = document.createElement("div");
+      div.className = "cup";
+      div.innerHTML = `
+        <img src="https://drive.google.com/thumbnail?id=1QybW_Uw8HO0OXo8vwQFD-zrrr-ifFrC9&sz=w1000"
+             class="cup-logo">
+        <div class="cup-meta">📜 Tidigare turnering</div>
+        <a href="${cup.href}">${cup.label}</a>
+        <div class="cup-season">Säsong: SEC ${cup.season}</div>
+      `;
+      cupListEl.appendChild(div);
+    });
+  }
+
+  searchEl.addEventListener("input", renderCups);
+  yearFilterEl.addEventListener("change", renderCups);
+
+  renderCups();
+</script>
+
 </body>
 </html>
