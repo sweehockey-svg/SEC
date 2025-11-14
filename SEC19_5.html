@@ -6,6 +6,47 @@
   <title>Svenska eHockey Cupen 19.5</title>
 
   <style>
+    .player-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.1rem;
+  margin: 24px 0 10px;
+}
+
+.player-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,215,0,0.10));
+  border: 1px solid rgba(255,215,0,0.25);
+  border-radius: 14px;
+  text-align: center;
+  padding: 10px;
+  text-decoration: none;
+  color: #fff;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.player-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 20px rgba(255,215,0,0.25);
+}
+
+.player-card img {
+  width: 90px;
+  height: 90px;
+  border-radius: 12px;
+  object-fit: cover;
+  margin-bottom: 8px;
+}
+
+.player-card .pname {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.player-card .prole {
+  font-size: 0.8rem;
+  color: #ddd;
+}
+
     :root {
       --sec-bg-deep: #02030a;
       --sec-bg-top: #080f24;
@@ -797,18 +838,26 @@ html, body {
   <!-- Each team page below will show when clicked -->
 
   <!-- 🟥 MoDo Hockey -->
-  <div id="team-modo" class="team-panel" style="display:none;">
-    <button type="button" class="back-to-lag">← Tillbaka till lagsidan</button>
-    <div class="team-hero">
-      <img src="https://drive.google.com/thumbnail?id=1Pbr3B5ZSRjbluKEpNXvz6e4xnj0oB0Pw&sz=w1000" class="team-hero-logo" alt="MoDo Hockey">
-      <h2>MoDo Hockey</h2>
-      <p class="team-roster"><strong>C:</strong> MrXbox79 &nbsp; <strong>A:</strong> RookieLIAMOVIC, Disctrasan-</p>
-    </div>
-    <div class="stat-tabs">
-      <button class="tab active" data-mode="gruppspel">Gruppspel</button>
-      <button class="tab" data-mode="slutspel">Slutspel</button>
-      <button class="tab" data-mode="matcher">Matcher</button>
-    </div>
+<div id="team-modo" class="team-panel" style="display:none;">
+  <button type="button" class="back-to-lag">← Tillbaka till lagsidan</button>
+
+  <div class="team-hero">
+    <img src="https://drive.google.com/thumbnail?id=1Pbr3B5ZSRjbluKEpNXvz6e4xnj0oB0Pw&sz=w1000" class="team-hero-logo" alt="MoDo Hockey">
+    <h2>MoDo Hockey</h2>
+    <p class="team-roster"><strong>C:</strong> MrXbox79 &nbsp; <strong>A:</strong> RookieLIAMOVIC, Disctrasan-</p>
+  </div>
+
+  <!-- ✅ Lägg in denna rad exakt här -->
+  <h3>Spelare</h3>
+  <div class="player-list" data-team="MOD"></div>
+  <!-- ⬆⬆⬆ Detta är det nya som hör till punkt 2 -->
+
+  <div class="stat-tabs">
+    <button class="tab active" data-mode="gruppspel">Gruppspel</button>
+    <button class="tab" data-mode="slutspel">Slutspel</button>
+    <button class="tab" data-mode="matcher">Matcher</button>
+  </div>
+
 
     <div class="team-view" style="max-width:980px;margin:auto"></div>
     <script>
@@ -987,11 +1036,12 @@ html, body {
       };
 
       // --- Gruppspel & Slutspel ---
-      const loadStats = (mode) => {
+            const loadStats = (mode) => {
         if (!host) return;
         host.innerHTML = `<div style="padding:12px">Laddar ${mode}...</div>`;
         const sheetSkaters = mode === "slutspel" ? "Spelarstats slut 19.5" : "Spelarstats";
         const sheetGoalies = mode === "slutspel" ? "Målvaktsstats slut 19.5" : "Målvaktsstats";
+
         Promise.all([
           fetch(API + `?sheet=${encodeURIComponent(sheetGoalies)}`).then(r => r.json()),
           fetch(API + `?sheet=${encodeURIComponent(sheetSkaters)}`).then(r => r.json())
@@ -999,23 +1049,39 @@ html, body {
           const goalies = g.filter(r => String(r.team||"").trim() === TEAM);
           const skaters = s.filter(r => String(r.team||"").trim() === TEAM);
           host.innerHTML = "";
+
           const h2g = document.createElement("h2");
           h2g.textContent = `${TEAM_NAME} – Målvakter ${mode === "slutspel" ? "(Slutspel)" : ""}`;
           const wrap1 = document.createElement("div");
           wrap1.className = "wrap";
           wrap1.append(makeTable(goalies, "goalie"));
+
           const h2s = document.createElement("h2");
           h2s.textContent = `${TEAM_NAME} – Spelare ${mode === "slutspel" ? "(Slutspel)" : ""}`;
           const wrap2 = document.createElement("div");
           wrap2.className = "wrap";
           wrap2.append(makeTable(skaters, "skater"));
+
           const sep = document.createElement("div");
           sep.className = "sep";
           host.append(h2g, wrap1, sep, h2s, wrap2);
+
+          // 🔗 GÖR NAMN KLICKBARA → player.html
+          const nameCells = host.querySelectorAll("tbody tr td:nth-child(2)");
+          nameCells.forEach(td => {
+            const name = td.textContent.trim();
+            if (!name) return;
+            const a = document.createElement("a");
+            a.href = `player.html?player=${encodeURIComponent(name)}`;
+            a.textContent = name;
+            td.textContent = "";
+            td.appendChild(a);
+          });
         }).catch(err => {
           host.innerHTML = `<div style="padding:12px;color:#f66;">Fel vid hämtning av statistik: ${err}</div>`;
         });
       };
+
 
       // --- Matcher (från statisk HTML) ---
       const loadMatches = () => {
@@ -1122,11 +1188,12 @@ html, body {
       };
 
       // --- Gruppspel & Slutspel ---
-      const loadStats = (mode) => {
+           const loadStats = (mode) => {
         if (!host) return;
         host.innerHTML = `<div style="padding:12px">Laddar ${mode}...</div>`;
         const sheetSkaters = mode === "slutspel" ? "Spelarstats slut 19.5" : "Spelarstats";
         const sheetGoalies = mode === "slutspel" ? "Målvaktsstats slut 19.5" : "Målvaktsstats";
+
         Promise.all([
           fetch(API + `?sheet=${encodeURIComponent(sheetGoalies)}`).then(r => r.json()),
           fetch(API + `?sheet=${encodeURIComponent(sheetSkaters)}`).then(r => r.json())
@@ -1134,19 +1201,34 @@ html, body {
           const goalies = g.filter(r => String(r.team||"").trim() === TEAM);
           const skaters = s.filter(r => String(r.team||"").trim() === TEAM);
           host.innerHTML = "";
+
           const h2g = document.createElement("h2");
           h2g.textContent = `${TEAM_NAME} – Målvakter ${mode === "slutspel" ? "(Slutspel)" : ""}`;
           const wrap1 = document.createElement("div");
           wrap1.className = "wrap";
           wrap1.append(makeTable(goalies, "goalie"));
+
           const h2s = document.createElement("h2");
           h2s.textContent = `${TEAM_NAME} – Spelare ${mode === "slutspel" ? "(Slutspel)" : ""}`;
           const wrap2 = document.createElement("div");
           wrap2.className = "wrap";
           wrap2.append(makeTable(skaters, "skater"));
+
           const sep = document.createElement("div");
           sep.className = "sep";
           host.append(h2g, wrap1, sep, h2s, wrap2);
+
+          // 🔗 GÖR NAMN KLICKBARA → player.html
+          const nameCells = host.querySelectorAll("tbody tr td:nth-child(2)");
+          nameCells.forEach(td => {
+            const name = td.textContent.trim();
+            if (!name) return;
+            const a = document.createElement("a");
+            a.href = `player.html?player=${encodeURIComponent(name)}`;
+            a.textContent = name;
+            td.textContent = "";
+            td.appendChild(a);
+          });
         }).catch(err => {
           host.innerHTML = `<div style="padding:12px;color:#f66;">Fel vid hämtning av statistik: ${err}</div>`;
         });
@@ -1262,11 +1344,12 @@ html, body {
       };
 
       // --- Gruppspel & Slutspel ---
-      const loadStats = (mode) => {
+           const loadStats = (mode) => {
         if (!host) return;
         host.innerHTML = `<div style="padding:12px">Laddar ${mode}...</div>`;
         const sheetSkaters = mode === "slutspel" ? "Spelarstats slut 19.5" : "Spelarstats";
         const sheetGoalies = mode === "slutspel" ? "Målvaktsstats slut 19.5" : "Målvaktsstats";
+
         Promise.all([
           fetch(API + `?sheet=${encodeURIComponent(sheetGoalies)}`).then(r => r.json()),
           fetch(API + `?sheet=${encodeURIComponent(sheetSkaters)}`).then(r => r.json())
@@ -1274,23 +1357,39 @@ html, body {
           const goalies = g.filter(r => String(r.team||"").trim() === TEAM);
           const skaters = s.filter(r => String(r.team||"").trim() === TEAM);
           host.innerHTML = "";
+
           const h2g = document.createElement("h2");
           h2g.textContent = `${TEAM_NAME} – Målvakter ${mode === "slutspel" ? "(Slutspel)" : ""}`;
           const wrap1 = document.createElement("div");
           wrap1.className = "wrap";
           wrap1.append(makeTable(goalies, "goalie"));
+
           const h2s = document.createElement("h2");
           h2s.textContent = `${TEAM_NAME} – Spelare ${mode === "slutspel" ? "(Slutspel)" : ""}`;
           const wrap2 = document.createElement("div");
           wrap2.className = "wrap";
           wrap2.append(makeTable(skaters, "skater"));
+
           const sep = document.createElement("div");
           sep.className = "sep";
           host.append(h2g, wrap1, sep, h2s, wrap2);
+
+          // 🔗 GÖR NAMN KLICKBARA → player.html
+          const nameCells = host.querySelectorAll("tbody tr td:nth-child(2)");
+          nameCells.forEach(td => {
+            const name = td.textContent.trim();
+            if (!name) return;
+            const a = document.createElement("a");
+            a.href = `player.html?player=${encodeURIComponent(name)}`;
+            a.textContent = name;
+            td.textContent = "";
+            td.appendChild(a);
+          });
         }).catch(err => {
           host.innerHTML = `<div style="padding:12px;color:#f66;">Fel vid hämtning av statistik: ${err}</div>`;
         });
       };
+
 
       // --- Matcher (från statisk HTML) ---
       const loadMatches = () => {
@@ -3178,9 +3277,114 @@ function activate() {
   setTimeout(activate, 1500);
 });
 </script>
+<script>
+// API för lagstatistik (den du redan använder i lag-scripten)
+const STATS_API = "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec";
+// API för foton (samma som i player.html)
+const PLAYER_API = "https://script.google.com/macros/s/AKfycbwUvylvIbUTy4_zihW5_OKIsQME2vxcPHWLldObZI28dggqJytvF2UmdsAD4Ib5Zre1/exec";
+const FALLBACK_PHOTO = "1VAa79pJ-QbyeliY60autf914z6SBwmhp";
+
+function normPlayer(s) {
+  return String(s || "")
+    .toLowerCase()
+    .replace(/[,]/g, "")
+    .replace(/\s+/g, "")
+    .replace(/_swe|swe|fin|nor|den|ger/g, "")
+    .replace(/[^a-z0-9_]/g, "");
+}
+
+async function fetchJson(url) {
+  const res = await fetch(url, { mode: "cors" });
+  return res.json();
+}
+
+async function buildAllPlayerLists() {
+  const containers = document.querySelectorAll(".player-list[data-team]");
+  if (!containers.length) return;
+
+  const [skaters, goalies, photos] = await Promise.all([
+    fetchJson(`${STATS_API}?sheet=${encodeURIComponent("Spelarstats")}`),
+    fetchJson(`${STATS_API}?sheet=${encodeURIComponent("Målvaktsstats")}`),
+    fetchJson(`${PLAYER_API}?sheet=${encodeURIComponent("Spelarfoton")}`)
+  ]);
+
+  // Indexera foton
+  const photoMap = new Map();
+  photos.forEach(r => {
+    const key = normPlayer(r.Spelarnamn || r.Namn || r.PLAYER);
+    if (!key) return;
+    const id = r.DriveID || r.Foto || r.Bild;
+    if (id) photoMap.set(key, id);
+  });
+
+  function getPhotoId(name) {
+    const key = normPlayer(name);
+    return photoMap.get(key) || FALLBACK_PHOTO;
+  }
+
+  // Gruppera spelare per lag
+  const playersByTeam = {};
+
+  skaters.forEach(r => {
+    const team = String(r.team || r.TEAM || "").trim();
+    const name = r.players || r.player || r.PLAYER || r.Spelare;
+    if (!team || !name) return;
+    if (!playersByTeam[team]) playersByTeam[team] = {};
+    if (!playersByTeam[team][name]) {
+      playersByTeam[team][name] = { name, role: "Skater", isGoalie: false };
+    }
+  });
+
+  goalies.forEach(r => {
+    const team = String(r.team || r.TEAM || "").trim();
+    const name = r.goalies || r.goalie || r.PLAYER || r.Namn;
+    if (!team || !name) return;
+    if (!playersByTeam[team]) playersByTeam[team] = {};
+    if (!playersByTeam[team][name]) {
+      playersByTeam[team][name] = { name, role: "Goalie", isGoalie: true };
+    } else {
+      playersByTeam[team][name].role = "Goalie";
+      playersByTeam[team][name].isGoalie = true;
+    }
+  });
+
+  // Bygg kort för varje container
+  containers.forEach(container => {
+    const teamCode = container.dataset.team;
+    const playersObj = playersByTeam[teamCode] || {};
+    const players = Object.values(playersObj);
+
+    if (!players.length) {
+      container.innerHTML = `<div style="color:#bbb;font-size:.85rem;">Inga spelare hittades i statistiken för ${teamCode}</div>`;
+      return;
+    }
+
+    container.innerHTML = "";
+    players.sort((a,b) => a.name.localeCompare(b.name, "sv"));
+
+    players.forEach(p => {
+      const driveId = getPhotoId(p.name);
+      const card = document.createElement("a");
+      card.className = "player-card";
+      card.href = `player.html?player=${encodeURIComponent(p.name)}`;
+      card.innerHTML = `
+        <img src="https://drive.google.com/thumbnail?id=${driveId}&sz=w400" alt="${p.name}">
+        <div class="pname">${p.name}</div>
+        <div class="prole">${p.isGoalie ? "G" : "Skater"}</div>
+      `;
+      container.appendChild(card);
+    });
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  buildAllPlayerLists().catch(err => console.error("Player cards error:", err));
+});
+</script>
 
 </body>
 </html>
+
 
 
 
