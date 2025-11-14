@@ -1,20 +1,57 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Svenska eHockey Cupen 19.5</title>
+  <!-- (styles unchanged) -->
+</head>
+
 <body>
+  <div id="sec-bg-layer">
+    <div class="smoke-layer smoke-back"></div>
+    <div class="smoke-layer"></div>
+  </div>
 
-  <!-- Obligatoriska element -->
-  <div id="playerName"></div>
+  <div id="sec-page">
+    <!-- HEADER -->
+    <div class="sfc-header">
+      <img 
+        src="https://drive.google.com/thumbnail?id=1QybW_Uw8HO0OXo8vwQFD-zrrr-ifFrC9&sz=w1000" 
+        alt="SEC Logo" 
+        class="sfc-logo">
+      <div class="sfc-title">
+        🏆 Svenska eHockey <strong>Cupen</strong> 19.5 🏒
+      </div>
+      <div class="sfc-divider"></div>
+      <div class="sfc-reflection"></div>
+    </div>
 
-  <img id="playerPhoto" />
+    <nav class="cup-tabs">
+      <button class="tab active">1</button>
+    </nav>
 
-  <div id="statsOutput"></div>
+    <!-- PANELEN DÄR SPELARDATA SKA VISAS -->
+    <div class="tab-panel" style="max-width: 1100px; margin: 26px auto 0; text-align:center; padding:20px;">
+      <div id="playerName" style="font-size:1.6rem; font-weight:700; margin-bottom:20px;"></div>
+      <img id="playerPhoto" style="width:260px; border-radius:12px; margin-bottom:20px;" />
+      <div id="statsOutput"></div>
+    </div>
 
-  <!-- Ditt script -->
+    <!-- FOOTER -->
+    <div id="sec-footer-wrapper">
+      <div class="sec-footer-glow"></div>
+      <div id="sec-footer-line"></div>
+      <div id="sec-footer-text">
+        © 2026 <span>Svenska eHockey Cupen</span> | Design &amp; Utveckling av <span>SweeHockey</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTET DU BADE OM -->
   <script>
-  // 1) API-URL – BYT TILL DIN NYA WEBBAPP-ADRESS
   const API_BASE = "https://script.google.com/macros/s/AKfycbwUvylvIbUTy4_zihW5_OKIsQME2vxcPHWLldObZI28dggqJytvF2UmdsAD4Ib5Zre1/exec";
 
-  console.log("API_BASE =", API_BASE);
-
-  // 2) Läs ?player= från URL
   const urlParams = new URLSearchParams(window.location.search);
   const rawName = (urlParams.get("player") || "").trim();
   const playerNameEl = document.getElementById("playerName");
@@ -34,14 +71,10 @@
       .replace(/[^a-z0-9_]/g, "");
   }
 
-  // 3) Ladda foto
   async function loadPhoto() {
     try {
-      const res = await fetch(`${API_BASE}?sheet=${encodeURIComponent("Spelarfoton")}`, {
-        mode: "cors"
-      });
+      const res = await fetch(`${API_BASE}?sheet=${encodeURIComponent("Spelarfoton")}`);
       const rows = await res.json();
-      console.log("Photo rows:", rows);
 
       const target = norm(rawName);
       const match = rows.find(r => norm(r.Spelarnamn || r.Namn || r.PLAYER) === target);
@@ -57,7 +90,6 @@
     }
   }
 
-  // 4) Ladda statistik
   async function loadStats() {
     const out = document.getElementById("statsOutput");
 
@@ -67,11 +99,8 @@
     }
 
     try {
-      const res = await fetch(`${API_BASE}?player=${encodeURIComponent(rawName)}`, {
-        mode: "cors"
-      });
+      const res = await fetch(`${API_BASE}?player=${encodeURIComponent(rawName)}`);
       const data = await res.json();
-      console.log("API data:", data);
 
       if (data.error) {
         out.innerHTML = `<div class="no-stats">❌ ${data.error}</div>`;
@@ -129,5 +158,6 @@
 
   loadPhoto();
   loadStats();
-</script>
-  </body>
+  </script>
+</body>
+</html>
