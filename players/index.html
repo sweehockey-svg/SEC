@@ -8,88 +8,126 @@
   <div id="statsOutput"></div>
 
   <!-- Ditt script -->
- <script>
-(async () => {
-
-  // 🔧 BYT TILL DIN APP SCRIPT WEB-APP URL (slutar på /exec)
+  <script>
+  // 1) API-URL – BYT TILL DIN NYA WEBBAPP-ADRESS
   const API_BASE = "https://script.google.com/macros/s/AKfycbwUvylvIbUTy4_zihW5_OKIsQME2vxcPHWLldObZI28dggqJytvF2UmdsAD4Ib5Zre1/exec";
 
-  // hämta ?player=xxxx från URL
-  const params = new URLSearchParams(window.location.search);
-  const rawPlayer = (params.get("player") || "").trim();
-  const norm = s => String(s||"").toLowerCase().replace(/\s+/g,"");
+  console.log("API_BASE =", API_BASE);
 
-  if (!rawPlayer) {
-    document.querySelector(".player-nick").textContent = "Ingen spelare vald";
-    return;
+  // 2) Läs ?player= från URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const rawName = (urlParams.get("player") || "").trim();
+  const playerNameEl = document.getElementById("playerName");
+
+  if (!rawName) {
+    playerNameEl.textContent = "Ingen spelare vald";
+  } else {
+    playerNameEl.textContent = rawName;
   }
 
-  const normalized = norm(rawPlayer);
-
-  // dina säsonger
-  const seasons = [19.5, ...Array.from({length: 19},(_,i)=>19-i)];
-
-  // alla 4 typer per säsong
-  const SHEETS = [];
-  for (const s of seasons) {
-    SHEETS.push({type:"goalie",name:`Målvaktsstats grupp ${s}`});
-    SHEETS.push({type:"goalie",name:`Målvaktsstats slut ${s}`});
-    SHEETS.push({type:"player",name:`Spelarstats grupp ${s}`});
-    SHEETS.push({type:"player",name:`Spelarstats slut ${s}`});
+  function norm(s) {
+    return String(s || "")
+      .toLowerCase()
+      .replace(/[,]/g, "")
+      .replace(/\s+/g, "")
+      .replace(/_swe|swe|fin|nor|den|ger/g, "")
+      .replace(/[^a-z0-9_]/g, "");
   }
 
-  // TEAM MAP
-  const TEAM_MAP = { /* DIN STORA TEAM_MAP HÄR */ };
-
-  // vi letar från högst → lägst
-  let found = null;
-
-  for (const sh of SHEETS) {
+  // 3) Ladda foto
+  async function loadPhoto() {
     try {
-      const res = await fetch(`${API_BASE}?sheet=${encodeURIComponent(sh.name)}&_t=${Date.now()}`);
+      const res = await fetch(`${API_BASE}?sheet=${encodeURIComponent("Spelarfoton")}`, {
+        mode: "cors"
+      });
       const rows = await res.json();
-      if (!rows?.length) continue;
+      console.log("Photo rows:", rows);
 
-      // rätt kolumnnamn
-      const nameCol = (sh.type === "goalie") ? "GOALIES" : "PLAYERS";
+      const target = norm(rawName);
+      const match = rows.find(r => norm(r.Spelarnamn || r.Namn || r.PLAYER) === target);
 
-      for (const r of rows) {
-        const cell = norm(r[nameCol]);
-        if (!cell) continue;
-        if (cell === normalized || cell.includes(normalized)) {
+      const fallbackId = "1VAa79pJ-QbyeliY60autf914z6SBwmhp";
+      const driveId = match ? (match.DriveID || match.Foto || match.Bild) : fallbackId;
 
-          found = {
-            type: sh.type,
-            season: sh.name,
-            team: r["TEAM"] || "",
-            data: r
-          };
-
-          break;
-        }
-      }
-
-      if (found) break;
-
-    } catch(err) {
-      console.warn("Fel vid läsning:", sh.name, err);
+      const img = document.getElementById("playerPhoto");
+      img.src = `https://drive.google.com/thumbnail?id=${driveId}&sz=w1000`;
+      img.onload = () => img.classList.add("loaded");
+    } catch (err) {
+      console.error("Foto-fel:", err);
     }
   }
 
-  if (!found) {
-    document.querySelector(".player-nick").textContent = rawPlayer;
-    document.querySelector(".player-meta").textContent = "Ingen data hittad";
-    return;
+  // 4) Ladda statistik
+  async function loadStats() {
+    const out = document.getElementById("statsOutput");
+
+    if (!rawName) {
+      out.innerHTML = `<div class="no-stats">❌ Ingen spelare vald i URL:en (?player=)</div>`;
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}?player=${encodeURIComponent(rawName)}`, {
+        mode: "cors"
+      });
+      const data = await res.json();
+      console.log("API data:", data);
+
+      if (data.error) {
+        out.innerHTML = `<div class="no-stats">❌ ${data.error}</div>`;
+        return;
+      }
+
+      const isGoalie = data.__type === "goalie";
+
+      const skaterFields = [
+        ["TEAM", "Team"],
+        ["GP", "GP"],
+        ["G", "Mål"],
+        ["A", "Assist"],
+        ["PTS", "Poäng"],
+        ["PIM", "Utvisningsminuter"],
+      ];
+
+      const goalieFields = [
+        ["TEAM", "Team"],
+        ["GP", "GP"],
+        ["SA", "Skott mot"],
+        ["GA", "Insläppta mål"],
+        ["SV", "Räddningar"],
+        ["SVP", "Räddnings%"],
+        ["GAA", "GAA"],
+        ["SO", "Nollor"],
+      ];
+
+      const fields = isGoalie ? goalieFields : skaterFields;
+
+      let html = `
+        <div class="stats-table">
+          <table>
+            <thead>
+              <tr><th>Stat</th><th>Värde</th></tr>
+            </thead>
+            <tbody>
+      `;
+
+      for (const [key, label] of fields) {
+        const val = data[key] ?? data[key.toUpperCase()] ?? "";
+        if (val === "") continue;
+        html += `<tr><td>${label}</td><td>${val}</td></tr>`;
+      }
+
+      html += `<tr><td>Hämtad från</td><td>${data.__sheet || "okänd flik"}</td></tr>`;
+      html += `</tbody></table></div>`;
+
+      out.innerHTML = html;
+    } catch (err) {
+      console.error("Stats-fel:", err);
+      out.innerHTML = `<div class="no-stats">⚠️ Fel vid hämtning av statistik</div>`;
+    }
   }
 
-  // TEAM-kod → TEAM_MAP
-  const teamName = TEAM_MAP[found.team] || found.team || "Okänt lag";
-
-  // uppdatera UI
-  document.querySelector(".player-nick").textContent = rawPlayer;
-  document.querySelector(".player-meta").textContent = teamName;
-
-})();
+  loadPhoto();
+  loadStats();
 </script>
-
   </body>
