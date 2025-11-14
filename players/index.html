@@ -43,15 +43,15 @@
   }
 
   #playerPhoto {
-    width: 220px;
-    height: 220px;
-    border-radius: 14px;
-    object-fit: cover;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    margin-bottom: 25px;
-    box-shadow: 0 0 25px rgba(0,0,0,0.6);
-    border: 2px solid rgba(255,215,0,0.25);
+    width: 260px;
+    height: auto;
+    border-radius: 20px;
+    object-fit: contain;
+    background:#0a0c11;
+    padding: 6px;
+    opacity: 1;
+    box-shadow: 0 0 35px rgba(255,215,0,0.25);
+    border: 2px solid rgba(255,215,0,0.35);
   }
   #playerPhoto.loaded {
     opacity: 1;
@@ -101,6 +101,16 @@
   }
   .player-card {
     width: 95%;
+    max-width: 900px;
+    background: linear-gradient(180deg, #0d1020 0%, #05060a 100%);
+    padding: 40px 30px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,215,0,0.20);
+    box-shadow: 0 0 40px rgba(255,215,0,0.10);
+    text-align: center;
+    margin-bottom: 35px;
+  } {
+    width: 95%;
     max-width: 600px;
     background: rgba(20,20,28,0.85);
     padding: 30px;
@@ -122,13 +132,21 @@
   </h1>
 </div>
 
-<!-- PLAYER + STATS CONTENT -->
-<div class="player-card">
-  <div id="playerName"></div>
-  <img id="playerPhoto" />
+<!-- NAVIGATION -->
+<div class="sec-nav" style="width:95%;max-width:900px;margin-bottom:25px;text-align:center;">
+  <div style="background:rgba(20,20,28,0.8);padding:12px 30px;border-radius:14px;border:1px solid rgba(255,215,0,0.25);display:inline-block;box-shadow:0 0 18px rgba(255,215,0,0.12);font-weight:600;letter-spacing:1px;color:#f5d86e;">SPELARKORT</div>
 </div>
 
-<div class="content-card">
+<!-- PLAYER CARD -->
+<div class="player-card" style="text-align:center;">
+  <img id="playerPhoto" />
+  <div id="playerName" style="margin-top:18px;"></div>
+
+  <h2 style="margin-top:10px;color:#f5d86e;font-size:1.4rem;letter-spacing:1px;">STATISTIK – SVENSKA EHOCKEY CUPEN</h2>
+  <p style="color:#ccc;max-width:600px;margin:10px auto 25px;font-size:0.95rem;line-height:1.5;">
+    Nedan visas spelarens statistik från turneringens grundspel och slutspel över flera upplagor av Svenska eHockey Cupen.
+  </p>
+
   <div id="statsOutput"></div>
 </div>
 
