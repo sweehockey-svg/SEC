@@ -1,134 +1,31 @@
-<!DOCTYPE html>
-<html lang="sv">
-<head>
-<meta charset="UTF-8">
-<title>Spelare – Svenska eHockey Cupen</title>
-
-<style>
-  body {
-    margin: 0;
-    background: #040615;
-    font-family: 'Poppins', sans-serif;
-    color: #fff;
-    text-align: center;
-  }
-
-  .header {
-    padding: 40px 0;
-    border-bottom: 1px solid rgba(255, 200, 0, 0.2);
-  }
-
-  .header img {
-    width: 110px;
-    margin-bottom: 10px;
-  }
-
-  .title {
-    font-size: 32px;
-    font-weight: 700;
-    letter-spacing: 2px;
-  }
-
-  .player-section {
-    margin-top: 60px;
-  }
-
-  #playerPhoto {
-    width: 280px;
-    border-radius: 18px;
-    opacity: 0;
-    transition: opacity .5s;
-    border: 3px solid rgba(255, 200, 0, 0.3);
-  }
-
-  #playerPhoto.loaded {
-    opacity: 1;
-  }
-
-  .player-name {
-    margin-top: 25px;
-    font-size: 34px;
-    font-weight: 800;
-  }
-
-  .player-info {
-    font-size: 14px;
-    opacity: 0.7;
-    margin-bottom: 40px;
-  }
-
-  .stats-title {
-    margin-top: 40px;
-    font-size: 22px;
-    letter-spacing: 1px;
-    font-weight: 600;
-  }
-
-  .stats-table {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-  }
-
-  table {
-    width: 340px;
-    border-collapse: collapse;
-    background: rgba(255,255,255,0.04);
-    border-radius: 12px;
-    overflow: hidden;
-  }
-
-  th, td {
-    padding: 12px 15px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-  }
-
-  th {
-    background: rgba(255,255,255,0.08);
-    font-weight: 600;
-    font-size: 15px;
-  }
-
-  tr:last-child td {
-    border-bottom: none;
-  }
-
-  .no-stats {
-    margin-top: 20px;
-    opacity: 0.7;
-  }
-</style>
-
-</head>
 <body>
 
-<!-- HEADER -->
-<div class="header">
-  <img src="https://i.imgur.com/Uy5NQmK.png" alt="SFC Logo"> 
-  <div class="title">🏆 SVENSKA EHOCKEY CUPEN 🏒</div>
-</div>
+  <!-- Obligatoriska element -->
+  <div id="playerName"></div>
 
-<!-- PLAYER SECTION -->
-<div class="player-section">
-  <img id="playerPhoto" src="" alt="Player Photo">
+  <img id="playerPhoto" />
 
-  <div class="player-name" id="playerNameDisplay"></div>
-  <div class="player-info" id="playerInfoDisplay"></div>
-
-  <div class="stats-title">STATISTIK – SVENSKA EHOCKEY CUPEN</div>
   <div id="statsOutput"></div>
-</div>
 
-<script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbwUbtWzH3eVvx6S5cnOgrn-AVOZT-mdfKocYtTLWogtq2UH0gE/exec";
+  <!-- Ditt script -->
+  <script>
+  // 1) API-URL – BYT TILL DIN NYA WEBBAPP-ADRESS
+  const API_BASE = "https://script.google.com/macros/s/AKfycbwUvylvIbUTy4_zihW5_OKIsQME2vxcPHWLldObZI28dggqJytvF2UmdsAD4Ib5Zre1/exec";
 
-  // Hämta namn från URL (?player=)
+  console.log("API_BASE =", API_BASE);
+
+  // 2) Läs ?player= från URL
   const urlParams = new URLSearchParams(window.location.search);
-  const rawName = urlParams.get("player");
+  const rawName = (urlParams.get("player") || "").trim();
+  const playerNameEl = document.getElementById("playerName");
 
-  document.getElementById("playerNameDisplay").textContent = rawName || "";
+  if (!rawName) {
+    playerNameEl.textContent = "Ingen spelare vald";
+  } else {
+    playerNameEl.textContent = rawName;
+  }
 
-  function norm(s) { 
+  function norm(s) {
     return String(s || "")
       .toLowerCase()
       .replace(/[,]/g, "")
@@ -155,7 +52,6 @@
       const img = document.getElementById("playerPhoto");
       img.src = `https://drive.google.com/thumbnail?id=${driveId}&sz=w1000`;
       img.onload = () => img.classList.add("loaded");
-
     } catch (err) {
       console.error("Foto-fel:", err);
     }
@@ -225,7 +121,6 @@
       html += `</tbody></table></div>`;
 
       out.innerHTML = html;
-
     } catch (err) {
       console.error("Stats-fel:", err);
       out.innerHTML = `<div class="no-stats">⚠️ Fel vid hämtning av statistik</div>`;
@@ -235,6 +130,4 @@
   loadPhoto();
   loadStats();
 </script>
-
-</body>
-</html>
+  </body>
