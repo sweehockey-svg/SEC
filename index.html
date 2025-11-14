@@ -15,6 +15,61 @@
     }
 
     a { text-decoration: none; }
+/* === GLOBAL SEC HEADER === */
+.sec-header {
+  margin: 30px auto;
+  max-width: 950px;
+  padding: 60px 20px 40px;
+  background: radial-gradient(circle at top, #1a2247 0%, #0a0d1f 55%, #050614 100%);
+  border: 2px solid rgba(214, 177, 95, 0.35);
+  border-radius: 22px;
+  box-shadow: 0 0 25px rgba(214, 177, 95, 0.18);
+  text-align: center;
+}
+
+.sec-header-logo {
+  width: 135px;
+  margin-bottom: 10px;
+  filter: drop-shadow(0 0 18px rgba(240,213,139,0.45));
+}
+
+.sec-header-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #f0d58b;
+  margin-bottom: 20px;
+  letter-spacing: 0.18rem;
+  text-shadow: 0 0 12px rgba(240,213,139,0.4);
+}
+
+.sec-header-title span {
+  color: #fff;
+  letter-spacing: 0.3rem;
+}
+
+.sec-nav {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 22px;
+}
+
+.sec-nav .nav-item {
+  color: #f0d58b;
+  padding: 8px 20px;
+  border: 1px solid rgba(214,177,95,0.4);
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 700;
+  transition: 0.2s;
+  background: #060814;
+}
+
+.sec-nav .nav-item:hover {
+  background: rgba(214,177,95,0.2);
+  box-shadow: 0 0 10px rgba(214,177,95,0.5);
+  transform: translateY(-2px);
+}
 
     /* === HERO HEADER — som SEC 19.5 === */
     .hero {
@@ -196,6 +251,23 @@
 </head>
 
 <body>
+<!-- GLOBAL NAVIGATION + HEADER -->
+<div class="sec-header">
+  <a href="index.html" class="sec-logo-link">
+    <img src="https://drive.google.com/thumbnail?id=1QybW_Uw8HO0OXo8vwQFD-zrrr-ifFrC9&sz=w1000"
+         alt="SEC-logga"
+         class="sec-header-logo">
+  </a>
+
+  <h1 class="sec-header-title">
+    🏆 S V E N S K A &nbsp; E H O C K E Y &nbsp; <span>C U P E N</span> 🏒
+  </h1>
+
+  <nav class="sec-nav">
+    <a href="index.html" class="nav-item">ÖVERSIKT</a>
+    <a href="players.html" class="nav-item">SPELARKORT</a>
+  </nav>
+</div>
 
   <!-- HEADER -->
   <div class="hero">
