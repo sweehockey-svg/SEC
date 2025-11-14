@@ -143,7 +143,7 @@
   <div class="header-card">
     <img src="https://drive.google.com/thumbnail?id=1QybW_Uw8HO0OXo8vwQFD-zrrr-ifFrC9&sz=w1000" alt="SEC Logo" />
     <h1 style="font-size:1.8rem; font-weight:700; color:#f5d86e; letter-spacing:1px; margin-top:10px; text-shadow:0 0 10px rgba(255,215,0,0.4);">
-      🏆 SVENSKA EHOCKEY CUPEN jj 🏒
+      🏆 SVENSKA EHOCKEY CUPEN jddj 🏒
     </h1>
   </div>
 
@@ -207,159 +207,104 @@
     }
 
     // Ladda spelarens statistik och rendera tabell som på Dobby-bilden
-    async function loadStats() {
-      const out = document.getElementById("statsOutput");
+   async function loadStats() {
+  const out = document.getElementById("statsOutput");
 
-      if (!rawName) {
-        out.innerHTML = `<div class="no-stats">❌ Ingen spelare vald i URL:en (?player=)</div>`;
-        return;
-      }
+  if (!rawName) {
+    out.innerHTML = `<div class="no-stats">❌ Ingen spelare vald i URL:en (?player=)</div>`;
+    return;
+  }
 
-      try {
-        const res = await fetch(`${API_BASE}?player=${encodeURIComponent(rawName)}`);
-        const data = await res.json();
+  try {
+    const res = await fetch(`${API_BASE}?player=${encodeURIComponent(rawName)}`);
+    let data = await res.json();
 
-        // Om backend skickar error
-        if (data && data.error) {
-          out.innerHTML = `<div class="no-stats">❌ ${data.error}</div>`;
-          return;
-        }
-
-        // FALL 1: API skickar FLERA rader (turnerings-historik)
-        if (Array.isArray(data)) {
-          if (!data.length) {
-            out.innerHTML = `<div class="no-stats">❌ Ingen statistik hittades för spelaren.</div>`;
-            return;
-          }
-
-          const first = data[0] || {};
-          const isGoalieRows = "SA" in first || "SV" in first || "SVP" in first;
-
-          let html = `
-            <div class="stats-table">
-              <table>
-                <thead>
-          `;
-
-          if (isGoalieRows) {
-            // Målvakt – layout som på bilden
-            html += `
-              <tr>
-                <th>TURNERING</th>
-                <th>TEAM</th>
-                <th>GP</th>
-                <th>SA</th>
-                <th>GA</th>
-                <th>SV</th>
-                <th>GAA</th>
-                <th>SVP</th>
-                <th>SO</th>
-              </tr>
-            `;
-          } else {
-            // Utespelare – motsvarande layout, men med skater-stats
-            html += `
-              <tr>
-                <th>TURNERING</th>
-                <th>TEAM</th>
-                <th>GP</th>
-                <th>G</th>
-                <th>A</th>
-                <th>PTS</th>
-                <th>PIM</th>
-              </tr>
-            `;
-          }
-
-          html += `</thead><tbody>`;
-
-          data.forEach(r => {
-            if (isGoalieRows) {
-              html += `
-                <tr>
-                  <td>${r.TURNERING || ""}</td>
-                  <td>${r.TEAM || ""}</td>
-                  <td>${r.GP || 0}</td>
-                  <td>${r.SA || 0}</td>
-                  <td>${r.GA || 0}</td>
-                  <td>${r.SV || 0}</td>
-                  <td>${r.GAA || "0.00"}</td>
-                  <td>${r.SVP || "0.000"}</td>
-                  <td>${r.SO || 0}</td>
-                </tr>
-              `;
-            } else {
-              html += `
-                <tr>
-                  <td>${r.TURNERING || ""}</td>
-                  <td>${r.TEAM || ""}</td>
-                  <td>${r.GP || 0}</td>
-                  <td>${r.G || 0}</td>
-                  <td>${r.A || 0}</td>
-                  <td>${r.PTS || 0}</td>
-                  <td>${r.PIM || 0}</td>
-                </tr>
-              `;
-            }
-          });
-
-          html += `</tbody></table></div>`;
-          out.innerHTML = html;
-          return;
-        }
-
-        // FALL 2: API skickar EN rad (t.ex. sammanfattning) → Stat / Värde-tabell
-        const isGoalie = data.__type === "goalie";
-
-        const skaterFields = [
-          ["TEAM", "Team"],
-          ["GP", "GP"],
-          ["G", "Mål"],
-          ["A", "Assist"],
-          ["PTS", "Poäng"],
-          ["PIM", "Utvisningsminuter"]
-        ];
-
-        const goalieFields = [
-          ["TEAM", "Team"],
-          ["GP", "GP"],
-          ["SA", "Skott mot"],
-          ["GA", "Insläppta mål"],
-          ["SV", "Räddningar"],
-          ["SVP", "Räddnings%"],
-          ["GAA", "GAA"],
-          ["SO", "Nollor"]
-        ];
-
-        const fields = isGoalie ? goalieFields : skaterFields;
-
-        let html = `
-          <div class="stats-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>STAT</th>
-                  <th>VÄRDE</th>
-                </tr>
-              </thead>
-              <tbody>
-        `;
-
-        for (const [key, label] of fields) {
-          const value = data[key] ?? data[key.toUpperCase()] ?? "";
-          html += `<tr><td>${label}</td><td>${value}</td></tr>`;
-        }
-
-        html += `<tr><td>Hämtad från</td><td>${data.__sheet || "okänd flik"}</td></tr>`;
-        html += `</tbody></table></div>`;
-
-        out.innerHTML = html;
-
-      } catch (err) {
-        console.error("Stats-fel:", err);
-        out.innerHTML = `<div class="no-stats">⚠️ Fel vid hämtning av statistik</div>`;
-      }
+    if (data && data.error) {
+      out.innerHTML = `<div class="no-stats">❌ ${data.error}</div>`;
+      return;
     }
+
+    // Om API returnerar EN rad → skapa en lista manuellt
+    if (!Array.isArray(data)) {
+      data = [data];
+    }
+
+    const first = data[0];
+    const isGoalie = "SA" in first && "SV" in first;
+
+    let html = `
+      <div class="stats-table">
+        <table>
+          <thead>
+    `;
+
+    if (isGoalie) {
+      html += `
+        <tr>
+          <th>TURNERING</th>
+          <th>TEAM</th>
+          <th>GP</th>
+          <th>SA</th>
+          <th>GA</th>
+          <th>SV</th>
+          <th>GAA</th>
+          <th>SVP</th>
+          <th>SO</th>
+        </tr>`;
+    } else {
+      html += `
+        <tr>
+          <th>TURNERING</th>
+          <th>TEAM</th>
+          <th>GP</th>
+          <th>G</th>
+          <th>A</th>
+          <th>PTS</th>
+          <th>PIM</th>
+        </tr>`;
+    }
+
+    html += `</thead><tbody>`;
+
+    data.forEach(row => {
+      const turnering = row.TURNERING || row.Tournament || "—";
+
+      if (isGoalie) {
+        html += `
+          <tr>
+            <td>${turnering}</td>
+            <td>${row.TEAM || ""}</td>
+            <td>${row.GP || 0}</td>
+            <td>${row.SA || 0}</td>
+            <td>${row.GA || 0}</td>
+            <td>${row.SV || 0}</td>
+            <td>${row.GAA || "0.00"}</td>
+            <td>${row.SVP || "0.000"}</td>
+            <td>${row.SO || 0}</td>
+          </tr>`;
+      } else {
+        html += `
+          <tr>
+            <td>${turnering}</td>
+            <td>${row.TEAM || ""}</td>
+            <td>${row.GP || 0}</td>
+            <td>${row.G || 0}</td>
+            <td>${row.A || 0}</td>
+            <td>${row.PTS || 0}</td>
+            <td>${row.PIM || 0}</td>
+          </tr>`;
+      }
+    });
+
+    html += `</tbody></table></div>`;
+    out.innerHTML = html;
+
+  } catch (err) {
+    console.error("Stats-fel:", err);
+    out.innerHTML = `<div class="no-stats">⚠️ Fel vid hämtning av statistik</div>`;
+  }
+}
+
 
     // Starta
     loadPhoto();
