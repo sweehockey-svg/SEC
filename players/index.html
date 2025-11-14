@@ -4,31 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Player Stats – Svenska eHockey Cupen</title>
-  /* Loader wrapper (dold från start) */
-.loader-wrapper {
-  display: none;
-  width: 100%;
-  padding: 40px 0;
-  display: flex;
-  justify-content: center;
-}
-
-/* Själva loadern */
-.loader {
-  width: 55px;
-  height: 55px;
-  border: 6px solid rgba(255,215,0,0.15);
-  border-top: 6px solid #f5d86e;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-/* Animation */
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -160,7 +135,7 @@
         font-size: 1.6rem;
       }
     }
-    /* ====== Statistik-tabell – SWEeHockey ====== */
+/* ====== Statistik-tabell – SWEeHockey ====== */
 
 .stats-table {
     width: 100%;
@@ -234,7 +209,7 @@
   <div class="header-card">
     <img src="https://drive.google.com/thumbnail?id=1QybW_Uw8HO0OXo8vwQFD-zrrr-ifFrC9&sz=w1000" alt="SEC Logo" />
     <h1 style="font-size:1.8rem; font-weight:700; color:#f5d86e; letter-spacing:1px; margin-top:10px; text-shadow:0 0 10px rgba(255,215,0,0.4);">
-      🏆 SVENSKA EHOCKEY CUPEN 🏒
+      🏆 SVENSKA EHOCKEY CUPEN jddj 🏒
     </h1>
   </div>
 
@@ -254,11 +229,6 @@
     <p style="color:#ccc;max-width:600px;margin:10px auto 25px;font-size:0.95rem;line-height:1.5;">
       Nedan visas spelarens statistik från turneringens grundspel och slutspel över flera upplagor av Svenska eHockey Cupen.
     </p>
-<div id="loader" class="loader-wrapper">
-  <div class="loader"></div>
-</div>
-
-<div id="statsOutput"></div>
 
     <div id="statsOutput"></div>
   </div>
@@ -305,28 +275,25 @@
     // Ladda spelarens statistik och rendera tabell som på Dobby-bilden
    async function loadStats() {
   const out = document.getElementById("statsOutput");
-  const loader = document.getElementById("loader");
 
   if (!rawName) {
     out.innerHTML = `<div class="no-stats">❌ Ingen spelare vald i URL:en (?player=)</div>`;
     return;
   }
 
-  // VISA LOADER
-  loader.style.display = "flex";
-  out.innerHTML = "";
-
   try {
     const res = await fetch(`${API_BASE}?player=${encodeURIComponent(rawName)}`);
     let data = await res.json();
 
     if (data && data.error) {
-      loader.style.display = "none";
       out.innerHTML = `<div class="no-stats">❌ ${data.error}</div>`;
       return;
     }
 
-    if (!Array.isArray(data)) data = [data];
+    // Om API returnerar EN rad → skapa en lista manuellt
+    if (!Array.isArray(data)) {
+      data = [data];
+    }
 
     const first = data[0];
     const isGoalie = "SA" in first && "SV" in first;
@@ -340,49 +307,69 @@
     if (isGoalie) {
       html += `
         <tr>
-          <th>TURNERING</th><th>TEAM</th><th>GP</th><th>SA</th><th>GA</th>
-          <th>SV</th><th>GAA</th><th>SVP</th><th>SO</th>
+          <th>TURNERING</th>
+          <th>TEAM</th>
+          <th>GP</th>
+          <th>SA</th>
+          <th>GA</th>
+          <th>SV</th>
+          <th>GAA</th>
+          <th>SVP</th>
+          <th>SO</th>
         </tr>`;
     } else {
       html += `
         <tr>
-          <th>TURNERING</th><th>TEAM</th><th>GP</th><th>G</th><th>A</th>
-          <th>PTS</th><th>PIM</th>
+          <th>TURNERING</th>
+          <th>TEAM</th>
+          <th>GP</th>
+          <th>G</th>
+          <th>A</th>
+          <th>PTS</th>
+          <th>PIM</th>
         </tr>`;
     }
 
     html += `</thead><tbody>`;
 
     data.forEach(row => {
-      const t = row.TURNERING || "—";
+      const turnering = row.TURNERING || row.Tournament || "—";
 
       if (isGoalie) {
         html += `
           <tr>
-            <td>${t}</td><td>${row.TEAM}</td><td>${row.GP}</td><td>${row.SA}</td>
-            <td>${row.GA}</td><td>${row.SV}</td><td>${row.GAA}</td><td>${row.SVP}</td><td>${row.SO}</td>
+            <td>${turnering}</td>
+            <td>${row.TEAM || ""}</td>
+            <td>${row.GP || 0}</td>
+            <td>${row.SA || 0}</td>
+            <td>${row.GA || 0}</td>
+            <td>${row.SV || 0}</td>
+            <td>${row.GAA || "0.00"}</td>
+            <td>${row.SVP || "0.000"}</td>
+            <td>${row.SO || 0}</td>
           </tr>`;
       } else {
         html += `
           <tr>
-            <td>${t}</td><td>${row.TEAM}</td><td>${row.GP}</td><td>${row.G}</td>
-            <td>${row.A}</td><td>${row.PTS}</td><td>${row.PIM}</td>
+            <td>${turnering}</td>
+            <td>${row.TEAM || ""}</td>
+            <td>${row.GP || 0}</td>
+            <td>${row.G || 0}</td>
+            <td>${row.A || 0}</td>
+            <td>${row.PTS || 0}</td>
+            <td>${row.PIM || 0}</td>
           </tr>`;
       }
     });
 
     html += `</tbody></table></div>`;
-
     out.innerHTML = html;
 
   } catch (err) {
+    console.error("Stats-fel:", err);
     out.innerHTML = `<div class="no-stats">⚠️ Fel vid hämtning av statistik</div>`;
   }
-
-  // DÖLJ LOADER NÄR KLART
-  loader.style.display = "none";
 }
-
 
 
     // Starta
