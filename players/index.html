@@ -1,29 +1,93 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Player Stats</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #0d1117;
+    color: #e6edf3;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #playerName {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+  }
+
+  #playerPhoto {
+    width: 200px;
+    height: 200px;
+    border-radius: 12px;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    margin-bottom: 25px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+  }
+  #playerPhoto.loaded {
+    opacity: 1;
+  }
+
+  .stats-table {
+    background: #161b22;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    max-width: 400px;
+    width: 100%;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th {
+    text-align: left;
+    font-size: 1rem;
+    border-bottom: 1px solid #30363d;
+    padding-bottom: 6px;
+  }
+
+  td {
+    padding: 10px 0;
+    border-bottom: 1px solid #21262d;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  .no-stats {
+    color: #ff6b6b;
+    background: #2d0000;
+    padding: 10px 15px;
+    border-radius: 8px;
+  }
+</style>
+</head>
 <body>
 
-  <!-- Obligatoriska element -->
-  <div id="playerName"></div>
+<div id="playerName"></div>
+<img id="playerPhoto" />
+<div id="statsOutput"></div>
 
-  <img id="playerPhoto" />
-
-  <div id="statsOutput"></div>
-
-  <!-- Ditt script -->
-  <script>
-  // 1) API-URL – BYT TILL DIN NYA WEBBAPP-ADRESS
+<script>
   const API_BASE = "https://script.google.com/macros/s/AKfycbwUvylvIbUTy4_zihW5_OKIsQME2vxcPHWLldObZI28dggqJytvF2UmdsAD4Ib5Zre1/exec";
 
-  console.log("API_BASE =", API_BASE);
-
-  // 2) Läs ?player= från URL
   const urlParams = new URLSearchParams(window.location.search);
   const rawName = (urlParams.get("player") || "").trim();
   const playerNameEl = document.getElementById("playerName");
 
-  if (!rawName) {
-    playerNameEl.textContent = "Ingen spelare vald";
-  } else {
-    playerNameEl.textContent = rawName;
-  }
+  playerNameEl.textContent = rawName || "Ingen spelare vald";
 
   function norm(s) {
     return String(s || "")
@@ -34,14 +98,10 @@
       .replace(/[^a-z0-9_]/g, "");
   }
 
-  // 3) Ladda foto
   async function loadPhoto() {
     try {
-      const res = await fetch(`${API_BASE}?sheet=${encodeURIComponent("Spelarfoton")}`, {
-        mode: "cors"
-      });
+      const res = await fetch(`${API_BASE}?sheet=${encodeURIComponent("Spelarfoton")}`);
       const rows = await res.json();
-      console.log("Photo rows:", rows);
 
       const target = norm(rawName);
       const match = rows.find(r => norm(r.Spelarnamn || r.Namn || r.PLAYER) === target);
@@ -57,7 +117,6 @@
     }
   }
 
-  // 4) Ladda statistik
   async function loadStats() {
     const out = document.getElementById("statsOutput");
 
@@ -67,11 +126,8 @@
     }
 
     try {
-      const res = await fetch(`${API_BASE}?player=${encodeURIComponent(rawName)}`, {
-        mode: "cors"
-      });
+      const res = await fetch(`${API_BASE}?player=${encodeURIComponent(rawName)}`);
       const data = await res.json();
-      console.log("API data:", data);
 
       if (data.error) {
         out.innerHTML = `<div class="no-stats">❌ ${data.error}</div>`;
@@ -130,4 +186,6 @@
   loadPhoto();
   loadStats();
 </script>
-  </body>
+
+</body>
+</html>
