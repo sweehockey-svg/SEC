@@ -4,62 +4,87 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Player Stats</title>
+
 <style>
   body {
     font-family: Arial, sans-serif;
-    background: #0d1117;
+    background: radial-gradient(circle at top, #0a0c11, #000);
     color: #e6edf3;
     margin: 0;
-    padding: 20px;
+    padding: 40px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
   }
 
+  .header-card {
+    width: 95%;
+    max-width: 1100px;
+    background: rgba(20,20,28,0.8);
+    padding: 40px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,215,0,0.25);
+    box-shadow: 0 0 25px rgba(255,215,0,0.15);
+    text-align: center;
+    margin-bottom: 25px;
+  }
+
+  .header-card img.logo {
+    width: 160px;
+    margin-bottom: 20px;
+  }
+
   #playerName {
-    font-size: 2rem;
+    font-size: 2.2rem;
     font-weight: 700;
-    margin-bottom: 15px;
+    letter-spacing: 2px;
+    color: #f5d86e;
+    text-shadow: 0 0 10px rgba(255,215,0,0.4);
+    margin-bottom: 20px;
   }
 
   #playerPhoto {
-    width: 200px;
-    height: 200px;
-    border-radius: 12px;
+    width: 220px;
+    height: 220px;
+    border-radius: 14px;
     object-fit: cover;
     opacity: 0;
     transition: opacity 0.4s ease;
-    margin-bottom: 25px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    margin-bottom: 10px;
+    box-shadow: 0 0 25px rgba(0,0,0,0.6);
+    border: 2px solid rgba(255,215,0,0.25);
   }
   #playerPhoto.loaded {
     opacity: 1;
   }
 
-  .stats-table {
-    background: #161b22;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.4);
-    max-width: 400px;
-    width: 100%;
+  .content-card {
+    width: 95%;
+    max-width: 900px;
+    background: rgba(20,20,28,0.8);
+    padding: 30px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,215,0,0.15);
+    box-shadow: 0 0 20px rgba(255,215,0,0.1);
   }
 
   table {
     width: 100%;
     border-collapse: collapse;
+    font-size: 1.05rem;
   }
 
   th {
     text-align: left;
-    font-size: 1rem;
-    border-bottom: 1px solid #30363d;
-    padding-bottom: 6px;
+    border-bottom: 1px solid #323946;
+    padding-bottom: 8px;
+    color: #f5d86e;
+    font-size: 1.1rem;
   }
 
   td {
-    padding: 10px 0;
-    border-bottom: 1px solid #21262d;
+    padding: 12px 0;
+    border-bottom: 1px solid #232832;
   }
 
   tr:last-child td {
@@ -67,124 +92,139 @@
   }
 
   .no-stats {
-    color: #ff6b6b;
-    background: #2d0000;
-    padding: 10px 15px;
-    border-radius: 8px;
+    background: #3a0000;
+    border: 1px solid #ff4d4d;
+    padding: 12px 18px;
+    border-radius: 10px;
+    color: #ffb3b3;
+    font-weight: bold;
+    margin-top: 15px;
   }
 </style>
 </head>
+
 <body>
 
-<div id="playerName"></div>
-<img id="playerPhoto" />
-<div id="statsOutput"></div>
+<!-- HEADER / LOGO / PLAYER -->
+<div class="header-card">
+  <img class="logo" src="https://drive.google.com/thumbnail?id=1QybW_Uw8HO0OXo8vwQFD-zrrr-ifFrC9&sz=w1000" alt="SFC Logo" />
+  <div id="playerName"></div>
+  <img id="playerPhoto" />
+</div>
+
+<!-- STATS CONTENT -->
+<div class="content-card">
+  <div id="statsOutput"></div>
+</div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbwUvylvIbUTy4_zihW5_OKIsQME2vxcPHWLldObZI28dggqJytvF2UmdsAD4Ib5Zre1/exec";
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const rawName = (urlParams.get("player") || "").trim();
-  const playerNameEl = document.getElementById("playerName");
+const API_BASE = "https://script.google.com/macros/s/AKfycbwUvylvIbUTy4_zihW5_OKIsQME2vxcPHWLldObZI28dggqJytvF2UmdsAD4Ib5Zre1/exec";
 
-  playerNameEl.textContent = rawName || "Ingen spelare vald";
+const urlParams = new URLSearchParams(window.location.search);
+const rawName = (urlParams.get("player") || "").trim();
+const playerNameEl = document.getElementById("playerName");
 
-  function norm(s) {
-    return String(s || "")
-      .toLowerCase()
-      .replace(/[,]/g, "")
-      .replace(/\s+/g, "")
-      .replace(/_swe|swe|fin|nor|den|ger/g, "")
-      .replace(/[^a-z0-9_]/g, "");
+playerNameEl.textContent = rawName || "Ingen spelare vald";
+
+function norm(s) {
+  return String(s || "")
+    .toLowerCase()
+    .replace(/[,]/g, "")
+    .replace(/\s+/g, "")
+    .replace(/_swe|swe|fin|nor|den|ger/g, "")
+    .replace(/[^a-z0-9_]/g, "");
+}
+
+async function loadPhoto() {
+  try {
+    const res = await fetch(`${API_BASE}?sheet=${encodeURIComponent("Spelarfoton")}`);
+    const rows = await res.json();
+
+    const target = norm(rawName);
+    const match = rows.find(r => norm(r.Spelarnamn || r.Namn || r.PLAYER) === target);
+
+    const fallbackId = "1VAa79pJ-QbyeliY60autf914z6SBwmhp";
+    const driveId = match ? (match.DriveID || match.Foto || match.Bild) : fallbackId;
+
+    const img = document.getElementById("playerPhoto");
+    img.src = `https://drive.google.com/thumbnail?id=${driveId}&sz=w1000`;
+    img.onload = () => img.classList.add("loaded");
+  } catch (err) {
+    console.error("Foto-fel:", err);
+  }
+}
+
+async function loadStats() {
+  const out = document.getElementById("statsOutput");
+
+  if (!rawName) {
+    out.innerHTML = `<div class="no-stats">❌ Ingen spelare vald i URL:en (?player=)</div>`;
+    return;
   }
 
-  async function loadPhoto() {
-    try {
-      const res = await fetch(`${API_BASE}?sheet=${encodeURIComponent("Spelarfoton")}`);
-      const rows = await res.json();
+  try {
+    const res = await fetch(`${API_BASE}?player=${encodeURIComponent(rawName)}`);
+    const data = await res.json();
 
-      const target = norm(rawName);
-      const match = rows.find(r => norm(r.Spelarnamn || r.Namn || r.PLAYER) === target);
-
-      const fallbackId = "1VAa79pJ-QbyeliY60autf914z6SBwmhp";
-      const driveId = match ? (match.DriveID || match.Foto || match.Bild) : fallbackId;
-
-      const img = document.getElementById("playerPhoto");
-      img.src = `https://drive.google.com/thumbnail?id=${driveId}&sz=w1000`;
-      img.onload = () => img.classList.add("loaded");
-    } catch (err) {
-      console.error("Foto-fel:", err);
-    }
-  }
-
-  async function loadStats() {
-    const out = document.getElementById("statsOutput");
-
-    if (!rawName) {
-      out.innerHTML = `<div class="no-stats">❌ Ingen spelare vald i URL:en (?player=)</div>`;
+    if (data.error) {
+      out.innerHTML = `<div class="no-stats">❌ ${data.error}</div>`;
       return;
     }
 
-    try {
-      const res = await fetch(`${API_BASE}?player=${encodeURIComponent(rawName)}`);
-      const data = await res.json();
+    const isGoalie = data.__type === "goalie";
 
-      if (data.error) {
-        out.innerHTML = `<div class="no-stats">❌ ${data.error}</div>`;
-        return;
-      }
+    const skaterFields = [
+      ["TEAM", "Team"],
+      ["GP", "GP"],
+      ["G", "Mål"],
+      ["A", "Assist"],
+      ["PTS", "Poäng"],
+      ["PIM", "Utvisningsminuter"],
+    ];
 
-      const isGoalie = data.__type === "goalie";
+    const goalieFields = [
+      ["TEAM", "Team"],
+      ["GP", "GP"],
+      ["SA", "Skott mot"],
+      ["GA", "Insläppta mål"],
+      ["SV", "Räddningar"],
+      ["SVP", "Räddnings%"],
+      ["GAA", "GAA"],
+      ["SO", "Nollor"],
+    ];
 
-      const skaterFields = [
-        ["TEAM", "Team"],
-        ["GP", "GP"],
-        ["G", "Mål"],
-        ["A", "Assist"],
-        ["PTS", "Poäng"],
-        ["PIM", "Utvisningsminuter"],
-      ];
+    const fields = isGoalie ? goalieFields : skaterFields;
 
-      const goalieFields = [
-        ["TEAM", "Team"],
-        ["GP", "GP"],
-        ["SA", "Skott mot"],
-        ["GA", "Insläppta mål"],
-        ["SV", "Räddningar"],
-        ["SVP", "Räddnings%"],
-        ["GAA", "GAA"],
-        ["SO", "Nollor"],
-      ];
+    let html = `
+      <div class="stats-table">
+      <table>
+      <thead>
+        <tr><th>Stat</th><th>Värde</th></tr>
+      </thead>
+      <tbody>
+    `;
 
-      const fields = isGoalie ? goalieFields : skaterFields;
-
-      let html = `
-        <div class="stats-table">
-          <table>
-            <thead>
-              <tr><th>Stat</th><th>Värde</th></tr>
-            </thead>
-            <tbody>
-      `;
-
-      for (const [key, label] of fields) {
-        const val = data[key] ?? data[key.toUpperCase()] ?? "";
-        if (val === "") continue;
-        html += `<tr><td>${label}</td><td>${val}</td></tr>`;
-      }
-
-      html += `<tr><td>Hämtad från</td><td>${data.__sheet || "okänd flik"}</td></tr>`;
-      html += `</tbody></table></div>`;
-
-      out.innerHTML = html;
-    } catch (err) {
-      console.error("Stats-fel:", err);
-      out.innerHTML = `<div class="no-stats">⚠️ Fel vid hämtning av statistik</div>`;
+    for (const [key, label] of fields) {
+      const val = data[key] ?? data[key.toUpperCase()] ?? "";
+      if (val === "") continue;
+      html += `<tr><td>${label}</td><td>${val}</td></tr>`;
     }
-  }
 
-  loadPhoto();
-  loadStats();
+    html += `<tr><td>Hämtad från</td><td>${data.__sheet || "okänd flik"}</td></tr>`;
+    html += `</tbody></table></div>`;
+
+    out.innerHTML = html;
+
+  } catch (err) {
+    console.error("Stats-fel:", err);
+    out.innerHTML = `<div class="no-stats">⚠️ Fel vid hämtning av statistik</div>`;
+  }
+}
+
+loadPhoto();
+loadStats();
+
 </script>
 
 </body>
