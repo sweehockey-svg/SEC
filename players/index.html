@@ -33,9 +33,15 @@
 
     <!-- PANELEN DÄR SPELARDATA SKA VISAS -->
     <div class="tab-panel" style="max-width: 1100px; margin: 26px auto 0; text-align:center; padding:20px;">
-      <div id="playerName" style="font-size:1.6rem; font-weight:700; margin-bottom:20px;"></div>
-      <img id="playerPhoto" style="width:260px; border-radius:12px; margin-bottom:20px;" />
-      <div id="statsOutput"></div>
+      <div class="player-card" style="max-width:500px; margin:0 auto;">
+  <div id="playerPhotoWrapper" style="padding:0; margin-bottom:20px;">
+    <img id="playerPhoto" style="width:260px; border-radius:18px; box-shadow:0 0 30px rgba(0,0,0,0.6);" />
+  </div>
+  <div id="playerName" style="font-size:2rem; font-weight:800; margin-top:10px; margin-bottom:6px;"></div>
+  <div id="playerExtra" style="font-size:0.9rem; opacity:0.8; margin-bottom:20px;"></div>
+  <h2 style="margin-top:30px; margin-bottom:10px; font-size:1.2rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--sec-gold-soft);">Statistik – Svenska eHockey Cupen</h2>
+  <div id="statsOutput"></div>
+</div>
     </div>
 
     <!-- FOOTER -->
