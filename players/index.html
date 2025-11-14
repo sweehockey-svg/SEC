@@ -4,212 +4,195 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Player Stats</title>
-<style>body{
-      margin:0;
-      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
-      background:#000;
-      color:#fff;
-      display:flex;
-      justify-content:center;
-      width:100%;
-    }
-    #sec-page{
-      width:100%;
-      max-width:1200px;
-      padding:20px 12px 80px;
-      margin:auto;
-      text-align:center;
-    }
+<style>
+  body{
+    margin:0;
+    font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+    background:#000;
+    color:#fff;
+    display:flex;
+    justify-content:center;
+    width:100%;
+  }
 
-    /* HEADER */
-    .sfc-header{
-      margin-top:12px;
-      border-radius:22px;
-      padding:26px 16px 22px;
-      background:radial-gradient(circle at top,#151b3f 0,#050614 55%,#02030a 100%);
-      border:1px solid rgba(214,177,95,0.6);
-      text-align:center;
-      box-shadow:0 20px 60px rgba(0,0,0,0.95);
-    }
-    .sfc-logo{width:165px;}
-    .sfc-title{
-      font-weight:800;
-      font-size:1.7rem;
-      letter-spacing:.18em;
-      text-transform:uppercase;
-      color:#fff;
-      margin-top:4px;
-    }
-    .sfc-title strong{color:#f0d58b;}
-    .sfc-divider{
-      width:180px;
-      height:3px;
-      border-radius:999px;
-      margin:18px auto 0;
-      background:linear-gradient(90deg,transparent,#f0d58b,transparent);
-    }
+  /* CENTRERA SIDAN */
+  #sec-page{
+    width:100%;
+    max-width:900px;
+    padding:20px 12px 80px;
+    margin:auto;
+    text-align:center;
+  }
 
-    /* TABS */
-    .cup-tabs{
-      margin-top:20px;
-      border-radius:999px;
-      background:#060715;
-      border:1px solid rgba(214,177,95,0.3);
-      padding:7px 10px;
-      display:flex;
-      justify-content:center;
-    }
-    .cup-tabs .tab{
-      border-radius:999px;
-      border:none;
-      background:linear-gradient(90deg,#d6b15f,#f0d58b);
-      color:#181933;
-      font-size:.8rem;
-      padding:9px 22px;
-      text-transform:uppercase;
-      font-weight:600;
-    }
+  /* HEADER */
+  .sfc-header{
+    margin-top:12px;
+    border-radius:22px;
+    padding:26px 16px 22px;
+    background:radial-gradient(circle at top,#151b3f 0,#050614 55%,#02030a 100%);
+    border:1px solid rgba(214,177,95,0.6);
+    text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,0.95);
+  }
+  .sfc-logo{width:165px;}
+  .sfc-title{
+    font-weight:800;
+    font-size:1.7rem;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:#fff;
+    margin-top:4px;
+  }
+  .sfc-title strong{color:#f0d58b;}
+  .sfc-divider{
+    width:180px;
+    height:3px;
+    border-radius:999px;
+    margin:18px auto 0;
+    background:linear-gradient(90deg,transparent,#f0d58b,transparent);
+  }
 
-    /* PANEL */
-    .tab-panel{
-      margin-top:26px;
-      border-radius:22px;
-      background:linear-gradient(180deg,#060715,#02030a 60%,#000 100%);
-      border:1px solid rgba(255,255,255,0.06);
-      padding:24px 20px 26px;
-      box-shadow:0 18px 42px rgba(0,0,0,0.95);
-    }
+  /* TABS */
+  .cup-tabs{
+    margin-top:20px;
+    border-radius:999px;
+    background:#060715;
+    border:1px solid rgba(214,177,95,0.3);
+    padding:7px 10px;
+    display:flex;
+    justify-content:center;
+  }
+  .cup-tabs .tab{
+    border-radius:999px;
+    border:none;
+    background:linear-gradient(90deg,#d6b15f,#f0d58b);
+    color:#181933;
+    font-size:.8rem;
+    padding:9px 22px;
+    text-transform:uppercase;
+    font-weight:600;
+  }
 
-    /* SPELARKORT */
-    .player-hero{
-      text-align:center;
-      padding:20px 12px 10px;
-      position:relative;
-      animation:heroFade .8s ease-out;
-    }
-    .player-hero::before{
-      content:"";
-      position:absolute;
-      top:50%;
-      left:50%;
-      transform:translate(-50%,-50%);
-      width:320px;
-      height:320px;
-      background:radial-gradient(circle,rgba(214,177,95,0.22),transparent 70%);
-      filter:blur(40px);
-      z-index:0;
-      opacity:.9;
-    }
-    .player-photo{
-      position:relative;
-      z-index:1;
-      width:240px;
-      border-radius:20px;
-      border:2px solid #d6b15f;
-      box-shadow:0 0 25px rgba(214,177,95,0.25),0 12px 40px rgba(0,0,0,0.9);
-      transition:transform .4s ease,box-shadow .4s ease;
-    }
-    .player-photo:hover{
-      transform:scale(1.05);
-      box-shadow:0 0 35px rgba(214,177,95,0.35),0 18px 50px rgba(0,0,0,0.95);
-    }
-    .player-nick{
-      margin:22px 0 4px;
-      font-size:2.6rem;
-      font-weight:800;
-      letter-spacing:.05em;
-      background:linear-gradient(90deg,#ffffff,#f0d58b);
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-    }
+  /* PANEL */
+  .tab-panel{
+    margin-top:26px;
+    border-radius:22px;
+    background:linear-gradient(180deg,#060715,#02030a 60%,#000 100%);
+    border:1px solid rgba(255,255,255,0.06);
+    padding:24px 20px 26px;
+    box-shadow:0 18px 42px rgba(0,0,0,0.95);
+  }
 
-    /* STATS TEXT */
-    .player-stats{
-      margin-top:40px;
-      text-align:center;
-    }
-    .player-stats-heading{
-      font-size:1.4rem;
-      font-weight:700;
-      color:#f0d58b;
-      text-transform:uppercase;
-      letter-spacing:.05em;
-      margin-bottom:8px;
-    }
-    .player-stats-intro{
-      color:#ccc;
-      font-size:.95rem;
-      max-width:680px;
-      margin:0 auto 18px;
-      line-height:1.6;
-    }
+  /* SPELARKORT */
+  .player-hero{
+    text-align:center;
+    padding:20px 12px 10px;
+    position:relative;
+    animation:heroFade .8s ease-out;
+  }
+  .player-hero::before{
+    content:"";
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    width:320px;
+    height:320px;
+    background:radial-gradient(circle,rgba(214,177,95,0.22),transparent 70%);
+    filter:blur(40px);
+    z-index:0;
+    opacity:.9;
+  }
+  .player-photo{
+    position:relative;
+    z-index:1;
+    width:240px;
+    border-radius:20px;
+    border:2px solid #d6b15f;
+    box-shadow:0 0 25px rgba(214,177,95,0.25),0 12px 40px rgba(0,0,0,0.9);
+  }
+  .player-nick{
+    margin:22px 0 4px;
+    font-size:2.6rem;
+    font-weight:800;
+    letter-spacing:.05em;
+    background:linear-gradient(90deg,#ffffff,#f0d58b);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
 
-    /* TABLE */
-    .goalie-wrap-inner{
-      background:#101526;
-      border-radius:12px;
-      overflow-x:auto;
-      box-shadow:0 6px 18px rgba(0,0,0,.3);
-      padding:4px;
-      margin-top:16px;
-    }
-    #goalie-stats table{
-      width:100%;
-      min-width:700px;
-      border-collapse:collapse;
-      font:14px/1.4 Inter,system-ui,Arial,sans-serif;
-      color:#fff;
-    }
-    #goalie-stats thead th{
-      background:#141b33;
-      color:#d6b15f;
-      padding:10px 8px;
-      border-bottom:2px solid #222b4f;
-      text-align:center;
-      font-weight:700;
-      text-transform:uppercase;
-      letter-spacing:.3px;
-      white-space:nowrap;
-    }
-    #goalie-stats tbody td{
-      padding:10px 8px;
-      border-bottom:1px solid rgba(255,255,255,.08);
-      text-align:center;
-      white-space:nowrap;
-    }
+  /* STATS TEXT */
+  .player-stats{
+    margin-top:40px;
+    text-align:center;
+  }
+  .player-stats-heading{
+    font-size:1.4rem;
+    font-weight:700;
+    color:#f0d58b;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    margin-bottom:8px;
+  }
 
-    /* FOOTER */
-    footer{
-      margin-top:60px;
-      text-align:center;
-      border-top:1px solid rgba(214,177,95,0.15);
-      padding:30px 0 0;
-      font-size:.88rem;
-      color:#ddd;
-    }
-    footer span{color:#f0d58b;font-weight:600;}
+  /* TABLE */
+  .goalie-wrap-inner{
+    background:#101526;
+    border-radius:12px;
+    overflow-x:auto;
+    box-shadow:0 6px 18px rgba(0,0,0,.3);
+    padding:4px;
+    margin-top:16px;
+  }
+  #goalie-stats table{
+    width:100%;
+    min-width:700px;
+    border-collapse:collapse;
+    color:#fff;
+  }
+  #goalie-stats thead th{
+    background:#141b33;
+    color:#d6b15f;
+    padding:10px 8px;
+    border-bottom:2px solid #222b4f;
+    text-align:center;
+    white-space:nowrap;
+  }
+  #goalie-stats tbody td{
+    padding:10px 8px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    text-align:center;
+    white-space:nowrap;
+  }
 
-    @keyframes heroFade{
-      from{opacity:0;transform:translateY(10px);}    
-      to{opacity:1;transform:translateY(0);}    
-    }
+  /* FOOTER */
+  footer{
+    margin-top:60px;
+    text-align:center;
+    border-top:1px solid rgba(214,177,95,0.15);
+    padding:30px 0 0;
+    font-size:.88rem;
+    color:#ddd;
+  }
+  footer span{color:#f0d58b;font-weight:600;}
 
-    @media(max-width:600px){
-      .tab-panel{padding:20px 14px 24px;}
-      .player-photo{width:210px;}
-    }</style>
+  @keyframes heroFade{
+    from{opacity:0;transform:translateY(10px);}    
+    to{opacity:1;transform:translateY(0);}    
+  }
+</style>
 </head>
 <body>
 
 <div id="sec-page">
   <div class="sfc-header">
-    <img src="https://drive.google.com/thumbnail?id=1QybW_Uw8HO0OXo8vwQFD-zrrr-ifFrC9&sz=w1000" class="sfc-logo" alt="SEC Logo">
+    <img src="https://drive.google.com/thumbnail?id=1QybW_Uw8HO0OXo8vwQFD-zrrr-ifFrC9&sz=w1000" class="sfc-logo">
     <div class="sfc-title">🏆 Svenska eHockey <strong>Cupen</strong> 🏒</div>
     <div class="sfc-divider"></div>
   </div>
 
   <nav class="cup-tabs">
-    <button class="tab" type="button">Spelarkort</button>
+    <button class="tab">Spelarkort</button>
   </nav>
 
   <div class="tab-panel">
@@ -220,24 +203,16 @@
 
     <section class="player-stats">
       <h2 class="player-stats-heading">Statistik – Svenska eHockey Cupen</h2>
-      <p class="player-stats-intro">
-        
-      </p>
-      <div class="goalie-wrap-inner"><div id="statsOutput"></div></div>
+
+      <div class="goalie-wrap-inner">
+        <div id="statsOutput"></div>
+      </div>
     </section>
   </div>
 
   <footer>
     © 2026 <span>Svenska eHockey Cupen</span> | Design & utveckling av <span>SWEEHOCKEY</span>
   </footer>
-</div>
-
-  <h2 style="margin-top:10px;color:#f5d86e;font-size:1.4rem;letter-spacing:1px;"></h2>
-  <p style="color:#ccc;max-width:600px;margin:10px auto 25px;font-size:0.95rem;line-height:1.5;">
-    
-  </p>
-
-  <div id="statsOutput"></div>
 </div>
 
 <script>
@@ -249,103 +224,3 @@
 
   playerNameEl.textContent = rawName || "Ingen spelare vald";
 
-  function norm(s) {
-    return String(s || "")
-      .toLowerCase()
-      .replace(/[,]/g, "")
-      .replace(/\s+/g, "")
-      .replace(/_swe|swe|fin|nor|den|ger/g, "")
-      .replace(/[^a-z0-9_]/g, "");
-  }
-
-  async function loadPhoto() {
-    try {
-      const res = await fetch(`${API_BASE}?sheet=${encodeURIComponent("Spelarfoton")}`);
-      const rows = await res.json();
-
-      const target = norm(rawName);
-      const match = rows.find(r => norm(r.Spelarnamn || r.Namn || r.PLAYER) === target);
-
-      const fallbackId = "1VAa79pJ-QbyeliY60autf914z6SBwmhp";
-      const driveId = match ? (match.DriveID || match.Foto || match.Bild) : fallbackId;
-
-      const img = document.getElementById("playerPhoto");
-      img.src = `https://drive.google.com/thumbnail?id=${driveId}&sz=w1000`;
-      img.onload = () => img.classList.add("loaded");
-    } catch (err) {
-      console.error("Foto-fel:", err);
-    }
-  }
-
-  async function loadStats() {
-    const out = document.getElementById("statsOutput");
-
-    if (!rawName) {
-      out.innerHTML = `<div class="no-stats">❌ Ingen spelare vald i URL:en (?player=)</div>`;
-      return;
-    }
-
-    try {
-      const res = await fetch(`${API_BASE}?player=${encodeURIComponent(rawName)}`);
-      const data = await res.json();
-
-      if (data.error) {
-        out.innerHTML = `<div class="no-stats">❌ ${data.error}</div>`;
-        return;
-      }
-
-      const isGoalie = data.__type === "goalie";
-
-      const skaterFields = [
-        ["TEAM", "Team"],
-        ["GP", "GP"],
-        ["G", "Mål"],
-        ["A", "Assist"],
-        ["PTS", "Poäng"],
-        ["PIM", "Utvisningsminuter"],
-      ];
-
-      const goalieFields = [
-        ["TEAM", "Team"],
-        ["GP", "GP"],
-        ["SA", "Skott mot"],
-        ["GA", "Insläppta mål"],
-        ["SV", "Räddningar"],
-        ["SVP", "Räddnings%"],
-        ["GAA", "GAA"],
-        ["SO", "Nollor"],
-      ];
-
-      const fields = isGoalie ? goalieFields : skaterFields;
-
-      let html = `
-        <div class="stats-table">
-          <table>
-            <thead>
-              <tr><th>Stat</th><th>Värde</th></tr>
-            </thead>
-            <tbody>
-      `;
-
-      for (const [key, label] of fields) {
-        const val = data[key] ?? data[key.toUpperCase()] ?? "";
-        if (val === "") continue;
-        html += `<tr><td>${label}</td><td>${val}</td></tr>`;
-      }
-
-      html += `<tr><td>Hämtad från</td><td>${data.__sheet || "okänd flik"}</td></tr>`;
-      html += `</tbody></table></div>`;
-
-      out.innerHTML = html;
-    } catch (err) {
-      console.error("Stats-fel:", err);
-      out.innerHTML = `<div class="no-stats">⚠️ Fel vid hämtning av statistik</div>`;
-    }
-  }
-
-  loadPhoto();
-  loadStats();
-</script>
-
-</body>
-</html>
