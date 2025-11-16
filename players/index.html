@@ -354,15 +354,14 @@
     <div class="player-card">
       <img id="playerPhoto" alt="Spelarbild">
       <div id="playerName">Ingen spelare vald</div>
-      <div class="player-subtitle">Statistik per turnering</div>
       <div id="statsOutput"></div>
     </div>
 
     <!-- SÖKRUTA CENTRERAD -->
     <div class="player-search-centered">
-      <div class="search-title">Sök spelare</div>
+      <div class="search-title">Sök</div>
       <div class="search-wrapper">
-        <input id="playerSearch" placeholder="Ex: nickname, förnamn efternamn…">
+        <input id="playerSearch" placeholder="Sök PSN GT">
         <div id="searchResults"></div>
       </div>
     </div>
@@ -413,7 +412,7 @@ inp.addEventListener("input", () => {
 
   box.innerHTML = results.length
     ? results.map(p => `<div class="search-item" onclick="go('${p.PLAYER}')">${p.PLAYER}</div>`).join("")
-    : `<div class="search-item">Inga träffar</div>`;
+    : `<div class="search-item">Försök igen om några sekunder</div>`;
 
   box.style.display = "block";
 });
@@ -531,9 +530,15 @@ async function loadStats() {
   let data = await res.json();
   if (!Array.isArray(data)) data = [data];
 
-  /* -----------------------------------------------------------------------
-      🟦 NAMN + NATIONALITET
-  ----------------------------------------------------------------------- */
+  // ------------------------------
+  //   Behåll original TURNERING
+  //   men använd rensad version till bio
+  // ------------------------------
+  const originalData = data.map(r => ({ ...r }));  // kopia för tabellen
+
+  data.forEach(r => r.TURNERING = cleanTournament(r.TURNERING)); // kompromiss för bio
+
+  // ---- Nationalitet & namn ----
   let rawName = data[0].GOALIES || data[0].PLAYER || player;
   rawName = rawName.toString();
 
@@ -548,14 +553,7 @@ async function loadStats() {
     nationality = translateNationality(nationalityCode);
   }
 
-  /* -----------------------------------------------------------------------
-      🟦 Rensa turnering (merge G/S)
-  ----------------------------------------------------------------------- */
-  data.forEach(r => r.TURNERING = cleanTournament(r.TURNERING));
-
-  /* -----------------------------------------------------------------------
-      🟦 Räkna cuper utan dubletter
-  ----------------------------------------------------------------------- */
+  // ---- Cuper ----
   let uniqueCups = [...new Set(data.map(r => r.TURNERING))].sort((a, b) => {
     return Number(a.replace("SEC", "")) - Number(b.replace("SEC", ""));
   });
@@ -563,25 +561,13 @@ async function loadStats() {
   let firstCup = uniqueCups[0];
   let lastCup  = uniqueCups[uniqueCups.length - 1];
 
-  /* -----------------------------------------------------------------------
-      🟦 Första och sista lag
-  ----------------------------------------------------------------------- */
-  let firstTeam = teamName(data.find(r => r.TURNERING === firstCup).TEAM);
-  let lastTeam  = teamName(data.find(r => r.TURNERING === lastCup).TEAM);
+  let firstTeam = teamName(originalData.find(r => cleanTournament(r.TURNERING) === firstCup).TEAM);
+  let lastTeam  = teamName(originalData.find(r => cleanTournament(r.TURNERING) === lastCup).TEAM);
 
-  /* -----------------------------------------------------------------------
-      🟦 Antal unika lag
-  ----------------------------------------------------------------------- */
-  let teamCount = new Set(data.map(r => r.TEAM)).size;
+  let teamCount = new Set(originalData.map(r => r.TEAM)).size;
+  let totalGames = originalData.reduce((sum, r) => sum + Number(r.GP || 0), 0);
 
-  /* -----------------------------------------------------------------------
-      🟦 Antal matcher
-  ----------------------------------------------------------------------- */
-  let totalGames = data.reduce((sum, r) => sum + Number(r.GP || 0), 0);
-
-  /* -----------------------------------------------------------------------
-      🟦 BIO TEXT
-  ----------------------------------------------------------------------- */
+  // ---- BIO ----
   const bioText = `
     <div style="margin-top:10px; margin-bottom:20px; color:#ddd;
                 font-size:0.95rem; line-height:1.55;">
@@ -595,36 +581,64 @@ async function loadStats() {
     </div>
   `;
 
-  /* -----------------------------------------------------------------------
-      🟦 STATISTIKTABELL
-  ----------------------------------------------------------------------- */
-  const isGoalie = ("SA" in data[0]) && ("SV" in data[0]);
+  // ---- Tabell ----
+  // Separera skater och goalie stats
+const skaterRows = originalData.filter(r => !("SA" in r && "SV" in r));
+const goalieRows = originalData.filter(r => ("SA" in r && "SV" in r));
 
-  let html = bioText + `
-  <div class="stats-table">
-    <table>
-      <thead>
+let html = bioText;
+
+// ====================================
+// 🟦 Utespelare TABELL (om finns)
+// ====================================
+if (skaterRows.length > 0) {
+  html += `
+  <h3 style="margin-top:25px; color:#f5d86e;">Utespelare</h3>
+  <div class="stats-table"><table>
+  <thead>
+    <tr>
+      <th>TURNERING</th><th>TEAM</th><th>GP</th><th>G</th>
+      <th>A</th><th>PTS</th><th>PIM</th>
+    </tr>
+  </thead>
+  <tbody>
   `;
 
-  if (isGoalie) {
+  skaterRows.forEach(r => {
     html += `
       <tr>
-        <th>TURNERING</th><th>TEAM</th><th>GP</th><th>SA</th><th>GA</th>
-        <th>SV</th><th>GAA</th><th>SV%</th><th>SO</th>
+        <td>${r.TURNERING}</td>
+        <td>${teamName(r.TEAM)}</td>
+        <td>${r.GP}</td>
+        <td>${r.G}</td>
+        <td>${r.A}</td>
+        <td>${r.PTS}</td>
+        <td>${r.PIM}</td>
       </tr>`;
-  } else {
+  });
+
+  html += `</tbody></table></div>`;
+}
+
+// ====================================
+// 🟦 Målvakt TABELL (om finns)
+// ====================================
+if (goalieRows.length > 0) {
+  html += `
+  <h3 style="margin-top:25px; color:#f5d86e;">Målvakt</h3>
+  <div class="stats-table"><table>
+  <thead>
+    <tr>
+      <th>TURNERING</th><th>TEAM</th><th>GP</th>
+      <th>SA</th><th>GA</th><th>SV</th>
+      <th>GAA</th><th>SV%</th><th>SO</th>
+    </tr>
+  </thead>
+  <tbody>
+  `;
+
+  goalieRows.forEach(r => {
     html += `
-      <tr>
-        <th>TURNERING</th><th>TEAM</th><th>GP</th><th>G</th>
-        <th>A</th><th>PTS</th><th>PIM</th>
-      </tr>`;
-  }
-
-  html += `</thead><tbody>`;
-
-  data.forEach(r => {
-    if (isGoalie) {
-      html += `
       <tr>
         <td>${r.TURNERING}</td>
         <td>${teamName(r.TEAM)}</td>
@@ -636,22 +650,13 @@ async function loadStats() {
         <td>${formatSVP(r.SVP)}</td>
         <td>${r.SO}</td>
       </tr>`;
-    } else {
-      html += `
-      <tr>
-        <td>${r.TURNERING}</td>
-        <td>${teamName(r.TEAM)}</td>
-        <td>${r.GP}</td>
-        <td>${r.G}</td>
-        <td>${r.A}</td>
-        <td>${r.PTS}</td>
-        <td>${r.PIM}</td>
-      </tr>`;
-    }
   });
 
   html += `</tbody></table></div>`;
-  out.innerHTML = html;
+}
+
+out.innerHTML = html;
+
 }
 
 /* INITIERA */
