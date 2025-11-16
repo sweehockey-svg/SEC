@@ -821,6 +821,15 @@ html, body {
     <div class="team-view" style="max-width:980px;margin:auto"></div>
     <script>
     (function(){
+      const panel = document.getElementById("team-modo");
+      if (!panel) return;
+      const host = panel.querySelector(".team-view");
+      const tabs = panel.querySelectorAll(".stat-tabs .tab");
+      const API = "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec";
+      const TEAM = "MOD";
+      const TEAM_NAME = "Modo Hockey";
+
+      // --- Tabellbyggare ---
 const makeTable = (rows, type) => {
   const table = document.createElement("table");
   const thead = document.createElement("thead");
@@ -840,15 +849,12 @@ const makeTable = (rows, type) => {
   rows.forEach((r, i) => {
     const tr = document.createElement("tr");
 
-    // Ta rätt fält
-    const rawName = (type === "goalie" ? r.goalies : r.players || r.player || "").trim();
+    // Namn
+    const name = (type === "goalie" ? r.goalies : r.players || r.player || "").trim();
 
-    // Rensa namn → ta bort landskod och allt efter komma
-    const cleanName = rawName.split(",")[0].trim();
-
-    // Klickbar länk med rensat namn
+    // Klickbar länk
     const clickableName =
-      `<a href="players/?player=${encodeURIComponent(cleanName)}" class="player-link">${cleanName}</a>`;
+      `<a href="players/?player=${encodeURIComponent(name)}" class="player-link">${name}</a>`;
 
     if (type === "goalie") {
       tr.innerHTML = `
@@ -880,7 +886,6 @@ const makeTable = (rows, type) => {
   table.append(thead, tbody);
   return table;
 };
-
 
 
       // --- Gruppspel & Slutspel ---
