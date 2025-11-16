@@ -339,11 +339,11 @@
   </div>
 
   <!-- HEADER -->
-  <a href="https://sweehockey-svg.github.io/SEC" style="text-decoration:none; color:inherit;">
+  <a href="index.html" style="text-decoration:none; color:inherit;">
     <div class="sfc-header">
         <img class="sfc-logo" src="https://drive.google.com/thumbnail?id=1QybW_Uw8HO0OXo8vwQFD-zrrr-ifFrC9&sz=w1000" alt="SEC Logo">
         <div class="sfc-title">
-          🏆 Svenska eHockey <strong>Cupen</strong> 🏒
+          🏆 Svenska eHockey <strong>Cupen</strong> 19.5 🏒
         </div>
         <div class="sfc-divider"></div>
     </div>
@@ -470,7 +470,54 @@ function formatSVP(raw) {
   return (num * 100).toFixed(1) + "%";
 }
 
-/* Statistik */
+/* =======================================================================================
+   NATIONALITETER
+======================================================================================= */
+function translateNationality(code) {
+  if (!code) return "okänd nation";
+
+  const map = {
+    "SWE": "Svensk",
+    "FIN": "Finsk",
+    "NOR": "Norsk",
+    "DEN": "Dansk",
+    "DK": "Dansk",
+    "GER": "Tysk",
+    "DE": "Tysk",
+    "FRA": "Fransk",
+    "CZE": "Tjeckisk",
+    "SVK": "Slovakisk",
+    "SUI": "Schweizisk",
+    "CHE": "Schweizisk",
+    "AUT": "Österrikisk",
+    "LAT": "Lettisk",
+    "EST": "Estnisk",
+    "LTU": "Litauisk",
+    "POL": "Polsk",
+    "NLD": "Nederländsk",
+    "NED": "Nederländsk",
+    "GBR": "Brittisk",
+    "ENG": "Engelsk"
+  };
+
+  code = code.trim().toUpperCase();
+  return map[code] || code;
+}
+
+/* =======================================================================================
+   Rensa turnering (tar bort G och S helt)
+======================================================================================= */
+function cleanTournament(t) {
+  if (!t) return t;
+  return t.replace(/\bG\b/g, "")
+          .replace(/\bS\b/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+}
+
+/* =======================================================================================
+   LADDAR SPELARSTATISTIK + BYGGER BIO
+======================================================================================= */
 async function loadStats() {
   const out = document.getElementById("statsOutput");
 
@@ -479,19 +526,81 @@ async function loadStats() {
     return;
   }
 
+  // 🔵 Hämta statistik
   const res = await fetch(API + "?player=" + encodeURIComponent(player));
   let data = await res.json();
-
-  if (data.error) {
-    out.innerHTML = `<div class="no-stats">${data.error}</div>`;
-    return;
-  }
-
   if (!Array.isArray(data)) data = [data];
 
+  /* -----------------------------------------------------------------------
+      🟦 NAMN + NATIONALITET
+  ----------------------------------------------------------------------- */
+  let rawName = data[0].GOALIES || data[0].PLAYER || player;
+  rawName = rawName.toString();
+
+  let cleanName = player;
+  let nationalityCode = "";
+  let nationality = "okänd nation";
+
+  if (rawName.includes(",")) {
+    const parts = rawName.split(",");
+    cleanName = parts[0].trim();
+    nationalityCode = parts[1].replace(/[^A-Z]/gi, "").trim();
+    nationality = translateNationality(nationalityCode);
+  }
+
+  /* -----------------------------------------------------------------------
+      🟦 Rensa turnering (merge G/S)
+  ----------------------------------------------------------------------- */
+  data.forEach(r => r.TURNERING = cleanTournament(r.TURNERING));
+
+  /* -----------------------------------------------------------------------
+      🟦 Räkna cuper utan dubletter
+  ----------------------------------------------------------------------- */
+  let uniqueCups = [...new Set(data.map(r => r.TURNERING))].sort((a, b) => {
+    return Number(a.replace("SEC", "")) - Number(b.replace("SEC", ""));
+  });
+
+  let firstCup = uniqueCups[0];
+  let lastCup  = uniqueCups[uniqueCups.length - 1];
+
+  /* -----------------------------------------------------------------------
+      🟦 Första och sista lag
+  ----------------------------------------------------------------------- */
+  let firstTeam = teamName(data.find(r => r.TURNERING === firstCup).TEAM);
+  let lastTeam  = teamName(data.find(r => r.TURNERING === lastCup).TEAM);
+
+  /* -----------------------------------------------------------------------
+      🟦 Antal unika lag
+  ----------------------------------------------------------------------- */
+  let teamCount = new Set(data.map(r => r.TEAM)).size;
+
+  /* -----------------------------------------------------------------------
+      🟦 Antal matcher
+  ----------------------------------------------------------------------- */
+  let totalGames = data.reduce((sum, r) => sum + Number(r.GP || 0), 0);
+
+  /* -----------------------------------------------------------------------
+      🟦 BIO TEXT
+  ----------------------------------------------------------------------- */
+  const bioText = `
+    <div style="margin-top:10px; margin-bottom:20px; color:#ddd;
+                font-size:0.95rem; line-height:1.55;">
+      <strong>${cleanName}</strong> är en <strong>${nationality}</strong> eHockey-spelare
+      som gjorde sitt första framträdande i <strong>${firstCup}</strong>, där han
+      representerade <strong>${firstTeam}</strong>.
+      Sedan dess har han deltagit i ytterligare <strong>${uniqueCups.length - 1}</strong> cuper 
+      och representerat totalt <strong>${teamCount}</strong> olika lag,
+      senast i <strong>${lastCup}</strong> för <strong>${lastTeam}</strong>.
+      Totalt har han spelat <strong>${totalGames}</strong> matcher i SEC.
+    </div>
+  `;
+
+  /* -----------------------------------------------------------------------
+      🟦 STATISTIKTABELL
+  ----------------------------------------------------------------------- */
   const isGoalie = ("SA" in data[0]) && ("SV" in data[0]);
 
-  let html = `
+  let html = bioText + `
   <div class="stats-table">
     <table>
       <thead>
@@ -500,12 +609,14 @@ async function loadStats() {
   if (isGoalie) {
     html += `
       <tr>
-        <th>TURNERING</th><th>TEAM</th><th>GP</th><th>SA</th><th>GA</th><th>SV</th><th>GAA</th><th>SV%</th><th>SO</th>
+        <th>TURNERING</th><th>TEAM</th><th>GP</th><th>SA</th><th>GA</th>
+        <th>SV</th><th>GAA</th><th>SV%</th><th>SO</th>
       </tr>`;
   } else {
     html += `
       <tr>
-        <th>TURNERING</th><th>TEAM</th><th>GP</th><th>G</th><th>A</th><th>PTS</th><th>PIM</th>
+        <th>TURNERING</th><th>TEAM</th><th>GP</th><th>G</th>
+        <th>A</th><th>PTS</th><th>PIM</th>
       </tr>`;
   }
 
@@ -543,7 +654,7 @@ async function loadStats() {
   out.innerHTML = html;
 }
 
-/* Init */
+/* INITIERA */
 loadPhoto();
 loadStats();
 </script>
