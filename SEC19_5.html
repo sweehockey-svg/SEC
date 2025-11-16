@@ -834,14 +834,19 @@ const makeTable = (rows, type) => {
   const table = document.createElement("table");
   const thead = document.createElement("thead");
 
+  // Huvudrad
   if (type === "goalie") {
-    thead.innerHTML = `<tr>
-      <th>#</th><th>Goalie</th><th>GP</th><th>SA</th><th>GA</th><th>SV</th><th>GAA</th><th>SV%</th><th>SO</th>
-    </tr>`;
+    thead.innerHTML = `
+      <tr>
+        <th>#</th><th>Goalie</th><th>GP</th><th>SA</th><th>GA</th>
+        <th>SV</th><th>GAA</th><th>SV%</th><th>SO</th>
+      </tr>`;
   } else {
-    thead.innerHTML = `<tr>
-      <th>#</th><th>Player</th><th>GP</th><th>G</th><th>A</th><th>PTS</th><th>PIM</th>
-    </tr>`;
+    thead.innerHTML = `
+      <tr>
+        <th>#</th><th>Player</th><th>GP</th><th>G</th>
+        <th>A</th><th>PTS</th><th>PIM</th>
+      </tr>`;
   }
 
   const tbody = document.createElement("tbody");
@@ -849,17 +854,24 @@ const makeTable = (rows, type) => {
   rows.forEach((r, i) => {
     const tr = document.createElement("tr");
 
-    // Namn
-    const name = (type === "goalie" ? r.goalies : r.players || r.player || "").trim();
+    // Hämta namn från rätt kolumn
+    let rawName =
+      (type === "goalie" ? r.goalies : r.players || r.player || "")
+      ?.toString()
+      ?.trim() || "";
 
-    // Klickbar länk
-    const clickableName =
-      `<a href="players/?player=${encodeURIComponent(name)}" class="player-link">${name}</a>`;
+    // Rensa namn: ta bort allt efter första kommatecken
+    let cleanName = rawName.split(",")[0].trim();
+
+    // Om namnet ändå blev tomt → skriv ut originalet och skippa länken
+    let nameHTML = cleanName
+      ? `<a href="players/?player=${encodeURIComponent(cleanName)}" class="player-link">${cleanName}</a>`
+      : rawName;
 
     if (type === "goalie") {
       tr.innerHTML = `
         <td>${i + 1}</td>
-        <td>${clickableName}</td>
+        <td>${nameHTML}</td>
         <td>${r.gp || ""}</td>
         <td>${r.sa || ""}</td>
         <td>${r.ga || ""}</td>
@@ -871,7 +883,7 @@ const makeTable = (rows, type) => {
     } else {
       tr.innerHTML = `
         <td>${i + 1}</td>
-        <td>${clickableName}</td>
+        <td>${nameHTML}</td>
         <td>${r.gp || ""}</td>
         <td>${r.g || ""}</td>
         <td>${r.a || ""}</td>
