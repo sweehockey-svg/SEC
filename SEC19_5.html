@@ -1025,24 +1025,74 @@ const makeTable = (rows, type) => {
 
       // --- Tabellbyggare ---
       const makeTable = (rows, type) => {
-        const table = document.createElement("table");
-        const thead = document.createElement("thead");
-        if (type === "goalie") {
-          thead.innerHTML = `<tr><th>#</th><th>Goalie</th><th>GP</th><th>SA</th><th>GA</th><th>SV</th><th>GAA</th><th>SV%</th><th>SO</th></tr>`;
-        } else {
-          thead.innerHTML = `<tr><th>#</th><th>Player</th><th>GP</th><th>G</th><th>A</th><th>PTS</th><th>PIM</th></tr>`;
-        }
-        const tbody = document.createElement("tbody");
-        rows.forEach((r, i) => {
-          if (type === "goalie") {
-            tbody.innerHTML += `<tr><td>${i+1}</td><td>${r.goalies||""}</td><td>${r.gp||""}</td><td>${r.sa||""}</td><td>${r.ga||""}</td><td>${r.sv||""}</td><td>${r.gaa||""}</td><td>${r.svp||""}</td><td>${r.so||""}</td></tr>`;
-          } else {
-            tbody.innerHTML += `<tr><td>${i+1}</td><td>${r.players||r.player||""}</td><td>${r.gp||""}</td><td>${r.g||""}</td><td>${r.a||""}</td><td>${r.pts||""}</td><td>${r.pim||""}</td></tr>`;
-          }
-        });
-        table.append(thead, tbody);
-        return table;
-      };
+  const table = document.createElement("table");
+  const thead = document.createElement("thead");
+
+  // Huvudrad
+  if (type === "goalie") {
+    thead.innerHTML = `
+      <tr>
+        <th>#</th><th>Goalie</th><th>GP</th><th>SA</th><th>GA</th>
+        <th>SV</th><th>GAA</th><th>SV%</th><th>SO</th>
+      </tr>`;
+  } else {
+    thead.innerHTML = `
+      <tr>
+        <th>#</th><th>Player</th><th>GP</th><th>G</th>
+        <th>A</th><th>PTS</th><th>PIM</th>
+      </tr>`;
+  }
+
+  const tbody = document.createElement("tbody");
+
+  rows.forEach((r, i) => {
+    const tr = document.createElement("tr");
+
+    // Hämta namn från rätt kolumn
+    let rawName =
+      (type === "goalie" ? r.goalies : r.players || r.player || "")
+      ?.toString()
+      ?.trim() || "";
+
+    // Rensa namn: ta bort allt efter första kommatecken
+    let cleanName = rawName.split(",")[0].trim();
+
+    // Om namnet ändå blev tomt → skriv ut originalet och skippa länken
+    let nameHTML = cleanName
+      ? `<a href="players/?player=${encodeURIComponent(cleanName)}" class="player-link">${cleanName}</a>`
+      : rawName;
+
+    if (type === "goalie") {
+      tr.innerHTML = `
+        <td>${i + 1}</td>
+        <td>${nameHTML}</td>
+        <td>${r.gp || ""}</td>
+        <td>${r.sa || ""}</td>
+        <td>${r.ga || ""}</td>
+        <td>${r.sv || ""}</td>
+        <td>${r.gaa || ""}</td>
+        <td>${r.svp || ""}</td>
+        <td>${r.so || ""}</td>
+      `;
+    } else {
+      tr.innerHTML = `
+        <td>${i + 1}</td>
+        <td>${nameHTML}</td>
+        <td>${r.gp || ""}</td>
+        <td>${r.g || ""}</td>
+        <td>${r.a || ""}</td>
+        <td>${r.pts || ""}</td>
+        <td>${r.pim || ""}</td>
+      `;
+    }
+
+    tbody.appendChild(tr);
+  });
+
+  table.append(thead, tbody);
+  return table;
+};
+
 
       // --- Gruppspel & Slutspel ---
       const loadStats = (mode) => {
@@ -1159,25 +1209,75 @@ const makeTable = (rows, type) => {
       const TEAM_NAME = "Sunne IK Esport";
 
       // --- Tabellbyggare ---
-      const makeTable = (rows, type) => {
-        const table = document.createElement("table");
-        const thead = document.createElement("thead");
-        if (type === "goalie") {
-          thead.innerHTML = `<tr><th>#</th><th>Goalie</th><th>GP</th><th>SA</th><th>GA</th><th>SV</th><th>GAA</th><th>SV%</th><th>SO</th></tr>`;
-        } else {
-          thead.innerHTML = `<tr><th>#</th><th>Player</th><th>GP</th><th>G</th><th>A</th><th>PTS</th><th>PIM</th></tr>`;
-        }
-        const tbody = document.createElement("tbody");
-        rows.forEach((r, i) => {
-          if (type === "goalie") {
-            tbody.innerHTML += `<tr><td>${i+1}</td><td>${r.goalies||""}</td><td>${r.gp||""}</td><td>${r.sa||""}</td><td>${r.ga||""}</td><td>${r.sv||""}</td><td>${r.gaa||""}</td><td>${r.svp||""}</td><td>${r.so||""}</td></tr>`;
-          } else {
-            tbody.innerHTML += `<tr><td>${i+1}</td><td>${r.players||r.player||""}</td><td>${r.gp||""}</td><td>${r.g||""}</td><td>${r.a||""}</td><td>${r.pts||""}</td><td>${r.pim||""}</td></tr>`;
-          }
-        });
-        table.append(thead, tbody);
-        return table;
-      };
+     const makeTable = (rows, type) => {
+  const table = document.createElement("table");
+  const thead = document.createElement("thead");
+
+  // Huvudrad
+  if (type === "goalie") {
+    thead.innerHTML = `
+      <tr>
+        <th>#</th><th>Goalie</th><th>GP</th><th>SA</th><th>GA</th>
+        <th>SV</th><th>GAA</th><th>SV%</th><th>SO</th>
+      </tr>`;
+  } else {
+    thead.innerHTML = `
+      <tr>
+        <th>#</th><th>Player</th><th>GP</th><th>G</th>
+        <th>A</th><th>PTS</th><th>PIM</th>
+      </tr>`;
+  }
+
+  const tbody = document.createElement("tbody");
+
+  rows.forEach((r, i) => {
+    const tr = document.createElement("tr");
+
+    // Hämta namn från rätt kolumn
+    let rawName =
+      (type === "goalie" ? r.goalies : r.players || r.player || "")
+      ?.toString()
+      ?.trim() || "";
+
+    // Rensa namn: ta bort allt efter första kommatecken
+    let cleanName = rawName.split(",")[0].trim();
+
+    // Om namnet ändå blev tomt → skriv ut originalet och skippa länken
+    let nameHTML = cleanName
+      ? `<a href="players/?player=${encodeURIComponent(cleanName)}" class="player-link">${cleanName}</a>`
+      : rawName;
+
+    if (type === "goalie") {
+      tr.innerHTML = `
+        <td>${i + 1}</td>
+        <td>${nameHTML}</td>
+        <td>${r.gp || ""}</td>
+        <td>${r.sa || ""}</td>
+        <td>${r.ga || ""}</td>
+        <td>${r.sv || ""}</td>
+        <td>${r.gaa || ""}</td>
+        <td>${r.svp || ""}</td>
+        <td>${r.so || ""}</td>
+      `;
+    } else {
+      tr.innerHTML = `
+        <td>${i + 1}</td>
+        <td>${nameHTML}</td>
+        <td>${r.gp || ""}</td>
+        <td>${r.g || ""}</td>
+        <td>${r.a || ""}</td>
+        <td>${r.pts || ""}</td>
+        <td>${r.pim || ""}</td>
+      `;
+    }
+
+    tbody.appendChild(tr);
+  });
+
+  table.append(thead, tbody);
+  return table;
+};
+
 
       // --- Gruppspel & Slutspel ---
       const loadStats = (mode) => {
@@ -1300,24 +1400,74 @@ const makeTable = (rows, type) => {
 
       // --- Tabellbyggare ---
       const makeTable = (rows, type) => {
-        const table = document.createElement("table");
-        const thead = document.createElement("thead");
-        if (type === "goalie") {
-          thead.innerHTML = `<tr><th>#</th><th>Goalie</th><th>GP</th><th>SA</th><th>GA</th><th>SV</th><th>GAA</th><th>SV%</th><th>SO</th></tr>`;
-        } else {
-          thead.innerHTML = `<tr><th>#</th><th>Player</th><th>GP</th><th>G</th><th>A</th><th>PTS</th><th>PIM</th></tr>`;
-        }
-        const tbody = document.createElement("tbody");
-        rows.forEach((r, i) => {
-          if (type === "goalie") {
-            tbody.innerHTML += `<tr><td>${i+1}</td><td>${r.goalies||""}</td><td>${r.gp||""}</td><td>${r.sa||""}</td><td>${r.ga||""}</td><td>${r.sv||""}</td><td>${r.gaa||""}</td><td>${r.svp||""}</td><td>${r.so||""}</td></tr>`;
-          } else {
-            tbody.innerHTML += `<tr><td>${i+1}</td><td>${r.players||r.player||""}</td><td>${r.gp||""}</td><td>${r.g||""}</td><td>${r.a||""}</td><td>${r.pts||""}</td><td>${r.pim||""}</td></tr>`;
-          }
-        });
-        table.append(thead, tbody);
-        return table;
-      };
+  const table = document.createElement("table");
+  const thead = document.createElement("thead");
+
+  // Huvudrad
+  if (type === "goalie") {
+    thead.innerHTML = `
+      <tr>
+        <th>#</th><th>Goalie</th><th>GP</th><th>SA</th><th>GA</th>
+        <th>SV</th><th>GAA</th><th>SV%</th><th>SO</th>
+      </tr>`;
+  } else {
+    thead.innerHTML = `
+      <tr>
+        <th>#</th><th>Player</th><th>GP</th><th>G</th>
+        <th>A</th><th>PTS</th><th>PIM</th>
+      </tr>`;
+  }
+
+  const tbody = document.createElement("tbody");
+
+  rows.forEach((r, i) => {
+    const tr = document.createElement("tr");
+
+    // Hämta namn från rätt kolumn
+    let rawName =
+      (type === "goalie" ? r.goalies : r.players || r.player || "")
+      ?.toString()
+      ?.trim() || "";
+
+    // Rensa namn: ta bort allt efter första kommatecken
+    let cleanName = rawName.split(",")[0].trim();
+
+    // Om namnet ändå blev tomt → skriv ut originalet och skippa länken
+    let nameHTML = cleanName
+      ? `<a href="players/?player=${encodeURIComponent(cleanName)}" class="player-link">${cleanName}</a>`
+      : rawName;
+
+    if (type === "goalie") {
+      tr.innerHTML = `
+        <td>${i + 1}</td>
+        <td>${nameHTML}</td>
+        <td>${r.gp || ""}</td>
+        <td>${r.sa || ""}</td>
+        <td>${r.ga || ""}</td>
+        <td>${r.sv || ""}</td>
+        <td>${r.gaa || ""}</td>
+        <td>${r.svp || ""}</td>
+        <td>${r.so || ""}</td>
+      `;
+    } else {
+      tr.innerHTML = `
+        <td>${i + 1}</td>
+        <td>${nameHTML}</td>
+        <td>${r.gp || ""}</td>
+        <td>${r.g || ""}</td>
+        <td>${r.a || ""}</td>
+        <td>${r.pts || ""}</td>
+        <td>${r.pim || ""}</td>
+      `;
+    }
+
+    tbody.appendChild(tr);
+  });
+
+  table.append(thead, tbody);
+  return table;
+};
+
 
       // --- Gruppspel & Slutspel ---
       const loadStats = (mode) => {
@@ -1434,25 +1584,75 @@ const makeTable = (rows, type) => {
       const TEAM_NAME = "Veterankraft";
 
       // --- Tabellbyggare ---
-      const makeTable = (rows, type) => {
-        const table = document.createElement("table");
-        const thead = document.createElement("thead");
-        if (type === "goalie") {
-          thead.innerHTML = `<tr><th>#</th><th>Goalie</th><th>GP</th><th>SA</th><th>GA</th><th>SV</th><th>GAA</th><th>SV%</th><th>SO</th></tr>`;
-        } else {
-          thead.innerHTML = `<tr><th>#</th><th>Player</th><th>GP</th><th>G</th><th>A</th><th>PTS</th><th>PIM</th></tr>`;
-        }
-        const tbody = document.createElement("tbody");
-        rows.forEach((r, i) => {
-          if (type === "goalie") {
-            tbody.innerHTML += `<tr><td>${i+1}</td><td>${r.goalies||""}</td><td>${r.gp||""}</td><td>${r.sa||""}</td><td>${r.ga||""}</td><td>${r.sv||""}</td><td>${r.gaa||""}</td><td>${r.svp||""}</td><td>${r.so||""}</td></tr>`;
-          } else {
-            tbody.innerHTML += `<tr><td>${i+1}</td><td>${r.players||r.player||""}</td><td>${r.gp||""}</td><td>${r.g||""}</td><td>${r.a||""}</td><td>${r.pts||""}</td><td>${r.pim||""}</td></tr>`;
-          }
-        });
-        table.append(thead, tbody);
-        return table;
-      };
+     const makeTable = (rows, type) => {
+  const table = document.createElement("table");
+  const thead = document.createElement("thead");
+
+  // Huvudrad
+  if (type === "goalie") {
+    thead.innerHTML = `
+      <tr>
+        <th>#</th><th>Goalie</th><th>GP</th><th>SA</th><th>GA</th>
+        <th>SV</th><th>GAA</th><th>SV%</th><th>SO</th>
+      </tr>`;
+  } else {
+    thead.innerHTML = `
+      <tr>
+        <th>#</th><th>Player</th><th>GP</th><th>G</th>
+        <th>A</th><th>PTS</th><th>PIM</th>
+      </tr>`;
+  }
+
+  const tbody = document.createElement("tbody");
+
+  rows.forEach((r, i) => {
+    const tr = document.createElement("tr");
+
+    // Hämta namn från rätt kolumn
+    let rawName =
+      (type === "goalie" ? r.goalies : r.players || r.player || "")
+      ?.toString()
+      ?.trim() || "";
+
+    // Rensa namn: ta bort allt efter första kommatecken
+    let cleanName = rawName.split(",")[0].trim();
+
+    // Om namnet ändå blev tomt → skriv ut originalet och skippa länken
+    let nameHTML = cleanName
+      ? `<a href="players/?player=${encodeURIComponent(cleanName)}" class="player-link">${cleanName}</a>`
+      : rawName;
+
+    if (type === "goalie") {
+      tr.innerHTML = `
+        <td>${i + 1}</td>
+        <td>${nameHTML}</td>
+        <td>${r.gp || ""}</td>
+        <td>${r.sa || ""}</td>
+        <td>${r.ga || ""}</td>
+        <td>${r.sv || ""}</td>
+        <td>${r.gaa || ""}</td>
+        <td>${r.svp || ""}</td>
+        <td>${r.so || ""}</td>
+      `;
+    } else {
+      tr.innerHTML = `
+        <td>${i + 1}</td>
+        <td>${nameHTML}</td>
+        <td>${r.gp || ""}</td>
+        <td>${r.g || ""}</td>
+        <td>${r.a || ""}</td>
+        <td>${r.pts || ""}</td>
+        <td>${r.pim || ""}</td>
+      `;
+    }
+
+    tbody.appendChild(tr);
+  });
+
+  table.append(thead, tbody);
+  return table;
+};
+
 
       // --- Gruppspel & Slutspel ---
       const loadStats = (mode) => {
@@ -1590,25 +1790,75 @@ const makeTable = (rows, type) => {
       const TEAM_NAME = "vNexs Vipers";
 
       // --- Tabellbyggare ---
-      const makeTable = (rows, type) => {
-        const table = document.createElement("table");
-        const thead = document.createElement("thead");
-        if (type === "goalie") {
-          thead.innerHTML = `<tr><th>#</th><th>Goalie</th><th>GP</th><th>SA</th><th>GA</th><th>SV</th><th>GAA</th><th>SV%</th><th>SO</th></tr>`;
-        } else {
-          thead.innerHTML = `<tr><th>#</th><th>Player</th><th>GP</th><th>G</th><th>A</th><th>PTS</th><th>PIM</th></tr>`;
-        }
-        const tbody = document.createElement("tbody");
-        rows.forEach((r, i) => {
-          if (type === "goalie") {
-            tbody.innerHTML += `<tr><td>${i+1}</td><td>${r.goalies||""}</td><td>${r.gp||""}</td><td>${r.sa||""}</td><td>${r.ga||""}</td><td>${r.sv||""}</td><td>${r.gaa||""}</td><td>${r.svp||""}</td><td>${r.so||""}</td></tr>`;
-          } else {
-            tbody.innerHTML += `<tr><td>${i+1}</td><td>${r.players||r.player||""}</td><td>${r.gp||""}</td><td>${r.g||""}</td><td>${r.a||""}</td><td>${r.pts||""}</td><td>${r.pim||""}</td></tr>`;
-          }
-        });
-        table.append(thead, tbody);
-        return table;
-      };
+     const makeTable = (rows, type) => {
+  const table = document.createElement("table");
+  const thead = document.createElement("thead");
+
+  // Huvudrad
+  if (type === "goalie") {
+    thead.innerHTML = `
+      <tr>
+        <th>#</th><th>Goalie</th><th>GP</th><th>SA</th><th>GA</th>
+        <th>SV</th><th>GAA</th><th>SV%</th><th>SO</th>
+      </tr>`;
+  } else {
+    thead.innerHTML = `
+      <tr>
+        <th>#</th><th>Player</th><th>GP</th><th>G</th>
+        <th>A</th><th>PTS</th><th>PIM</th>
+      </tr>`;
+  }
+
+  const tbody = document.createElement("tbody");
+
+  rows.forEach((r, i) => {
+    const tr = document.createElement("tr");
+
+    // Hämta namn från rätt kolumn
+    let rawName =
+      (type === "goalie" ? r.goalies : r.players || r.player || "")
+      ?.toString()
+      ?.trim() || "";
+
+    // Rensa namn: ta bort allt efter första kommatecken
+    let cleanName = rawName.split(",")[0].trim();
+
+    // Om namnet ändå blev tomt → skriv ut originalet och skippa länken
+    let nameHTML = cleanName
+      ? `<a href="players/?player=${encodeURIComponent(cleanName)}" class="player-link">${cleanName}</a>`
+      : rawName;
+
+    if (type === "goalie") {
+      tr.innerHTML = `
+        <td>${i + 1}</td>
+        <td>${nameHTML}</td>
+        <td>${r.gp || ""}</td>
+        <td>${r.sa || ""}</td>
+        <td>${r.ga || ""}</td>
+        <td>${r.sv || ""}</td>
+        <td>${r.gaa || ""}</td>
+        <td>${r.svp || ""}</td>
+        <td>${r.so || ""}</td>
+      `;
+    } else {
+      tr.innerHTML = `
+        <td>${i + 1}</td>
+        <td>${nameHTML}</td>
+        <td>${r.gp || ""}</td>
+        <td>${r.g || ""}</td>
+        <td>${r.a || ""}</td>
+        <td>${r.pts || ""}</td>
+        <td>${r.pim || ""}</td>
+      `;
+    }
+
+    tbody.appendChild(tr);
+  });
+
+  table.append(thead, tbody);
+  return table;
+};
+
 
       // --- Gruppspel & Slutspel ---
       const loadStats = (mode) => {
@@ -3322,4 +3572,3 @@ document.getElementById("teamSearchInput_195").addEventListener("input", functio
 
 </body>
 </html>
-
