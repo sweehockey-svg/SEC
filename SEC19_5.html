@@ -2862,45 +2862,86 @@ function renderTable(hostId,searchId,updatedId,sheetName,sortFunc){
   const host=document.getElementById(hostId);
   const search=document.getElementById(searchId);
   const updated=document.getElementById(updatedId);
+
   host.innerHTML='<div class="loader"><div class="puck">🏒</div><div>Laddar statistik...</div></div>';
+
   fetch(API_BASE+'?sheet='+encodeURIComponent(sheetName)+'&_t='+Date.now())
     .then(r=>r.json())
     .then(rows=>{
-      if(!rows||!rows.length){host.textContent="Ingen data.";return;}
-      if(sortFunc)rows.sort(sortFunc);
-      const headers=Object.keys(rows[0]);
+      if(!rows || !rows.length){
+        host.textContent="Ingen data.";
+        return;
+      }
+
+      if(sortFunc) rows.sort(sortFunc);
+
+      const headers = Object.keys(rows[0]);
       const table=document.createElement('table');
+
+      /* HEADER */
       const thead=document.createElement('thead');
       const hr=document.createElement('tr');
       hr.innerHTML='<th>#</th>'+headers.map(h=>`<th>${h.toUpperCase()}</th>`).join('');
       thead.appendChild(hr);
       table.appendChild(thead);
+
+      /* BODY */
       const tbody=document.createElement('tbody');
+
       rows.forEach((r,i)=>{
         const tr=document.createElement('tr');
-        tr.innerHTML='<td>'+(i+1)+'</td>'+headers.map(k=>{
-          let v=r[k];
+
+        tr.innerHTML='<td>'+(i+1)+'</td>' + headers.map(k=>{
+          let v = r[k] || "";
+
+          // Flagga + namn
           if(/player|goalie/i.test(k)){
-            const info=flagify(v);
-            v=(info.flag?info.flag+' ':'')+info.text;
+            const info = flagify(v);
+
+            const rawName = info.text; // Namn utan flagga
+
+            // LÄNK TILL SPELARKORT
+            const link = `<a href="players/?player=${encodeURIComponent(rawName)}"
+                             style="color:#ffd35c; font-weight:600; text-decoration:none;">
+                             ${rawName}
+                           </a>`;
+
+            // Lägg tillbaka flaggan om den finns
+            v = (info.flag ? info.flag + " " : "") + link;
           }
-          if(k.toLowerCase()==='team')v=mapTeam(v);
-          return `<td data-label="${k.toUpperCase()}">${v||''}</td>`;
+
+          // Mappa lag
+          if(k.toLowerCase() === 'team'){
+            v = mapTeam(v);
+          }
+
+          return `<td data-label="${k.toUpperCase()}">${v}</td>`;
         }).join('');
+
         tbody.appendChild(tr);
       });
+
       table.appendChild(tbody);
+
       host.innerHTML='';
       const wrap=document.createElement('div');
       wrap.className='wrap';
       wrap.appendChild(table);
       host.appendChild(wrap);
+
       updated.textContent="Senast uppdaterad: "+new Date().toLocaleString("sv-SE");
-      search.addEventListener('input',()=>[...tbody.rows].forEach(tr=>{
-        const match=[...tr.cells].some(td=>td.textContent.toLowerCase().includes(search.value.toLowerCase()));
-        tr.style.display=match?'':'none';
-      }));
+
+      /* SÖKFUNKTION */
+      search.addEventListener('input', ()=>
+        [...tbody.rows].forEach(tr=>{
+          const match = [...tr.cells].some(td =>
+            td.textContent.toLowerCase().includes(search.value.toLowerCase())
+          );
+          tr.style.display = match ? '' : 'none';
+        })
+      );
     })
+
     .catch(err=>{
       host.textContent="Fel vid laddning: "+err.message;
       console.error(err);
@@ -3222,5 +3263,4 @@ document.getElementById("teamSearchInput_195").addEventListener("input", functio
 
 </body>
 </html>
-
 
