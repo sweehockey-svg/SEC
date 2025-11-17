@@ -6,6 +6,54 @@
   <title>Svenska eHockey Cupen – Spelarkort</title>
 
   <style>
+.loader-wrapper {
+  width: 100%;
+  display: none;      /* visas via JS */
+  justify-content: center;
+  margin: 25px 0;
+}
+
+/* Kontainer för animationen */
+/* Nya loadern */
+.sec-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.loader-text {
+  font-size: 1rem;
+  color: #f6d66b;
+  margin-bottom: 10px;
+  letter-spacing: .04em;
+}
+
+.loader-bar {
+  width: 200px;
+  height: 10px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 6px;
+  border: 1px solid rgba(246,214,107,0.35);
+  overflow: hidden;
+  box-shadow: 0 0 12px rgba(246,214,107,0.45);
+}
+
+.loader-bar-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #f6d66b, #ffe7ac);
+  animation: secBar 1.8s infinite ease-in-out;
+}
+
+@keyframes secBar {
+  0% { width: 0%; }
+  50% { width: 85%; }
+  100% { width: 0%; }
+}
+
+
+
     :root {
       --sec-bg-deep: #02030a;
       --sec-bg-top: #080f24;
@@ -343,7 +391,7 @@
     <div class="sfc-header">
         <img class="sfc-logo" src="https://drive.google.com/thumbnail?id=1QybW_Uw8HO0OXo8vwQFD-zrrr-ifFrC9&sz=w1000" alt="SEC Logo">
         <div class="sfc-title">
-          🏆 Svenska eHockey <strong>Cupen</strong> 19.5 🏒
+          🏆 Svenska eHockey <strong>Cupen</strong> 🏒
         </div>
         <div class="sfc-divider"></div>
     </div>
@@ -356,6 +404,14 @@
       <div id="playerName">Ingen spelare vald</div>
       <div id="statsOutput"></div>
     </div>
+<div id="loaderWrapper" class="loader-wrapper">
+  <div class="sec-loader">
+    <div class="stick left"></div>
+    <div class="stick right"></div>
+    <div class="puck"></div>
+  </div>
+</div>
+
 
     <!-- SÖKRUTA CENTRERAD -->
     <div class="player-search-centered">
@@ -384,9 +440,22 @@ function teamName(code){ return TEAM_MAP[code] || code; }
 let allPlayers = [];
 
 async function loadAllPlayers() {
-  const res = await fetch(API + "?allplayers=1");
-  allPlayers = await res.json();
+  const loader = document.getElementById("loaderWrapper");
+
+  // Visa loader ONLY under allplayers-laddning
+  loader.style.display = "flex";
+
+  try {
+    const res = await fetch(API + "?allplayers=1");
+    allPlayers = await res.json();
+  } catch (err) {
+    console.error("Fel vid laddning av allplayers:", err);
+  }
+
+  // Dölj loader när klart
+  loader.style.display = "none";
 }
+
 loadAllPlayers();
 
 /* Normalisera text */
@@ -397,6 +466,7 @@ function norm(s) {
     .replace(/\s+/g, "")
     .replace(/[^a-z0-9]/g, "");
 }
+
 
 /* Sökning */
 const inp = document.getElementById("playerSearch");
@@ -567,6 +637,42 @@ async function loadStats() {
   let teamCount = new Set(originalData.map(r => r.TEAM)).size;
   let totalGames = originalData.reduce((sum, r) => sum + Number(r.GP || 0), 0);
 
+  /* ============================
+     BÄSTA CUPEN – NY LOGIK
+     (påverkar bara texten)
+  ============================ */
+  const skaterRowsBest = originalData.filter(r => !("SA" in r && "SV" in r));
+  const goalieRowsBest = originalData.filter(r => ("SA" in r && "SV" in r));
+
+  let bestSkater = null;
+  if (skaterRowsBest.length > 0) {
+    bestSkater = skaterRowsBest.reduce((best, r) => {
+      return (!best || Number(r.PTS) > Number(best.PTS)) ? r : best;
+    }, null);
+  }
+
+  let bestGoalie = null;
+  if (goalieRowsBest.length > 0) {
+    bestGoalie = goalieRowsBest.reduce((best, r) => {
+      return (!best || Number(r.SVP) > Number(best.SVP)) ? r : best;
+    }, null);
+  }
+
+  let bestCupText = "";
+  if (bestSkater && !bestGoalie) {
+    bestCupText = `Den bästa cupen han spelade var i <strong>${bestSkater.TURNERING}</strong> där han gjorde <strong>${bestSkater.PTS}</strong> poäng.`;
+  } else if (!bestSkater && bestGoalie) {
+    bestCupText = `Den bästa cupen han spelade var i <strong>${bestGoalie.TURNERING}</strong> där han hade en räddningsprocent på <strong>${formatSVP(bestGoalie.SVP)}</strong>.`;
+  } else if (bestSkater && bestGoalie) {
+  bestCupText = `
+    Den bästa cupen han spelade var i <strong>${bestSkater.TURNERING}</strong>, 
+    där han gjorde <strong>${bestSkater.PTS}</strong> poäng för <strong>${teamName(bestSkater.TEAM)}</strong>,
+    och som målvakt i <strong>${bestGoalie.TURNERING}</strong> hade han en räddningsprocent på 
+    <strong>${formatSVP(bestGoalie.SVP)}</strong> för <strong>${teamName(bestGoalie.TEAM)}</strong>.
+  `;
+}
+
+
   // ---- BIO ----
   const bioText = `
     <div style="margin-top:10px; margin-bottom:20px; color:#ddd;
@@ -578,6 +684,7 @@ async function loadStats() {
       och representerat totalt <strong>${teamCount}</strong> olika lag,
       senast i <strong>${lastCup}</strong> för <strong>${lastTeam}</strong>.
       Totalt har han spelat <strong>${totalGames}</strong> matcher i SEC.
+      <br><br>${bestCupText}
     </div>
   `;
 
