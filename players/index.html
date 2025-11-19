@@ -892,13 +892,14 @@
           ? skaters.reduce((b, r) => (!b || Number(r.PTS) > Number(b.PTS) ? r : b))
           : null;
 
-        const bestGoalie = goalies.length
-          ? goalies.reduce((b, r) => {
-              const rSV = parseFloat(String(r.SVP).replace(",", "."));
-              const bSV = parseFloat(String(b.SVP).replace(",", "."));
-              return (!b || rSV > bSV) ? r : b;
-            })
-          : null;
+   const bestGoalie = goalies.length
+  ? goalies.reduce((b, r) => {
+      const rSV = parseFloat(String(r.SVP || "0").replace(",", "."));
+      const bSV = parseFloat(String(b.SVP || "0").replace(",", "."));
+      return rSV > bSV ? r : b;
+    }, goalies[0])
+  : null;
+
 
         /* ⭐ Bästa cup – text */
         let bestCupText = "";
