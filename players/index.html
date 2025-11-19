@@ -451,31 +451,92 @@
 <script>
 const API = "https://script.google.com/macros/s/AKfycbwUvylvIbUTy4_zihW5_OKIsQME2vxcPHWLldObZI28dggqJytvF2UmdsAD4Ib5Zre1/exec";
 
+/* ==========================================================
+   LOCALSTORAGE CACHE – SUPERFAST PLAYER CACHE
+   ========================================================== */
+
+const CACHE_TIME = 10 * 60 * 1000; // 10 minuter
+
+function cacheGet(player) {
+  const key = "sec_player_" + player.toLowerCase();
+  const raw = localStorage.getItem(key);
+  if (!raw) return null;
+
+  try {
+    const obj = JSON.parse(raw);
+    if (!obj.time || !obj.data) return null;
+
+    // Utgången cache?
+    if (Date.now() - obj.time > CACHE_TIME) {
+      localStorage.removeItem(key);
+      return null;
+    }
+
+    return obj.data;
+  } catch {
+    return null;
+  }
+}
+
+function cacheSet(player, data) {
+  const key = "sec_player_" + player.toLowerCase();
+  localStorage.setItem(key, JSON.stringify({
+    time: Date.now(),
+    data: data
+  }));
+}
+
+
 /* full team-map */
 const TEAM_MAP={"3TU":"3Tuna Le sport","AL":"A Laget","AFT":"AFTERLIFE","AIS":"Almtuna ESPORT","AVE":"Avenyn Esport","BAC":"BACKCHECK BOYS","BAS":"Bask Nation","BEE":"Beerhouse","BGS":"Biggie Stockholm","BIK":"BIK Karlskoga Esport","BV":"Birka Vikings","IFB":"Björklöven Esport","CLS":"Black Clovers","BES":"Black Eagles Sweden","Bla":"Black Panthers","BPS":"Black Phantoms","BD":"Blackdawgs","BSU":"Blessed Suedis","BOI":"BOIS IK","Bom":"Bombers Hockey","Boo":"Boost HC","BOR":"BortaMatch HC","BRA":"Brain Freezers","BB":"Brunker Bulldogs","BIF":"Brynäs IF Esport","Bul":"Bull sharks","CAL":"Calippo HC","ICE":"Carolus Icemen","CAV":"Cavemen Hockey","CHA":"Charleswood Chiefs","CHC":"Chiefzz HC","CLO":"Clowns","COG":"Company of Geeks","CRA":"Crash The Net HC","Dar":"Dark City Knights","DIC":"DICE Hockey","DTS":"Dirty Tacklers HC","DIF":"Djurgården","DOM":"Dompa HC","DRA":"Dracones","DHY":"Dynamic Hockey","LXN":"EƎ Lag AntonLxnd","LGB":"EƎ Lag bystrom___","TCO":"EƎ Lag el_tacobag","LHZ":"EƎ Lag GD_Hampezz","FRY":"EƎ Lag l-Furyan-l","SLO":"EƎ Lag Sloogan9498","STG":"EƎ Lag Sneipthegunner","T50":"EƎ Lag Toivo4936","WAG":"EƎ Lag Wagge01","La":"EƎ Lag xAlknas","AC":"EƎ Lag xCurhed","Boe":"EƎ Lag xSnorlaaxx","EC":"Enkoping City","ENK":"Enköping Hks","EE":"Etuna Eagles","EVO":"Evolution HC","KBK":"Färjestad","FBK":"Färjestad BK","Far":"Farmalaget","FEM":"Favoritfemman","FEN":"Fenris Wolves","FIL":"Fila De La Hc","FF":"Flädie Faxes","FFR":"Free From Rodents","FHC":"Frölunda HC Academy","FR":"Frölunda HC Region","FSE":"Full send esport","GVL":"Gefle Bocken","GH":"Get Hagens HC","GIF":"Gifflarna HC","GB":"Glacies Bellator","GLA":"Glasbanken se","GHK":"Gleumes Hockey Krefeld","GD":"Green Devils","GHC":"Guldkallan HC","HAM":"Hamra Allstars","PE":"HC Pustertal Esports","HCZ":"HCZ","INC":"Hockey INC","HOC":"Hockey of the north","HP":"HockeyProfessorn HC","HRR":"Hokurit","HAW":"Hundred Acre Woods","HV":"HV71","Nld":"IFK Norrland","IKY":"IK EyBro","IKP":"Ik Pantern Esport","ISU":"Ik Stolpe ut","Ill":"Illumination","Ilu":"Illusion","JHC":"Jokers Hockey","KAJ":"KAJAK Esports","KAL":"KALMARUNIONEN","KNG":"Kingping","KXS":"Knox Stark","KP":"Kompaniet","KRK":"Kraken","OK":"Kronofogden Esport","KUM":"Kumla hockey","LOE":"Lack of Empathy","BYS":"Lag bystrom","AKE":"Lag Aker36","AND":"Lag andreaskakan","ANT":"Lag antoniomannen","AXE":"Lag Axelzonee","BEN":"Lag benjamint","BRU":"Lag Bruno_32","DAS":"Lag Dasplund","DII":"Lag Diizzylicious","ECK":"Lag eckeson","ELI":"Lag eliekamel_","EPS":"Lag ePsych0-","HEN":"Lag Henning92","LGH":"Lag Hojerslev","JAR":"Lag Jarvinder","JEP":"Lag Jepplo02","JON":"Lag Jonass1551","LAR":"Lag Larsson_500","LL":"Lag LaxenHD","LOK":"Lag Lokope11","LGL":"Lag LordOlii","MAT":"Lag Mathiasgamer_07","MES":"Lag mesimaki94","PRA":"Lag Prallelkova","LR":"Lag RookieLIAMOVIC","SNU":"Lag Snus","STE":"Lag Stenborg431","STI":"Lag stickovic","LGS":"Lag Svamp GG","TAB":"Lag Tablehockey","TAN":"Lag TantBerit","V1C":"Lag v1CTANK","LAL":"Lallare HC","LAM":"LAMPA","Las":"Las Palmas HC","CCN":"Le Club Chat Noir","LEG":"LEGION HC","LIF":"Leksand","LH":"Linköping","LHC":"Lofoten HC","666":"Lucid Dreams","LLE":"Ludvika Lightning Esport","LHK":"Luleå","LHF":"Luleå Hockey Region","LUM":"Lumberjacks HC","MAC":"Macho","MAD":"MAD Knogmackers HC","MIF":"Malmö","FOG":"MGŁA","MF":"Miami Freeze","Mel":"Mighty Mel HC","XXX":"Mighty Stixxx","MOD":"Modo Hockey","MIK":"Mora IK","MHC":"Morganchipsen HC","NWG":"No Worries Guys","NF":"Nordic Falcons","NK":"Nordic Knights","NKH":"Nordic Knights HC","NL":"Nordic Lightning","NOS":"Nordic Nosebleed","NOR":"Nordic Vipers","NVB":"Norra Västerbotten","NOF":"Norska förbundslaget","NHC":"North Hockey Academy","ND":"Northern Dust","NH":"Northern Heroes","Ock":"Ockelbo Ehockey","Olj":"Oljefondet","OME":"Omerta","omb":"Omerta beyond","ONT":"On The Road Again","One":"One HC","OBK":"Örebro","ODH":"Orebro deaf hockeY","OHA":"Orebro Hockey Academy","IKO":"Oskarshamn","OIK":"Oskarshamn IK","PAT":"Patriots","PHO":"Phoenix","POL":"Polarbears HC","PRO":"Prowlers Esport","PUR":"Purification","PC":"Purple Cobraas","RAE":"Rains It Poors","RHC":"Rava HC","RCT":"RCTIC","RNS":"Redemption Stars","ROP":"Rimon o Pumba","RGT":"Ringette HC","RBK":"Rögle","ROR":"Rorvik HC","RHT":"Royal HT","RPT":"RPEAT ESPORTS","SAN":"SandhedYoungGuns","SoS":"SCRUBS","SPT":"Serpentes","SHS":"Shifty Shafts","SHW":"Showtimes","112":"Sjukstugan","SAI":"Skellefteå","Sku":"Skumtomtarnas arme","SW":"SPARTA WARRIORS1928","SPA":"Spartans eSport","SA":"SSK Academy","SSA":"SSK Adepts","SSK":"SSK eSport","SI":"SSK Ignite","SSP":"SSK Prospects","SBH":"Stallarholmens Brygghus","STR":"Starz HC","SAS":"Stayhard Stallions","BKN":"Stockholm Black Knights","SIL":"Storhamar IL Esport","SuS":"SUKAT JA SANDAALIT","SES":"Sunne IK Esport","SS":"Surte Sisu HC","SYN":"Synergy Hockey","TMO":"Team Modo","TR":"Team Rocket","TBT":"THE BLUE TELGE","TRB":"The red bullets","TRW":"THE RELENTLESS WOLFS HC","SOL":"The Solution","WoW":"The Worn Out Wisemen","TB":"Thigh Bay","TES":"TIGERS E-sport","TIK":"Timrå IK","TRA":"Trasdockorna","TRE":"Troillan Esport","TRO":"Trojans","TUN":"Tundra","ULV":"Ulvhednar HC","UR":"UnderRated","UNI":"UNI Gaming","UN":"Unknown Heroes","UNW":"Unwanted","VAH":"Valbo hockey","VIK":"Västerås IK","VAX":"Växjo","VBS":"VBO B Stars","VBO":"VBO Stars","VER":"Verket","hmm":"Veterankraft","Vic":"Viccingi","VIP":"Viper hc","NEX":"vNexs Faxes","vNV":"vNexs Vipers","vNW":"VNexs wisemen","VS":"Vtuna Socken","WHI":"WHITE WINGS","WS":"Whitesharks","WIL":"Wild rockets Hc","WIS":"Wisby Islanders","You":"Young Guys"};
 
-function teamName(code){ return TEAM_MAP[code] || code; }
+function teamName(code){ 
+  return TEAM_MAP[code] || code; 
+}
 
 let allPlayers = [];
 
-async function loadAllPlayers() {
+/* ============================================================
+   SUPER-SNABB ALLPLAYERS – localStorage cache (12 timmar)
+============================================================ */
+async function loadAllPlayersFast() {
+  const CACHE_KEY = "secAllPlayers";
+  const CACHE_TIME_KEY = "secAllPlayers_time";
+  const MAX_AGE = 12 * 60 * 60 * 1000; // 12 timmar
+
   const loader = document.getElementById("loaderWrapper");
 
-  // Visa loader ONLY under allplayers-laddning
+  // Visa loader endast vid API-hämtning
   loader.style.display = "flex";
 
+  // 🔹 1) Kolla om cache finns och är färsk
+  const cached = localStorage.getItem(CACHE_KEY);
+  const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
+
+  if (cached && cachedTime && (Date.now() - cachedTime < MAX_AGE)) {
+    allPlayers = JSON.parse(cached);
+    loader.style.display = "none";
+    return;
+  }
+
+  // 🔹 2) Hämta från API om ingen cache finns
   try {
     const res = await fetch(API + "?allplayers=1");
-    allPlayers = await res.json();
+    const data = await res.json();
+    allPlayers = data;
+
+    // 🔹 Spara i cache
+    localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+    localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
+
   } catch (err) {
     console.error("Fel vid laddning av allplayers:", err);
   }
 
-  // Dölj loader när klart
   loader.style.display = "none";
 }
 
-loadAllPlayers();
+loadAllPlayersFast();
 
 /* Normalisera text */
 function norm(s) {
@@ -486,14 +547,16 @@ function norm(s) {
     .replace(/[^a-z0-9]/g, "");
 }
 
-
 /* Sökning */
 const inp = document.getElementById("playerSearch");
 const box = document.getElementById("searchResults");
 
 inp.addEventListener("input", () => {
   const q = norm(inp.value.trim());
-  if (!q) { box.style.display = "none"; return; }
+  if (!q) { 
+    box.style.display = "none"; 
+    return; 
+  }
 
   const results = allPlayers
     .filter(p => norm(p.PLAYER).includes(q))
@@ -582,7 +645,7 @@ function formatSVP(value) {
    NATIONALITETER
 ======================================================================================= */
 function translateNationality(code) {
-  if (!code) return " ";
+  if (!code) return "";
 
   const map = {
     "SWE": "Svensk",
@@ -658,268 +721,271 @@ async function getWinners() {
   return winData;
 }
 
-/* =======================================================================================
-   NY VERSION — EXTREMT OPTIMERAD loadStats() MED BUNDLE API
-======================================================================================= */
+/* ============================================================
+   ULTRASNABB + CACHE-OPTIMERAD LOADSTATS()
+   ============================================================ */
 
 async function loadStats() {
   const out = document.getElementById("statsOutput");
   const loaderStats = document.getElementById("statsLoader");
-  const photoEl = document.getElementById("playerPhoto");
+
+  if (!player) {
+    out.innerHTML = `<div class="no-stats">Ingen spelare vald.</div>`;
+    out.style.display = "block";
+    return;
+  }
+
+  loaderStats.style.display = "block";
+  out.style.display = "none";
 
   try {
-    if (!player) {
-      out.innerHTML = `<div class="no-stats">Ingen spelare vald.</div>`;
-      out.style.display = "block";
-      loaderStats.style.display = "none";
-      return;
-    }
+    /* ======================================================
+       1️⃣ FÖRSÖK LÄSA FRÅN CACHE FÖRST (10 min TTL)
+       ====================================================== */
+    let bundle = cacheGet(player);
 
-    loaderStats.style.display = "block";
-    out.style.display = "none";
+    /* ======================================================
+       2️⃣ HÄMTA FRÅN API ENDAST OM CACHE SAKNAS
+       ====================================================== */
+    if (!bundle) {
+      const url = API + "?bundle=1&player=" + encodeURIComponent(player);
+      const res = await fetch(url);
+      bundle = await res.json();
 
-    /* ============================================================
-       🔵 HÄMTA ALLT I ETT PAKET (stats + vinnare + foto)
-    ============================================================ */
-    const res = await fetch(API + "?bundle=1&player=" + encodeURIComponent(player));
-    const bundle = await res.json();
-
-    const stats = bundle.stats || [];
-    const winners = bundle.winners || [];
-    const photoId = bundle.photoId || null;
-
-    /* ============================================================
-       FOTO
-    ============================================================ */
-    if (photoEl) {
-      if (photoId) {
-        photoEl.src = `https://lh3.googleusercontent.com/d/${photoId}=s800`;
-      } else {
-        photoEl.src = "img/default.png";
+      // Spara i cache om det är ett legitimt svar
+      if (bundle && bundle.stats && !bundle.error && bundle.stats.length > 0) {
+        cacheSet(player, bundle);
       }
     }
 
-    if (!stats.length) {
+    /* ======================================================
+       3️⃣ FELHANTERING – inga stats hittades
+       ====================================================== */
+    if (!bundle || bundle.error || !bundle.stats || bundle.stats.length === 0) {
       out.innerHTML = `<div class="no-stats">Ingen statistik hittades.</div>`;
-      loaderStats.style.display = "none";
       out.style.display = "block";
+      loaderStats.style.display = "none";
       return;
     }
 
-    /* ============================================================
-       NORMALISERA SV% (0.86 → 86, 86 → 86, 865 → 86.5)
-    ============================================================ */
-    stats.forEach(r => {
-      if (r.SVP) {
-        let v = String(r.SVP).replace(",", ".");
-        let n = parseFloat(v);
-        if (n < 1) n = n * 100;
-        if (n > 100) n = n / 10;
-        r.SVP = n;
-      }
+    /* ======================================================
+       4️⃣ READ DATA
+       ====================================================== */
+    const originalData = bundle.stats;
+    const winners = bundle.winners || [];
+    const photoId = bundle.photoId || "1VAa79pJ-QbyeliY60autf914z6SBwmhp";
+
+    /* ======================================================
+       5️⃣ FOTO
+       ====================================================== */
+    const img = document.getElementById("playerPhoto");
+    img.src = `https://drive.google.com/thumbnail?id=${photoId}&sz=w1000`;
+    img.loading = "eager";
+
+    /* NORMALISERING AV TURNERING */
+    originalData.forEach(r => {
+      r.TURNERING = r.TURNERING
+        .replace(/G$/, "G")
+        .replace(/S$/, "S")
+        .replace(/\s+G$/, " G")
+        .replace(/\s+S$/, " S");
     });
 
-    /* ============================================================
-       Rensa TURNERING
-    ============================================================ */
-    stats.forEach(r => {
-      r.TURNERING = cleanTournament(r.TURNERING);
-    });
+    /* ======================================================
+       6️⃣ SPELARNAMN + NATIONALITET
+       ====================================================== */
+    let rawName = originalData[0].PLAYER || originalData[0].GOALIES || player;
+    rawName = String(rawName);
 
-    /* ============================================================
-       NAMN + NATIONALITET
-    ============================================================ */
-    let rawName = stats[0].GOALIES || stats[0].PLAYER || player;
-    rawName = rawName.toString();
+    let cleanName = rawName.includes(",") ? rawName.split(",")[0].trim() : rawName;
+    let natCode   = rawName.includes(",") ? rawName.split(",")[1].trim() : "";
+    let nationality = translateNationality(natCode);
 
-    let cleanName = rawName.includes(",") ? rawName.split(",")[0].trim() : player;
-    let nationalityCode = rawName.includes(",")
-      ? rawName.split(",")[1].replace(/[^A-Z]/gi, "")
-      : "";
-    let nationality = translateNationality(nationalityCode);
+    document.getElementById("playerName").textContent = cleanName;
 
-    /* ============================================================
-       CUPINFO
-    ============================================================ */
-    let originalData = stats.map(r => ({ ...r }));
-    let uniqueCups = [...new Set(stats.map(r => r.TURNERING))]
-      .sort((a, b) => Number(a.replace("SEC", "")) - Number(b.replace("SEC", "")));
+    /* ======================================================
+       7️⃣ CUPER, LAG & MATCHER
+       ====================================================== */
+    const cups = [...new Set(originalData.map(r => r.TURNERING))]
+      .sort((a, b) => parseFloat(a.replace("SEC", "")) - parseFloat(b.replace("SEC", "")));
 
-    let playedOnce = uniqueCups.length === 1;
-    let firstCup = uniqueCups[0];
-    let lastCup = uniqueCups[uniqueCups.length - 1];
+    const firstCup = cups[0];
+    const lastCup  = cups[cups.length - 1];
+    const playedOnce = cups.length === 1;
 
-    const firstTeam = teamName(
-      originalData.find(r => cleanTournament(r.TURNERING) === firstCup).TEAM
-    );
-    const lastTeam = teamName(
-      originalData.find(r => cleanTournament(r.TURNERING) === lastCup).TEAM
-    );
+    const firstTeam = teamName(originalData.find(r => r.TURNERING === firstCup).TEAM);
+    const lastTeam  = teamName(originalData.find(r => r.TURNERING === lastCup).TEAM);
 
-    let teamCount = new Set(originalData.map(r => r.TEAM)).size;
-    let totalGames = originalData.reduce((a, b) => a + Number(b.GP || 0), 0);
+    const totalGames = originalData.reduce((sum, r) => sum + Number(r.GP || 0), 0);
 
-    /* ============================================================
-       BÄSTA CUPEN — LOGIK
-    ============================================================ */
-    const skaters = originalData.filter(r => !("SA" in r && "SV" in r));
-    const goalies = originalData.filter(r => ("SA" in r && "SV" in r));
+    /* ======================================================
+       8️⃣ BÄSTA CUP – SKATERS & GOALIES
+       ====================================================== */
+    const skaters = originalData.filter(r => !("SA" in r));
+    const goalies = originalData.filter(r => ("SA" in r));
 
-    const bestSkater = skaters.length
-      ? skaters.reduce((b, r) => (!b || r.PTS > b.PTS ? r : b))
-      : null;
+    const bestSkater =
+      skaters.length ? skaters.reduce((b, r) => (r.PTS > (b?.PTS || -1) ? r : b), null) : null;
 
-    const bestGoalie = goalies.length
-      ? goalies.reduce((b, r) => (!b || r.SVP > b.SVP ? r : b))
-      : null;
+    const bestGoalie =
+      goalies.length
+        ? goalies.reduce((b, r) => {
+            const sv = parseFloat(String(r.SVP).replace(",", "."));
+            const bs = b ? parseFloat(String(b.SVP).replace(",", ".")) : -1;
+            return sv > bs ? r : b;
+          }, null)
+        : null;
 
+    function formatSVP_Value(v) {
+      let num = parseFloat(String(v).replace(",", "."));
+      if (num < 1) num *= 100;
+      return num.toFixed(1) + "%";
+    }
+
+    /* ======================================================
+       9️⃣ BÄSTA CUP — TEXT
+       ====================================================== */
     let bestCupText = "";
 
-    if (bestSkater && !bestGoalie) {
-      bestCupText = playedOnce
-        ? `Han spelade endast en SEC-cup, och hans bästa prestation som utespelare var i <strong>${bestSkater.TURNERING}</strong> där han gjorde <strong>${bestSkater.PTS}</strong> poäng för <strong>${teamName(bestSkater.TEAM)}</strong>.`
-        : `Den bästa cupen han spelade som utespelare var <strong>${bestSkater.TURNERING}</strong>, där han gjorde <strong>${bestSkater.PTS}</strong> poäng för <strong>${teamName(bestSkater.TEAM)}</strong>.`;
+    if (playedOnce) {
+      if (bestSkater) {
+        bestCupText += `
+          Som utespelare gjorde han sin bästa insats i <strong>${bestSkater.TURNERING}</strong>
+          med <strong>${bestSkater.PTS}</strong> poäng för <strong>${teamName(bestSkater.TEAM)}</strong>.<br>`;
+      }
+      if (bestGoalie) {
+        bestCupText += `
+          Som målvakt var han som bäst i <strong>${bestGoalie.TURNERING}</strong>
+          med en räddningsprocent på <strong>${formatSVP_Value(bestGoalie.SVP)}</strong>
+          för <strong>${teamName(bestGoalie.TEAM)}</strong>.`;
+      }
+    } else {
+      if (bestSkater) {
+        bestCupText += `
+          Den bästa cupen han spelade som utespelare var <strong>${bestSkater.TURNERING}</strong>,
+          där han gjorde <strong>${bestSkater.PTS}</strong> poäng för <strong>${teamName(bestSkater.TEAM)}</strong>.<br>`;
+      }
+      if (bestGoalie) {
+        bestCupText += `
+          Som målvakt var hans bästa cup <strong>${bestGoalie.TURNERING}</strong>
+          där han hade sin bästa SV% på <strong>${formatSVP_Value(bestGoalie.SVP)}</strong>
+          för <strong>${teamName(bestGoalie.TEAM)}</strong>.`;
+      }
     }
 
-    else if (!bestSkater && bestGoalie) {
-      bestCupText = playedOnce
-        ? `Han spelade endast en SEC-cup, och som målvakt var hans bästa insats i <strong>${bestGoalie.TURNERING}</strong> där han hade en räddningsprocent på <strong>${bestGoalie.SVP.toFixed(1)}%</strong> för <strong>${teamName(bestGoalie.TEAM)}</strong>.`
-        : `Den bästa cupen han spelade som målvakt var <strong>${bestGoalie.TURNERING}</strong> där han hade sin bästa räddningsprocent <strong>${bestGoalie.SVP.toFixed(1)}%</strong> för <strong>${teamName(bestGoalie.TEAM)}</strong>.`;
-    }
-
-    else if (bestSkater && bestGoalie) {
-      bestCupText = playedOnce
-        ? `Han spelade endast en SEC-cup. Som utespelare var hans bästa prestation <strong>${bestSkater.TURNERING}</strong> där han gjorde <strong>${bestSkater.PTS}</strong> poäng för <strong>${teamName(bestSkater.TEAM)}</strong>. Som målvakt var hans bästa insats <strong>${bestGoalie.TURNERING}</strong> där han hade en räddningsprocent på <strong>${bestGoalie.SVP.toFixed(1)}%</strong> för <strong>${teamName(bestGoalie.TEAM)}</strong>.`
-        : `Den bästa cupen han spelade som utespelare var <strong>${bestSkater.TURNERING}</strong> där han gjorde <strong>${bestSkater.PTS}</strong> poäng. Som målvakt var det <strong>${bestGoalie.TURNERING}</strong> där han hade sin bästa räddningsprocent <strong>${bestGoalie.SVP.toFixed(1)}%</strong>.`;
-    }
-
-    else {
-      bestCupText = "Statistik saknas.";
-    }
-
-    /* ============================================================
-       MÄSTARE + 2:A PLATS
-    ============================================================ */
+    /* ======================================================
+       🔟 MERITER – MÄSTARE & 2:A
+       ====================================================== */
     let meritText = "";
-    const cupIndex = {};
 
-    originalData.forEach(r => {
-      cupIndex[cleanTournament(r.TURNERING).replace("SEC", "").trim()] = r;
+    winners.forEach(w => {
+      if (!w.cup) return;
+
+      const num = w.cup.replace("SEC", "").trim();
+      const row = originalData.find(r =>
+        r.TURNERING.replace("SEC", "").trim().startsWith(num)
+      );
+      if (!row) return;
+
+      const tm = teamName(row.TEAM).toLowerCase();
+      const winTeam = w["1a"]?.toLowerCase();
+      const ruTeam  = w["2a"]?.toLowerCase();
+
+      if (tm === winTeam) meritText += `🏆 Han är <strong>Mästare i SEC ${num}</strong>.<br>`;
+      if (tm === ruTeam)  meritText += `🥈 Han kom <strong>2:a i SEC ${num}</strong>.<br>`;
     });
 
-    winners.forEach(row => {
-      if (!row.cup) return;
-
-      const num = row.cup.replace("SEC", "").trim();
-      const playedRow = cupIndex[num];
-      if (!playedRow) return;
-
-      const winner = row["1a"]?.trim()?.toLowerCase();
-      const runnerUp = row["2a"]?.trim()?.toLowerCase();
-      const team = teamName(playedRow.TEAM).toLowerCase();
-
-      if (winner && team === winner)
-        meritText += `🏆 Han är <strong>Mästare i SEC ${num}</strong> med <strong>${teamName(row["1a"])}</strong>.<br>`;
-
-      if (runnerUp && team === runnerUp)
-        meritText += `🥈 Han kom <strong>2:a i SEC ${num}</strong> med <strong>${teamName(row["2a"])}</strong>.<br>`;
-    });
-
-    /* ============================================================
-       BIO TEXT
-    ============================================================ */
+    /* ======================================================
+       1️⃣1️⃣ BIO TEXT
+       ====================================================== */
     let bioText = `
-      <div style="margin-top:10px; margin-bottom:20px; color:#ddd; font-size:0.95rem; line-height:1.55;">
-        <strong>${cleanName}</strong> är en <strong>${nationality}</strong> eHockey-spelare som gjorde sitt första framträdande i <strong>${firstCup}</strong>, där han representerade <strong>${firstTeam}</strong>.
+      <div style="margin-top:10px;margin-bottom:20px;color:#ddd;font-size:0.95rem;line-height:1.55;">
+        <strong>${cleanName}</strong> är en <strong>${nationality}</strong> eHockey-spelare
+        som gjorde sitt första framträdande i <strong>${firstCup}</strong> för <strong>${firstTeam}</strong>.
     `;
 
     if (playedOnce) {
-      bioText += `
-        Han har endast spelat en SEC-cup – <strong>${firstCup}</strong> – där han representerade <strong>${firstTeam}</strong>.
-      `;
+      bioText += `Han har endast spelat en enda SEC-cup – <strong>${firstCup}</strong>.`;
     } else {
       bioText += `
-        Sedan dess har han deltagit i ytterligare <strong>${uniqueCups.length - 1}</strong> cuper och representerat totalt <strong>${teamCount}</strong> lag. I den senaste SEC-upplagan han deltog i spelade han för <strong>${lastTeam}</strong>.
-      `;
+        Totalt har han deltagit i <strong>${cups.length}</strong> cuper och representerat
+        <strong>${new Set(originalData.map(r => r.TEAM)).size}</strong> lag.
+        I den senaste upplagan <strong>${lastCup}</strong> spelade han för <strong>${lastTeam}</strong>.`;
     }
 
     bioText += `
         Totalt har han spelat <strong>${totalGames}</strong> matcher i SEC.
-        <br><br>${bestCupText}
-        <br><br>${meritText}
+        <br><br>${bestCupText}<br><br>${meritText}
       </div>
     `;
 
-    /* ============================================================
-       TABELLER
-    ============================================================ */
+    /* ======================================================
+       1️⃣2️⃣ STATSBLOCK – HTML
+       ====================================================== */
     let html = bioText;
 
-    // Skater tabell
     if (skaters.length) {
       html += `
-      <h3 style="margin-top:25px; color:#f5d86e;">Utespelare</h3>
-      <div class="stats-table"><table>
-      <thead><tr>
-        <th>TURNERING</th><th>TEAM</th><th>GP</th><th>G</th>
-        <th>A</th><th>PTS</th><th>PIM</th>
-      </tr></thead><tbody>
-      `;
+        <h3 style="margin-top:25px;color:#f5d86e;">Utespelare</h3>
+        <div class="stats-table">
+          <table><thead>
+            <tr><th>TURNERING</th><th>TEAM</th><th>GP</th><th>G</th><th>A</th><th>PTS</th><th>PIM</th></tr>
+          </thead><tbody>`;
       skaters.forEach(r => {
         html += `
-        <tr>
-          <td>${r.TURNERING}</td>
-          <td>${teamName(r.TEAM)}</td>
-          <td>${r.GP}</td>
-          <td>${r.G}</td>
-          <td>${r.A}</td>
-          <td>${r.PTS}</td>
-          <td>${r.PIM}</td>
-        </tr>`;
+          <tr>
+            <td>${r.TURNERING}</td>
+            <td>${teamName(r.TEAM)}</td>
+            <td>${r.GP}</td>
+            <td>${r.G}</td>
+            <td>${r.A}</td>
+            <td>${r.PTS}</td>
+            <td>${r.PIM}</td>
+          </tr>`;
       });
-      html += "</tbody></table></div>";
+      html += `</tbody></table></div>`;
     }
 
-    // Goalie tabell
     if (goalies.length) {
       html += `
-      <h3 style="margin-top:25px; color:#f5d86e;">Målvakt</h3>
-      <div class="stats-table"><table>
-      <thead><tr>
-        <th>TURNERING</th><th>TEAM</th><th>GP</th>
-        <th>SA</th><th>GA</th><th>SV</th>
-        <th>GAA</th><th>SV%</th><th>SO</th>
-      </tr></thead><tbody>
-      `;
+        <h3 style="margin-top:25px;color:#f5d86e;">Målvakt</h3>
+        <div class="stats-table">
+          <table><thead>
+            <tr><th>TURNERING</th><th>TEAM</th><th>GP</th><th>SA</th><th>GA</th><th>SV</th><th>GAA</th><th>SV%</th><th>SO</th></tr>
+          </thead><tbody>`;
       goalies.forEach(r => {
         html += `
-        <tr>
-          <td>${r.TURNERING}</td>
-          <td>${teamName(r.TEAM)}</td>
-          <td>${r.GP}</td>
-          <td>${r.SA}</td>
-          <td>${r.GA}</td>
-          <td>${r.SV}</td>
-          <td>${formatGAA(r.GAA)}</td>
-          <td>${r.SVP.toFixed(1)}%</td>
-          <td>${r.SO}</td>
-        </tr>`;
+          <tr>
+            <td>${r.TURNERING}</td>
+            <td>${teamName(r.TEAM)}</td>
+            <td>${r.GP}</td>
+            <td>${r.SA}</td>
+            <td>${r.GA}</td>
+            <td>${r.SV}</td>
+            <td>${formatGAA(r.GAA)}</td>
+            <td>${formatSVP(r.SVP)}</td>
+            <td>${r.SO}</td>
+          </tr>`;
       });
-      html += "</tbody></table></div>";
+      html += `</tbody></table></div>`;
     }
 
+    /* ======================================================
+       1️⃣3️⃣ VISA RESULTAT
+       ====================================================== */
     out.innerHTML = html;
     out.style.display = "block";
     loaderStats.style.display = "none";
   }
 
   catch (err) {
-    console.error("Fel i loadStats:", err);
+    console.error("Stats error:", err);
     loaderStats.style.display = "none";
-    out.innerHTML = `<div class="no-stats">Fel vid laddning av statistik.</div>`;
+    out.innerHTML = `<div class="no-stats">Fel vid laddning.</div>`;
     out.style.display = "block";
   }
 }
+
 
 /* INITIERA */
 loadPhoto();
