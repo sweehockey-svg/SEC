@@ -792,28 +792,47 @@
 
         document.getElementById("playerName").textContent = cleanName;
 
-        /* Cuper & lag */
-        const cupSet = new Set(originalData.map(r => r.TURNERING));
-        const cups = [...cupSet].sort(
-          (a, b) => parseFloat(a.replace("SEC","")) - parseFloat(b.replace("SEC",""))
-        );
+/* Cuper & lag – G/S ska räknas som samma cup */
+const cupSet = new Set(
+  originalData.map(r =>
+    String(r.TURNERING)
+      .replace("SEC", "")
+      .trim()
+      .replace(/[GS]$/,"")   // tar bort G eller S
+  )
+);
 
-        const firstCup = cups[0];
-        const lastCup = cups[cups.length - 1];
-        const playedOnce = cups.length === 1;
+// Sortera numeriskt
+const cups = [...cupSet].sort((a, b) => Number(a) - Number(b));
 
-        const firstTeam = teamName(
-          originalData.find(r => r.TURNERING === firstCup).TEAM
-        );
+// Hämta verkliga rader för första/sista cupen
+const firstCupNum = cups[0];
+const lastCupNum = cups[cups.length - 1];
 
-        const lastTeam = teamName(
-          originalData.find(r => r.TURNERING === lastCup).TEAM
-        );
+const firstRow = originalData.find(r =>
+  String(r.TURNERING).replace("SEC", "").trim().replace(/[GS]$/,"") === firstCupNum
+);
 
-        const totalGames = originalData.reduce(
-          (n, r) => n + Number(r.GP || 0),
-          0
-        );
+const lastRow = originalData.find(r =>
+  String(r.TURNERING).replace("SEC", "").trim().replace(/[GS]$/,"") === lastCupNum
+);
+
+// Sätt turneringsnamn så det visas som SEC X
+const firstCup = `SEC ${firstCupNum}`;
+const lastCup  = `SEC ${lastCupNum}`;
+
+const playedOnce = cups.length === 1;
+
+// Hämta lagen
+const firstTeam = teamName(firstRow.TEAM);
+const lastTeam = teamName(lastRow.TEAM);
+
+// Totala matcher
+const totalGames = originalData.reduce(
+  (n, r) => n + Number(r.GP || 0),
+  0
+);
+
 
         /* Bästa cup – logik */
         const skaters = originalData.filter(r => !("SA" in r));
