@@ -6,6 +6,20 @@
   <title>Svenska eHockey Cupen – Spelarkort</title>
 
   <style>
+/* Gör tabeller scrollbara på mobil */
+/* Behåller designen och inga konstigheter */
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #444 #111;
+}
+
+.table-scroll table {
+  min-width: 700px; /* Säkerställer horisontell scroll */
+}
+
     .loader-wrapper {
       width: 100%;
       display: none;      /* visas via JS */
@@ -1003,31 +1017,46 @@ const totalGames = originalData.reduce(
         let html = bioText;
 
         if (skaters.length) {
-          html += `
-            <h3 style="margin-top:25px; color:#f5d86e;">Utespelare</h3>
-            <div class="stats-table"><table>
-            <thead>
-              <tr>
-                <th>TURNERING</th><th>TEAM</th><th>GP</th><th>G</th><th>A</th><th>PTS</th><th>PIM</th>
-              </tr>
-            </thead>
-            <tbody>
-          `;
-          skaters.forEach(r => {
-            html += `
-              <tr>
-                <td>${r.TURNERING}</td>
-                <td>${teamName(r.TEAM)}</td>
-                <td>${r.GP}</td>
-                <td>${r.G}</td>
-                <td>${r.A}</td>
-                <td>${r.PTS}</td>
-                <td>${r.PIM}</td>
-              </tr>
-            `;
-          });
-          html += "</tbody></table></div>";
-        }
+  html += `
+    <h3 style="margin-top:25px; color:#f5d86e;">Utespelare</h3>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>TURNERING</th>
+            <th>TEAM</th>
+            <th>GP</th>
+            <th>G</th>
+            <th>A</th>
+            <th>PTS</th>
+            <th>PIM</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  skaters.forEach(r => {
+    html += `
+      <tr>
+        <td>${r.TURNERING}</td>
+        <td>${teamName(r.TEAM)}</td>
+        <td>${r.GP}</td>
+        <td>${r.G}</td>
+        <td>${r.A}</td>
+        <td>${r.PTS}</td>
+        <td>${r.PIM}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
 
         if (goalies.length) {
           html += `
