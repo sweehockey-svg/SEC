@@ -892,13 +892,28 @@
           ? skaters.reduce((b, r) => (!b || Number(r.PTS) > Number(b.PTS) ? r : b))
           : null;
 
-   const bestGoalie = goalies.length
-  ? goalies.reduce((b, r) => {
-      const rSV = parseFloat(String(r.SVP || "0").replace(",", "."));
-      const bSV = parseFloat(String(b.SVP || "0").replace(",", "."));
-      return rSV > bSV ? r : b;
-    }, goalies[0])
+/* Bästa målvakt – korrekt SV%-logik */
+function parseSVP(val) {
+  if (val == null) return -1;
+  let v = String(val).trim().replace("%", "").replace(",", ".");
+  let num = parseFloat(v);
+  if (isNaN(num)) return -1;
+
+  // Om siffran är t.ex. 0.874 → gör om till 87.4
+  if (num > 0 && num < 1) num = num * 100;
+
+  return num;
+}
+
+const bestGoalie = goalies.length
+  ? goalies.reduce((best, row) => {
+      const rSV = parseSVP(row.SVP);
+      const bSV = best ? parseSVP(best.SVP) : -1;
+      return rSV > bSV ? row : best;
+    }, null)
   : null;
+
+
 
 
         /* ⭐ Bästa cup – text */
