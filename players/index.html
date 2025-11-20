@@ -1,4 +1,858 @@
-/* ===============================
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Svenska eHockey Cupen – Spelarkort</title>
+
+  <style>
+    /* ===============================
+       Scroll / premium-tabeller
+       =============================== */
+    .table-scroll {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-top: 10px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background:
+        radial-gradient(circle at top, rgba(255,255,255,0.04) 0, transparent 55%),
+        linear-gradient(180deg, #050716, #02030a 70%, #000);
+      box-shadow: 0 18px 55px rgba(0,0,0,0.9);
+      scrollbar-width: thin;
+      scrollbar-color: #444 #111;
+    }
+
+    .table-scroll::-webkit-scrollbar {
+      height: 6px;
+    }
+    .table-scroll::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.7);
+    }
+    .table-scroll::-webkit-scrollbar-thumb {
+      background: #444;
+      border-radius: 4px;
+    }
+
+    .stats-table table {
+      width: 100%;
+      min-width: 720px;
+      border-collapse: collapse;
+      font-size: .9rem;
+    }
+
+    .stats-table thead {
+      background: linear-gradient(90deg, #050c26, #0e1638);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.75);
+    }
+
+    .stats-table th {
+      padding: 10px 9px;
+      color: #f5c851;
+      text-align: right;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: .06em;
+      border-bottom: 1px solid rgba(245,200,81,0.4);
+      white-space: nowrap;
+    }
+
+    .stats-table th:first-child,
+    .stats-table th:nth-child(2) {
+      text-align: left;
+    }
+
+    .stats-table td {
+      padding: 9px 9px;
+      border-bottom: 1px solid #151a32;
+      text-align: right;
+      color: #e2e3f1;
+    }
+
+    .stats-table td:first-child,
+    .stats-table td:nth-child(2) {
+      text-align: left;
+    }
+
+    .stats-table tr:nth-child(even) {
+      background: rgba(255,255,255,0.01);
+    }
+
+    .stats-table tr:hover {
+      background: rgba(245,216,110,0.06);
+      box-shadow: inset 0 0 0 1px rgba(245,216,110,0.16);
+    }
+
+    .table-title {
+      margin-top: 28px;
+      margin-bottom: 6px;
+      text-align: center;
+      color: #f5d86e;
+      font-size: 1.15rem;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      text-shadow: 0 0 14px rgba(245,216,110,0.55);
+    }
+
+    /* ===============================
+       Loader
+       =============================== */
+    .loader-wrapper {
+      width: 100%;
+      display: none;      /* visas via JS */
+      justify-content: center;
+      margin: 25px 0;
+    }
+
+    .sec-loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+    }
+
+    .loader-text {
+      font-size: 1rem;
+      color: #f6d66b;
+      margin-bottom: 10px;
+      letter-spacing: .04em;
+    }
+
+    .loader-bar {
+      width: 200px;
+      height: 10px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 6px;
+      border: 1px solid rgba(246,214,107,0.35);
+      overflow: hidden;
+      margin: 0 auto;
+    }
+
+    .loader-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #f6d66b, #ffe7ac);
+      animation: secBar 1.8s infinite ease-in-out;
+    }
+
+    @keyframes secBar {
+      0% { width: 0%; }
+      50% { width: 85%; }
+      100% { width: 0%; }
+    }
+
+    :root {
+      --sec-bg-deep: #02030a;
+      --sec-bg-top: #080f24;
+      --sec-gold: #d6b15f;
+      --sec-gold-soft: #f0d58b;
+      --sec-text-main: #e3e4f2;
+      --sec-text-muted: #b4b7d8;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+      background: #000;
+      color: var(--sec-text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Bakgrund */
+    #sec-bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(214,177,95,0.17) 0, transparent 55%),
+        radial-gradient(circle at 100% 0%, rgba(88,120,255,0.16) 0, transparent 55%),
+        radial-gradient(circle at 50% 100%, #010314 0, #000 70%);
+    }
+
+    .smoke-layer {
+      position: absolute;
+      inset: -20%;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(120,140,200,0.12) 0, transparent 45%),
+        radial-gradient(circle at 80% 30%, rgba(120,140,200,0.10) 0, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(80,100,160,0.12) 0, transparent 45%);
+      opacity: 0;
+      animation: smokeFade 1.4s ease forwards .8s, smokeDrift 40s linear infinite;
+      mix-blend-mode: screen;
+    }
+
+    .smoke-layer.smoke-back {
+      filter: blur(22px);
+      animation: smokeFade 1.8s ease forwards 1s, smokeDrift 55s linear infinite;
+    }
+
+    @keyframes smokeFade { from { opacity:0;} to{opacity:0.4;} }
+    @keyframes smokeDrift {
+      0% { transform:translate3d(0,0,0) scale(1);}
+      50%{ transform:translate3d(-4%,-2%,1px) scale(1.05);}
+      100%{transform:translate3d(3%,3%,0) scale(1);}
+    }
+
+    #sec-page {
+      width: 95%;
+      max-width: 1200px;
+      padding: 20px 12px 80px 12px;
+      animation: pageFade .6s ease-out;
+    }
+
+    @keyframes pageFade {
+      from { opacity:0; transform: translateY(8px);}
+      to { opacity:1; transform: translateY(0);}
+    }
+
+    /* TILLBAKA-KNAPP */
+    .back-button {
+      display: inline-block;
+      cursor: pointer;
+      color: var(--sec-gold-soft);
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(214,177,95,0.35);
+      box-shadow: 0 0 18px rgba(214,177,95,0.15);
+      transition: 0.2s;
+      width: fit-content;
+    }
+
+    .back-button:hover {
+      background: rgba(255,215,0,0.15);
+      color: #fff;
+      transform: translateX(-3px);
+    }
+
+    /* Header */
+    .sfc-header {
+      margin-top: 12px;
+      border-radius: 22px;
+      padding: 26px 16px 22px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,0.05), transparent 40%),
+        radial-gradient(circle at top, #151b3f 0, #050614 55%, #02030a 100%);
+      border: 1px solid rgba(214,177,95,0.6);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.95);
+      text-align: center;
+    }
+
+    .sfc-logo {
+      width: 165px;
+      filter: drop-shadow(0 0 20px rgba(214,177,95,0.7));
+    }
+
+    .sfc-title {
+      font-weight: 800;
+      font-size: clamp(1.3rem, 2.6vw, 1.7rem);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+
+    .sfc-title strong {
+      color: var(--sec-gold-soft);
+    }
+
+    .sfc-divider {
+      width: 180px;
+      height: 3px;
+      margin: 18px auto 0;
+      border-radius: 999px;
+      background: linear-gradient(90deg,transparent,var(--sec-gold-soft),transparent);
+      box-shadow: 0 0 15px rgba(214,177,95,0.8);
+    }
+
+    .player-shell {
+      margin-top: 32px;
+      width: 95%;
+      max-width: 1100px;
+      margin-inline: auto;
+    }
+
+    /* Spelarkort */
+    .player-card {
+      width: 100%;
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at top, rgba(255,255,255,0.04), transparent 55%),
+        linear-gradient(180deg, #060715, #02030a 60%, #000);
+      border:1px solid rgba(255,255,255,0.06);
+      padding:24px 20px;
+      text-align:center;
+    }
+
+    #playerPhoto {
+      width: 260px;
+      max-width: 95%;
+      border-radius:20px;
+      padding:6px;
+      background:#050712;
+      border:2px solid rgba(255,215,0,.35);
+      margin-bottom:12px;
+    }
+
+    #playerName {
+      font-size:1.6rem;
+      font-weight:700;
+      color:#f5d86e;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      margin-bottom:6px;
+    }
+
+    .player-subtitle {
+      font-size:.88rem;
+      color:var(--sec-text-muted);
+      margin-bottom:12px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+
+    .no-stats {
+      margin-top:10px;
+      background:#3a0000;
+      border:1px solid #ff4d4d;
+      padding:10px;
+      border-radius:10px;
+      text-align:center;
+      font-size:0.9rem;
+    }
+
+    /* Sökmodul */
+    .player-search-centered {
+      margin: 40px auto 10px auto;
+      width: 50%;
+      max-width: 550px;
+      min-width: 260px;
+      border-radius: 22px;
+      text-align: center;
+      background:
+        radial-gradient(circle at top, rgba(255,255,255,0.05) 0, transparent 55%),
+        linear-gradient(180deg, #050718, #02030a 70%, #000);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 20px 18px 22px;
+    }
+
+    .search-title {
+      font-size: .92rem;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-weight: 600;
+      color: var(--sec-text-muted);
+      margin-bottom: 6px;
+    }
+
+    .player-search-centered .search-wrapper {
+      position: relative;
+    }
+
+    #playerSearch {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(245,216,110,.7);
+      background: rgba(2,4,18,0.95);
+      color: #fff;
+      font-size: .95rem;
+    }
+
+    #playerSearch::placeholder {
+      color: rgba(180,183,216,0.75);
+    }
+
+    #searchResults {
+      position:absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      width:100%;
+      background:#090b17;
+      border:1px solid rgba(255,215,0,.25);
+      border-radius:14px;
+      display:none;
+      max-height:230px;
+      overflow-y:auto;
+      z-index:100;
+    }
+
+    .search-item {
+      padding:9px 14px;
+      color:#ddd;
+      cursor:pointer;
+    }
+
+    .search-item:hover {
+      background:rgba(255,215,0,.08);
+      color:#f5d86e;
+    }
+
+    /* Meriter – enkel version (kan tweakas) */
+    .merit-title {
+      margin-top: 25px;
+      margin-bottom: 6px;
+      text-align: center;
+      color: #f5d86e;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      text-shadow: 0 0 14px rgba(245,216,110,0.55);
+    }
+
+    .merit-list {
+      text-align: center;
+      margin-top: 4px;
+      font-size: 1rem;
+      line-height: 1.7;
+      color: #e3e4f2;
+    }
+
+    /* Footer */
+    #sec-footer-wrapper {
+      margin-top: 30px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(214,177,95,0.35);
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--sec-text-muted);
+    }
+
+    #sec-footer-wrapper span {
+      color: var(--sec-gold-soft);
+      font-weight: 600;
+    }
+
+    @media (max-width: 600px) {
+      .player-search-centered {
+        width: 90%;
+      }
+
+      #playerPhoto {
+        width: 220px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Bakgrund -->
+  <div id="sec-bg-layer">
+    <div class="smoke-layer smoke-back"></div>
+    <div class="smoke-layer"></div>
+  </div>
+
+  <div id="sec-page">
+
+    <!-- 🔙 TILLBAKA-KNAPP -->
+    <div class="back-button" onclick="history.back()">
+      ← Tillbaka
+    </div>
+
+    <!-- HEADER -->
+    <a href="https://sweehockey-svg.github.io/SEC/index.html" style="text-decoration:none; color:inherit;">
+      <div class="sfc-header">
+        <img class="sfc-logo" src="https://drive.google.com/thumbnail?id=1QybW_Uw8HO0OXo8vwQFD-zrrr-ifFrC9&sz=w1000" alt="SEC Logo">
+        <div class="sfc-title">
+          🏆 Svenska eHockey <strong>Cupen</strong> 🏒
+        </div>
+        <div class="sfc-divider"></div>
+      </div>
+    </a>
+
+    <div class="player-shell">
+      <!-- SPELARKORT -->
+      <div class="player-card">
+        <img id="playerPhoto" alt="Spelarbild">
+        <div id="playerName">Ingen spelare vald</div>
+
+        <!-- 🔹 LADDARE FÖR STATISTIK -->
+        <div id="statsLoader" class="stats-loader" style="
+          display:none;
+          margin: 20px auto;
+          text-align:center;
+          width:100%;
+          display:flex;
+          flex-direction:column;
+          align-items:center;
+          justify-content:center;
+        ">
+          <div class="loader-text">Statistik laddas…</div>
+          <div class="loader-bar">
+            <div class="loader-bar-fill"></div>
+          </div>
+        </div>
+
+        <div id="statsOutput"></div>
+      </div>
+
+      <!-- Loader för allplayers -->
+      <div id="loaderWrapper" class="loader-wrapper">
+        <div class="sec-loader">
+          <div class="loader-text">Spelarlista laddas…</div>
+          <div class="loader-bar">
+            <div class="loader-bar-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SÖKRUTA CENTRERAD -->
+      <div class="player-search-centered">
+        <div class="search-title">Sök</div>
+        <div class="search-wrapper">
+          <input id="playerSearch" placeholder="Sök PSN GT">
+          <div id="searchResults"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div id="sec-footer-wrapper">
+      © 2025 <span>Svenska eHockey Cupen</span> | Design & utveckling av <span>SWEEHOCKEY</span>
+    </div>
+
+  </div>
+
+  <script>
+  const API = "https://script.google.com/macros/s/AKfycbwUvylvIbUTy4_zihW5_OKIsQME2vxcPHWLldObZI28dggqJytvF2UmdsAD4Ib5Zre1/exec";
+
+  /* full team-map */
+  const TEAM_MAP = {"3TU":"3Tuna Le sport","AL":"A Laget","AFT":"AFTERLIFE","AIS":"Almtuna ESPORT","AVE":"Avenyn Esport","BAC":"BACKCHECK BOYS","BAS":"Bask Nation","BEE":"Beerhouse","BGS":"Biggie Stockholm","BIK":"BIK Karlskoga Esport","BV":"Birka Vikings","IFB":"Björklöven Esport","CLS":"Black Clovers","BES":"Black Eagles Sweden","Bla":"Black Panthers","BPS":"Black Phantoms","BD":"Blackdawgs","BSU":"Blessed Suedis","BOI":"BOIS IK","Bom":"Bombers Hockey","Boo":"Boost HC","BOR":"BortaMatch HC","BRA":"Brain Freezers","BB":"Brunker Bulldogs","BIF":"Brynäs IF Esport","Bul":"Bull sharks","CAL":"Calippo HC","ICE":"Carolus Icemen","CAV":"Cavemen Hockey","CHA":"Charleswood Chiefs","CHC":"Chiefzz HC","CLO":"Clowns","COG":"Company of Geeks","CRA":"Crash The Net HC","Dar":"Dark City Knights","DIC":"DICE Hockey","DTS":"Dirty Tacklers HC","DIF":"Djurgården","DOM":"Dompa HC","DRA":"Dracones","DHY":"Dynamic Hockey","LXN":"EƎ Lag AntonLxnd","LGB":"EƎ Lag bystrom___","TCO":"EƎ Lag el_tacobag","LHZ":"EƎ Lag GD_Hampezz","FRY":"EƎ Lag l-Furyan-l","SLO":"EƎ Lag Sloogan9498","STG":"EƎ Lag Sneipthegunner","T50":"EƎ Lag Toivo4936","WAG":"EƎ Lag Wagge01","La":"EƎ Lag xAlknas","AC":"EƎ Lag xCurhed","Boe":"EƎ Lag xSnorlaaxx","EC":"Enkoping City","ENK":"Enköping Hks","EE":"Etuna Eagles","EVO":"Evolution HC","KBK":"Färjestad","FBK":"Färjestad BK","Far":"Farmalaget","FEM":"Favoritfemman","FEN":"Fenris Wolves","FIL":"Fila De La Hc","FF":"Flädie Faxes","FFR":"Free From Rodents","FHC":"Frölunda HC Academy","FR":"Frölunda HC Region","FSE":"Full send esport","GVL":"Gefle Bocken","GH":"Get Hagens HC","GIF":"Gifflarna HC","GB":"Glacies Bellator","GLA":"Glasbanken se","GHK":"Gleumes Hockey Krefeld","GD":"Green Devils","GHC":"Guldkallan HC","HAM":"Hamra Allstars","PE":"HC Pustertal Esports","HCZ":"HCZ","INC":"Hockey INC","HOC":"Hockey of the north","HP":"HockeyProfessorn HC","HRR":"Hokurit","HAW":"Hundred Acre Woods","HV":"HV71","Nld":"IFK Norrland","IKY":"IK EyBro","IKP":"Ik Pantern Esport","ISU":"Ik Stolpe ut","Ill":"Illumination","Ilu":"Illusion","JHC":"Jokers Hockey","KAJ":"KAJAK Esports","KAL":"KALMARUNIONEN","KNG":"Kingping","KXS":"Knox Stark","KP":"Kompaniet","KRK":"Kraken","OK":"Kronofogden Esport","KUM":"Kumla hockey","LOE":"Lack of Empathy","BYS":"Lag bystrom","AKE":"Lag Aker36","AND":"Lag andreaskakan","ANT":"Lag antoniomannen","AXE":"Lag Axelzonee","BEN":"Lag benjamint","BRU":"Lag Bruno_32","DAS":"Lag Dasplund","DII":"Lag Diizzylicious","ECK":"Lag eckeson","ELI":"Lag eliekamel_","EPS":"Lag ePsych0-","HEN":"Lag Henning92","LGH":"Lag Hojerslev","JAR":"Lag Jarvinder","JEP":"Lag Jepplo02","JON":"Lag Jonass1551","LAR":"Lag Larsson_500","LL":"Lag LaxenHD","LOK":"Lag Lokope11","LGL":"Lag LordOlii","MAT":"Lag Mathiasgamer_07","MES":"Lag mesimaki94","PRA":"Lag Prallelkova","LR":"Lag RookieLIAMOVIC","SNU":"Lag Snus","STE":"Lag Stenborg431","STI":"Lag stickovic","LGS":"Lag Svamp GG","TAB":"Lag Tablehockey","TAN":"Lag TantBerit","V1C":"Lag v1CTANK","LAL":"Lallare HC","LAM":"LAMPA","Las":"Las Palmas HC","CCN":"Le Club Chat Noir","LEG":"LEGION HC","LIF":"Leksand","LH":"Linköping","LHC":"Lofoten HC","666":"Lucid Dreams","LLE":"Ludvika Lightning Esport","LHK":"Luleå","LHF":"Luleå Hockey Region","LUM":"Lumberjacks HC","MAC":"Macho","MAD":"MAD Knogmackers HC","MIF":"Malmö","FOG":"MGŁA","MF":"Miami Freeze","Mel":"Mighty Mel HC","XXX":"Mighty Stixxx","MOD":"Modo Hockey","MIK":"Mora IK","MHC":"Morganchipsen HC","NWG":"No Worries Guys","NF":"Nordic Falcons","NK":"Nordic Knights","NKH":"Nordic Knights HC","NL":"Nordic Lightning","NOS":"Nordic Nosebleed","NOR":"Nordic Vipers","NVB":"Norra Västerbotten","NOF":"Norska förbundslaget","NHC":"North Hockey Academy","ND":"Northern Dust","NH":"Northern Heroes","Ock":"Ockelbo Ehockey","Olj":"Oljefondet","OME":"Omerta","omb":"Omerta beyond","ONT":"On The Road Again","One":"One HC","OBK":"Örebro","ODH":"Orebro deaf hockeY","OHA":"Orebro Hockey Academy","IKO":"Oskarshamn","OIK":"Oskarshamn IK","PAT":"Patriots","PHO":"Phoenix","POL":"Polarbears HC","PRO":"Prowlers Esport","PUR":"Purification","PC":"Purple Cobraas","RAE":"Rains It Poors","RHC":"Rava HC","RCT":"RCTIC","RNS":"Redemption Stars","ROP":"Rimon o Pumba","RGT":"Ringette HC","RBK":"Rögle","ROR":"Rorvik HC","RHT":"Royal HT","RPT":"RPEAT ESPORTS","SAN":"SandhedYoungGuns","SoS":"SCRUBS","SPT":"Serpentes","SHS":"Shifty Shafts","SHW":"Showtimes","112":"Sjukstugan","SAI":"Skellefteå","Sku":"Skumtomtarnas arme","SW":"SPARTA WARRIORS1928","SPA":"Spartans eSport","SA":"SSK Academy","SSA":"SSK Adepts","SSK":"SSK eSport","SI":"SSK Ignite","SSP":"SSK Prospects","SBH":"Stallarholmens Brygghus","STR":"Starz HC","SAS":"Stayhard Stallions","BKN":"Stockholm Black Knights","SIL":"Storhamar IL Esport","SuS":"SUKAT JA SANDAALIT","SES":"Sunne IK Esport","SS":"Surte Sisu HC","SYN":"Synergy Hockey","TMO":"Team Modo","TR":"Team Rocket","TBT":"THE BLUE TELGE","TRB":"The red bullets","TRW":"THE RELENTLESS WOLFS HC","SOL":"The Solution","WoW":"The Worn Out Wisemen","TB":"Thigh Bay","TES":"TIGERS E-sport","TIK":"Timrå IK","TRA":"Trasdockorna","TRE":"Troillan Esport","TRO":"Trojans","TUN":"Tundra","ULV":"Ulvhednar HC","UR":"UnderRated","UNI":"UNI Gaming","UN":"Unknown Heroes","UNW":"Unwanted","VAH":"Valbo hockey","VIK":"Västerås IK","VAX":"Växjo","VBS":"VBO B Stars","VBO":"VBO Stars","VER":"Verket","hmm":"Veterankraft","Vic":"Viccingi","VIP":"Viper hc","NEX":"vNexs Faxes","vNV":"vNexs Vipers","vNW":"VNexs wisemen","VS":"Vtuna Socken","WHI":"WHITE WINGS","WS":"Whitesharks","WIL":"Wild rockets Hc","WIS":"Wisby Islanders","You":"Young Guys"};
+
+  function teamName(code) {
+    return TEAM_MAP[code] || code;
+  }
+
+  /* ===============================
+     URL-PLAYER
+     =============================== */
+  const params = new URLSearchParams(location.search);
+  const player = params.get("player") || "";
+  document.getElementById("playerName").textContent = player || "Ingen spelare vald";
+
+  /* ===============================
+     Normalisera text
+     =============================== */
+  function norm(s) {
+    return String(s || "")
+      .toLowerCase()
+      .replace(/[,]/g, "")
+      .replace(/\s+/g, "")
+      .replace(/[^a-z0-9]/g, "");
+  }
+
+  /* ===============================
+     ALL PLAYERS – UTAN CACHE
+     =============================== */
+  let allPlayers = [];
+
+  async function loadAllPlayersFast() {
+    const loader = document.getElementById("loaderWrapper");
+    loader.style.display = "flex";
+
+    try {
+      const [uteRes, mvRes] = await Promise.all([
+        fetch(API + "?sheet=utestatsall"),
+        fetch(API + "?sheet=målvaktsstatsall")
+      ]);
+
+      const uteData = await uteRes.json();
+      const mvData = await mvRes.json();
+
+      const names = [];
+      const seen = new Set();
+
+      function addNamesFromMatrix(matrix, headerName) {
+        if (!Array.isArray(matrix) || matrix.length < 2) return;
+        const header = matrix[0];
+        const idx = header.indexOf(headerName);
+        if (idx === -1) return;
+
+        for (let i = 1; i < matrix.length; i++) {
+          const row = matrix[i];
+          const name = row[idx];
+          if (!name) continue;
+          const key = norm(name);
+          if (!key || seen.has(key)) continue;
+          seen.add(key);
+          names.push({ PLAYER: name });
+        }
+      }
+
+      addNamesFromMatrix(uteData, "PLAYERS");
+      addNamesFromMatrix(mvData, "GOALIES");
+
+      allPlayers = names;
+    } catch (err) {
+      console.error("Fel vid laddning av allplayers:", err);
+    }
+
+    loader.style.display = "none";
+  }
+
+  /* ===============================
+     SÖK – med allPlayers
+     =============================== */
+  const inp = document.getElementById("playerSearch");
+  const box = document.getElementById("searchResults");
+
+  inp.addEventListener("input", () => {
+    const q = norm(inp.value.trim());
+    if (!q) {
+      box.style.display = "none";
+      return;
+    }
+
+    const results = allPlayers
+      .filter(p => norm(p.PLAYER).includes(q))
+      .slice(0, 20);
+
+    box.innerHTML = results.length
+      ? results.map(p =>
+          `<div class="search-item" onclick="go('${p.PLAYER}')">${p.PLAYER}</div>`
+        ).join("")
+      : `<div class="search-item">Försök igen om några sekunder</div>`;
+
+    box.style.display = "block";
+  });
+
+  function go(name) {
+    location.href = "?player=" + encodeURIComponent(name);
+  }
+
+  document.addEventListener("click", e => {
+    if (!box.contains(e.target) && e.target !== inp) {
+      box.style.display = "none";
+    }
+  });
+
+  /* ===============================
+     Format GAA
+     =============================== */
+  function formatGAA(raw) {
+    if (raw == null || raw === "") return "";
+    if (typeof raw === "string" && raw.includes("T")) {
+      const d = new Date(raw);
+      if (!isNaN(d)) {
+        const h = d.getUTCHours();
+        const m = d.getUTCMinutes();
+        const val = h + m / 60;
+        return val.toFixed(2);
+      }
+    }
+    const num = Number(raw);
+    if (!isNaN(num)) return num.toFixed(2);
+    return raw;
+  }
+
+  /* ===============================
+     Format SV%
+     =============================== */
+  function formatSVP(value) {
+    if (!value && value !== 0) return "0%";
+    let v = value.toString().replace(",", ".");
+    let num = parseFloat(v);
+    if (isNaN(num)) return "0%";
+    if (num > 0 && num < 1) {
+      return (num * 100).toFixed(1) + "%";
+    }
+    if (num >= 1 && num <= 100) {
+      return num.toFixed(1) + "%";
+    }
+    if (num > 100) {
+      return (num / 100).toFixed(2) + "%";
+    }
+    return num.toFixed(1) + "%";
+  }
+
+  /* ===============================
+     Nationaliteter
+     =============================== */
+  function translateNationality(code) {
+    if (!code) return "";
+    const map = {
+      "SWE": "Svensk",
+      "FIN": "Finsk",
+      "NOR": "Norsk",
+      "DEN": "Dansk",
+      "DK": "Dansk",
+      "GER": "Tysk",
+      "DE": "Tysk",
+      "FRA": "Fransk",
+      "CZE": "Tjeckisk",
+      "SVK": "Slovakisk",
+      "SUI": "Schweizisk",
+      "CHE": "Schweizisk",
+      "AUT": "Österrikisk",
+      "LAT": "Lettisk",
+      "EST": "Estnisk",
+      "LTU": "Litauisk",
+      "POL": "Polsk",
+      "NLD": "Nederländsk",
+      "NED": "Nederländsk",
+      "GBR": "Brittisk",
+      "ENG": "Engelsk"
+    };
+    code = code.trim().toUpperCase();
+    return map[code] || code;
+  }
+
+  /* ===============================
+     Hämta bundle från API (?player=)
+     =============================== */
+  async function fetchBundle(playerName) {
+    const url = API + "?player=" + encodeURIComponent(playerName);
+    const res = await fetch(url);
+    const data = await res.json();
+    return data;
+  }
+
+  /* ===============================
+     LOAD STATS – via nya API:t (UTAN cache)
+     =============================== */
+  async function loadStats() {
+    const out = document.getElementById("statsOutput");
+    const loaderStats = document.getElementById("statsLoader");
+
+    if (!player) {
+      out.innerHTML = `<div class="no-stats">Ingen spelare vald.</div>`;
+      out.style.display = "block";
+      return;
+    }
+
+    loaderStats.style.display = "flex";
+    out.style.display = "none";
+
+    try {
+      const bundle = await fetchBundle(player);
+
+      if (!bundle || bundle.error || !Array.isArray(bundle.stats) || !bundle.stats.length) {
+        out.innerHTML = `<div class="no-stats">Ingen statistik hittades.</div>`;
+        out.style.display = "block";
+        loaderStats.style.display = "none";
+        return;
+      }
+
+      const originalData = bundle.stats || [];
+      const winners = Array.isArray(bundle.winners) ? bundle.winners : [];
+      const defaultPhotoId = "1VAa79pJ-QbyeliY60autf914z6SBwmhp";
+      const photoId = bundle.photoId || defaultPhotoId;
+
+      // FOTO
+      const img = document.getElementById("playerPhoto");
+      img.src = `https://drive.google.com/thumbnail?id=${photoId}&sz=w1000`;
+      img.loading = "eager";
+
+      // Dela upp i utespelare / målvakter
+      const skaters = originalData.filter(r => r.PLAYERS);
+      const goalies = originalData.filter(r => r.GOALIES);
+
+      // CUP → TURNERING
+      skaters.forEach(r => { r.TURNERING = r.CUP; });
+      goalies.forEach(r => { r.TURNERING = r.CUP; });
+
+      const allRows = [...skaters, ...goalies];
+
+      // Namn + nationalitet
+      let rawName =
+        (skaters[0] && skaters[0].PLAYERS) ||
+        (goalies[0] && goalies[0].GOALIES) ||
+        player;
+
+      rawName = String(rawName);
+
+      let cleanName = rawName.includes(",")
+        ? rawName.split(",")[0].trim()
+        : rawName;
+
+      let natCode = rawName.includes(",")
+        ? rawName.split(",")[1].trim()
+        : "";
+
+      let nationality = translateNationality(natCode);
+
+      document.getElementById("playerName").textContent = cleanName;
+
+      // Cuper & lag – G/S samma cup
+      const cupSet = new Set(
+        allRows.map(r =>
+          String(r.TURNERING || "")
+            .replace("SEC", "")
+            .trim()
+            .replace(/[GS]$/, "")
+        )
+      );
+
+      const cups = [...cupSet].filter(Boolean).sort((a, b) => Number(a) - Number(b));
+      const playedOnce = cups.length === 1;
+
+      const firstCup = cups.length ? "SEC " + cups[0] : "SEC ?";
+      const lastCup  = cups.length ? "SEC " + cups[cups.length - 1] : "SEC ?";
+
+      const firstRow = allRows.find(r =>
+        String(r.TURNERING || "").replace("SEC","").trim().replace(/[GS]$/,"") === cups[0]
+      );
+      const lastRow = allRows.find(r =>
+        String(r.TURNERING || "").replace("SEC","").trim().replace(/[GS]$/,"") === cups[cups.length - 1]
+      );
+
+      const firstTeam = firstRow ? teamName(firstRow.TEAM) : "-";
+      const lastTeam  = lastRow ? teamName(lastRow.TEAM)  : "-";
+
+      const totalGames = allRows.reduce((n, r) => n + Number(r.GP || 0), 0);
+
+      // Bästa cup – utespelare
+      const bestSkater = skaters.length
+        ? skaters.reduce((b, r) => (!b || Number(r.PTS || 0) > Number(b.PTS || 0) ? r : b), null)
+        : null;
+
+      // Bästa cup – målvakt (SV%)
+      const bestGoalie = goalies.length
+        ? goalies.reduce((b, r) => {
+            const rSV = parseFloat(String(r.SVP || "0").replace(",", "."));
+            const bSV = b ? parseFloat(String(b.SVP || "0").replace(",", ".")) : -1;
+            return rSV > bSV ? r : b;
+          }, null)
+        : null;
+
+      // ⭐ Bästa cup – text
+      let bestCupText = "";
+
+      if (bestSkater) {
+        bestCupText += `
+          <div style="margin-top:6px;">
+            🏒 Hans bästa cup som utespelare var <strong>${bestSkater.TURNERING}</strong> 
+            där han gjorde <strong>${bestSkater.PTS}</strong> poäng för 
+            <strong>${teamName(bestSkater.TEAM)}</strong>.
+          </div>
+        `;
+      }
+
+      if (bestGoalie) {
+        bestCupText += `
+          <div style="margin-top:10px;">
+            🧱 Hans bästa turnering som målvakt var <strong>${bestGoalie.TURNERING}</strong> 
+            där han hade en SV% på <strong>${formatSVP(bestGoalie.SVP)}</strong> 
+            för <strong>${teamName(bestGoalie.TEAM)}</strong>.
+          </div>
+        `;
+      }
+
+      /* ===============================
          🏆 Meriter
          =============================== */
       let meritText = "";
