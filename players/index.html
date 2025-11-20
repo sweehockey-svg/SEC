@@ -528,6 +528,10 @@
   </div>
 
   <script>
+function normalize(s) {
+  return norm(s);
+}
+
   const API = "https://script.google.com/macros/s/AKfycbwUvylvIbUTy4_zihW5_OKIsQME2vxcPHWLldObZI28dggqJytvF2UmdsAD4Ib5Zre1/exec";
 
   /* full team-map */
@@ -852,43 +856,69 @@
         `;
       }
 
-      /* ===============================
-         🏆 Meriter
-         =============================== */
-      let meritText = "";
+/* ===============================
+   🔥 Poäng / 🎯 Mål / 🍏 Assist – TOP 3
+   =============================== */
 
-      winners.forEach(w => {
-        const num = String(w.cup || "")
-          .replace(/SEC/gi,"")
-          .replace(/[^\d.]/g,"")
-          .trim();
-        if (!num) return;
+let cupsMap = {};
 
-        const row = allRows.find(r => {
-          const turn = String(r.TURNERING || "")
-            .replace(/SEC/gi,"")
-            .replace(/[^\d.]/g,"")
-            .trim();
-          return turn === num;
-        });
-        if (!row) return;
+skaters.forEach(r => {
+  const cupNum = String(r.TURNERING || "")
+    .replace("SEC", "")
+    .trim()
+    .replace(/[GS]$/, "");
 
-        const tm = teamName(row.TEAM).toLowerCase();
+  if (!cupNum) return;
 
-        if (tm === String(w["1a"] || "").toLowerCase()) {
-          meritText += `🏆 <strong>Mästare i SEC ${num}</strong> med <strong>${teamName(w["1a"])}</strong>.<br>`;
-        }
-        if (tm === String(w["2a"] || "").toLowerCase()) {
-          meritText += `🥈 <strong>2:a i SEC ${num}</strong> med <strong>${teamName(w["2a"])}</strong>.<br>`;
-        }
-      });
+  if (!cupsMap[cupNum]) cupsMap[cupNum] = [];
+  cupsMap[cupNum].push(r);
+});
 
-      if (meritText.trim() !== "") {
-        meritText = `
-          <div class="merit-title">Meriter</div>
-          <div class="merit-list">${meritText}</div>
-        `;
-      }
+Object.entries(cupsMap).forEach(([cup, rows]) => {
+
+  // Sortera TOP 3 korrekt
+  const topPoints = [...rows].sort((a,b)=>Number(b.PTS||0)-Number(a.PTS||0)).slice(0,3);
+  const topGoals  = [...rows].sort((a,b)=>Number(b.G  ||0)-Number(a.G  ||0)).slice(0,3);
+  const topAss    = [...rows].sort((a,b)=>Number(b.A  ||0)-Number(a.A  ||0)).slice(0,3);
+
+  const medal = ["🏆","🥈","🥉"];
+
+  // POÄNG – endast om spelaren är top 3
+  topPoints.forEach((p,i)=>{
+    if (!p) return;
+    if (normalize(p.PLAYERS) === normalize(rawName)) {
+      let rankText = i === 0 ? "Poängkung" : `${i+1}:a i poängligan`;
+      meritText += `${medal[i]} <strong>${rankText} i SEC ${cup}</strong> (${p.PTS}p)<br>`;
+    }
+  });
+
+  // MÅL – endast om spelaren är top 3
+  topGoals.forEach((g,i)=>{
+    if (!g) return;
+    if (normalize(g.PLAYERS) === normalize(rawName)) {
+      let rankText = i === 0 ? "Målkung" : `${i+1}:a i målskytteligan`;
+      meritText += `${medal[i]} <strong>${rankText} i SEC ${cup}</strong> (${g.G} mål)<br>`;
+    }
+  });
+
+  // ASSIST – endast om spelaren är top 3
+  topAss.forEach((a,i)=>{
+    if (!a) return;
+    if (normalize(a.PLAYERS) === normalize(rawName)) {
+      let rankText = i === 0 ? "Assistkung" : `${i+1}:a i assistligan`;
+      meritText += `${medal[i]} <strong>${rankText} i SEC ${cup}</strong> (${a.A} assist)<br>`;
+    }
+  });
+
+});
+
+if (meritText.trim() !== "") {
+  meritText = `
+    <div class="merit-title">Meriter</div>
+    <div class="merit-list">${meritText}</div>
+  `;
+}
+
 
       // 📝 BIO
       let bioText = `
@@ -1001,3 +1031,4 @@
 
 </body>
 </html>
+
