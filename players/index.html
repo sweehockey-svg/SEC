@@ -902,10 +902,11 @@ winners.forEach(w => {
 });
 
 
-/* ---- 📊 Poängliga + Skytteligan TOPP 3 (grupperad och sorterad) ---- */
+/* ---- 📊 Poängliga + Skytteligan + Målvakter TOPP 3 ---- */
 const pointData = await fetch(API + "?sheet=utestatsall").then(r => r.json());
 
 if (Array.isArray(pointData) && pointData.length > 1) {
+
   const header = pointData[0];
   const iCup  = header.indexOf("CUP");
   const iName = header.indexOf("PLAYERS");
@@ -929,7 +930,6 @@ if (Array.isArray(pointData) && pointData.length > 1) {
     });
   }
 
-  // ✨ Samla resultat i två listor
   const pointRows = [];
   const goalRows  = [];
 
@@ -944,7 +944,7 @@ if (Array.isArray(pointData) && pointData.length > 1) {
     const two   = list[1];
     const three = list[2];
 
-    // 📌 Poängligan
+    // 📊 Poängligan
     if (one && norm(cleanSheetName(one.player)) === norm(cleanName))
       pointRows.push({ rank: 1, cup: cupLabel, pts: one.pts, g: one.g });
 
@@ -954,7 +954,7 @@ if (Array.isArray(pointData) && pointData.length > 1) {
     if (three && norm(cleanSheetName(three.player)) === norm(cleanName))
       pointRows.push({ rank: 3, cup: cupLabel, pts: three.pts, g: three.g });
 
-    // 📌 Skytteligan (tidigare målligan)
+    // 🏹 Skytteligan
     const goalSorted = [...perCup[cupKey]].sort((a, b) =>
       b.g - a.g || b.pts - a.pts
     );
@@ -973,12 +973,72 @@ if (Array.isArray(pointData) && pointData.length > 1) {
       goalRows.push({ rank: 3, cup: cupLabel, g: g3.g });
   });
 
-  // ✨ Bygg ordnad merittext
-  if (pointRows.length || goalRows.length) {
+/* ----------------------------
+   🧱 Topp 3 bästa målvakter i SV% (med 40%-regel)
+   ---------------------------- */
+let goalieSVBlock = "";
 
-    meritBlockPersonal += `<div class="section-divider" style="margin-top:25px;">Personliga meriter</div>`;
+// Gruppér målvakter per CUP+TEAM
+const goalieGroups = {}; // "SEC 3 G|VIP" → lista av goalies
 
-    // 📊 POÄNGLIGAN
+goalies.forEach(g => {
+  const parts = splitTurneringLabel(g.TURNERING);
+  const key = `${parts.num}${parts.group}|${g.TEAM}`;
+  if (!goalieGroups[key]) goalieGroups[key] = [];
+  goalieGroups[key].push(g);
+});
+
+// Räkna lagets total-GP och filtrera bort målvakter <40%
+let eligibleGoalies = [];
+
+Object.keys(goalieGroups).forEach(key => {
+  const groupGoalies = goalieGroups[key];
+
+  const totalGP = groupGoalies.reduce((sum, g) => sum + Number(g.GP || 0), 0);
+  const minGP = totalGP * 0.40; // 40%
+
+  groupGoalies.forEach(g => {
+    const gp = Number(g.GP || 0);
+
+    if (gp >= minGP) {
+      eligibleGoalies.push(g);
+    }
+  });
+});
+
+// Sortera på SV%
+eligibleGoalies
+  .map(g => ({
+    ...g,
+    sv: parseSVP(g.SVP),
+    svDisplay: formatSVP(g.SVP)
+  }))
+  .sort((a, b) => b.sv - a.sv)
+  .slice(0, 3)
+  .forEach((g, index) => {
+    const medal = ["🥇","🥈","🥉"][index];
+    const parts = splitTurneringLabel(g.TURNERING);
+    const cupLabel = `SEC ${parts.num}${parts.group ? " " + parts.group : ""}`;
+
+    goalieSVBlock += `
+      ${medal} <strong>${index+1}:a bästa räddningsprocent i ${cupLabel}</strong> 
+      (${g.svDisplay}) med <strong>${teamName(g.TEAM)}</strong>.<br>
+    `;
+  });
+
+
+
+  /* ----------------------------------------------------
+     ✨ Bygg meritblock i ordning
+     ---------------------------------------------------- */
+  if (pointRows.length || goalRows.length || goalieSVBlock) {
+
+    meritBlockPersonal += `
+      <div class="section-divider" style="margin-top:25px;">Personliga meriter</div>
+      <div class="merit-list">
+    `;
+
+    // 📊 Poängligan
     pointRows.sort((a,b) => a.rank - b.rank).forEach(r => {
       const medal = r.rank === 1 ? "🎯" : r.rank === 2 ? "🥈" : "🥉";
       meritBlockPersonal += `
@@ -986,13 +1046,18 @@ if (Array.isArray(pointData) && pointData.length > 1) {
       `;
     });
 
-    // 🏹 SKYTTELIGAN
+    // 🏹 Skytteligan
     goalRows.sort((a,b) => a.rank - b.rank).forEach(r => {
       const medal = r.rank === 1 ? "🏹" : r.rank === 2 ? "🥈" : "🥉";
       meritBlockPersonal += `
         ${medal} <strong>${r.rank}:a i skytteligan i SEC ${r.cup}</strong> (${r.g} mål).<br>
       `;
     });
+
+    // 🧱 Målvakter SV%
+    meritBlockPersonal += goalieSVBlock;
+
+    meritBlockPersonal += `</div>`;
   }
 }
 
@@ -1004,16 +1069,12 @@ if (meritBlockGoldSilver || meritBlockPersonal) {
   meritText = `
     <div class="section-divider">Meriter</div>
     <div class="merit-list">${meritBlockGoldSilver}</div>
-
-    ${meritBlockPersonal ? `
-      <div class="merit-list">${meritBlockPersonal}</div>
-    ` : ""}
+    ${meritBlockPersonal}
   `;
 }
 
-
-      const cupsCount  = cupNumbers.length;
-      const teamsCount = new Set(allRows.map(r => r.TEAM)).size;
+const cupsCount  = cupNumbers.length;
+const teamsCount = new Set(allRows.map(r => r.TEAM)).size;
 
       /* BIO – ny text enligt din mall */
       let bioText = `
