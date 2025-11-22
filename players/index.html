@@ -6,48 +6,27 @@
   <title>Svenska eHockey Cupen – Spelarkort</title>
 
   <style>
+    .section-divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 35px 0 20px;
+      color: #f5d86e;
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      text-shadow: 0 0 10px rgba(245,216,110,0.3);
+    }
 
-.section-divider {
-  display: flex;
-  align-items: center;
-  text-align: center;
-  margin: 35px 0 20px;
-  color: #f5d86e;
-  font-size: 1.3rem;
-  font-weight: 700;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  text-shadow: 0 0 10px rgba(245,216,110,0.3);
-}
+    .section-divider::before,
+    .section-divider::after {
+      content: "";
+      flex: 1;
+      border-bottom: 1px solid rgba(245,216,110,0.35);
+      margin: 0 14px;
+    }
 
-.section-divider::before,
-.section-divider::after {
-  content: "";
-  flex: 1;
-  border-bottom: 1px solid rgba(245,216,110,0.35);
-  margin: 0 14px;
-}
-
-.section-divider {
-  display: flex;
-  align-items: center;
-  text-align: center;
-  margin: 35px 0 20px;
-  color: #f5d86e;
-  font-size: 1.3rem;
-  font-weight: 700;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-
-.section-divider::before,
-.section-divider::after {
-  content: "";
-  flex: 1;
-  border-bottom: 1px solid rgba(245,216,110,0.4);
-  margin: 0 12px;
-}
-f
     /* ===============================
        Scroll / premium-tabeller
        =============================== */
@@ -533,8 +512,6 @@ f
         <div id="statsOutput"></div>
       </div>
 
-      <!-- INGEN extra “Spelarlista laddas…”-loader längre -->
-
       <!-- SÖKRUTA CENTRERAD -->
       <div class="player-search-centered">
         <div class="search-title">Sök</div>
@@ -675,7 +652,7 @@ f
     return raw;
   }
 
-  /* Format SV% */
+  /* Format SV% (för visning) */
   function formatSVP(value) {
     if (!value && value !== 0) return "0%";
     let v = value.toString().replace(",", ".");
@@ -691,6 +668,23 @@ f
       return (num / 100).toFixed(2) + "%";
     }
     return num.toFixed(1) + "%";
+  }
+
+  // 🔧 För att jämföra SV% korrekt (".879", "87.9", "87.9%")
+  function parseSVP(raw) {
+    if (!raw) return 0;
+
+    let v = String(raw).replace(",", ".").trim();
+
+    if (v.endsWith("%")) {
+      v = v.replace("%", "");
+      let num = parseFloat(v);
+      return isNaN(num) ? 0 : num / 100;
+    }
+
+    let num = parseFloat(v);
+    if (num > 1) return num / 100;
+    return isNaN(num) ? 0 : num;
   }
 
   /* Nationaliteter */
@@ -728,6 +722,17 @@ f
     const url = API + "?player=" + encodeURIComponent(playerName);
     const res = await fetch(url);
     return await res.json();
+  }
+
+  // Hjälpfunktion: dela upp "SEC 17 G" → { num: "17", group: "G" }
+  function splitTurneringLabel(turn) {
+    if (!turn) return { num: "?", group: "" };
+    let c = String(turn).replace(/SEC/gi, "").trim(); // t.ex. "17 G" eller "19.5 S"
+    const parts = c.split(/\s+/);
+    return {
+      num: parts[0] || "?",
+      group: parts[1] || ""
+    };
   }
 
   /* LOAD STATS */
@@ -820,77 +825,67 @@ f
         ? skaters.reduce((b, r) => (!b || Number(r.PTS || 0) > Number(b.PTS || 0) ? r : b), null)
         : null;
 
-// 🔧 Fix: korrekt hantering av SV% oavsett format (".879", "87.9", "87.9%")
-function parseSVP(raw) {
-  if (!raw) return 0;
 
-  let v = String(raw).replace(",", ".").trim();
 
-  // Ta bort procent om det finns
-  if (v.endsWith("%")) {
-    v = v.replace("%", "");
-    let num = parseFloat(v);
-    return isNaN(num) ? 0 : num / 100; // gör om 87.9 → 0.879
-  }
 
-  let num = parseFloat(v);
-
-  // Om det är t.ex. 87.9 → vi gör om det till 0.879
-  if (num > 1) return num / 100;
-
-  return num; // redan i 0.879-format
-}
-
-// 🔥 Hitta bästa målvakten baserat på korrekt SV%
-const bestGoalie = goalies.length
-  ? goalies.reduce((best, row) => {
-      const rSV = parseSVP(row.SVP);
-      const bSV = best ? parseSVP(best.SVP) : -1;
-      return rSV > bSV ? row : best;
-    }, null)
-  : null;
-
+      // 🔥 Hitta bästa målvakten baserat på korrekt SV%
+      const bestGoalie = goalies.length
+        ? goalies.reduce((best, row) => {
+            const rSV = parseSVP(row.SVP);
+            const bSV = best ? parseSVP(best.SVP) : -1;
+            return rSV > bSV ? row : best;
+          }, null)
+        : null;
 
       let bestCupText = "";
 
+      // ✏️ Ny text för bästa utespelar-cup i "personlig merit"-stil
       if (bestSkater) {
+        const sParts = splitTurneringLabel(bestSkater.TURNERING);
+        const skaterCupLabel = `SEC ${sParts.num}${sParts.group ? " " + sParts.group : ""}`;
+
         bestCupText += `
-          <div style="margin-top:6px;">
-            🏒 Hans bästa cup som utespelare var <strong>${bestSkater.TURNERING}</strong> 
+          <div style="margin-top:10px;">
+            🏒 Hans bästa turnering som utespelare kom i <strong>${skaterCupLabel}</strong>, 
             där han gjorde <strong>${bestSkater.PTS}</strong> poäng för 
             <strong>${teamName(bestSkater.TEAM)}</strong>.
           </div>
         `;
       }
 
+      // ✏️ Ny text för bästa målvakts-cup i önskad stil
       if (bestGoalie) {
+        const gParts = splitTurneringLabel(bestGoalie.TURNERING);
+        const goalieCupLabel = `SEC ${gParts.num}${gParts.group ? " " + gParts.group : ""}`;
+
         bestCupText += `
           <div style="margin-top:10px;">
-            🧱 Hans bästa turnering som målvakt var <strong>${bestGoalie.TURNERING}</strong> 
-            där han hade en SV% på <strong>${formatSVP(bestGoalie.SVP)}</strong> 
-            för <strong>${teamName(bestGoalie.TEAM)}</strong>.
+            🧱 Hans bästa turnering som målvakt kom i <strong>${goalieCupLabel}</strong>, 
+            där han noterades för en räddningsprocent på 
+            <strong>${formatSVP(bestGoalie.SVP)}</strong> med 
+            <strong>${teamName(bestGoalie.TEAM)}</strong>.
           </div>
         `;
       }
 
-/* ===============================
-   🏆 Meriter + Poängliga + Målliga
+      /* ===============================
+   🏆 Meriter + Poängliga + Skytteligan
    =============================== */
 let meritBlockGoldSilver = "";
-let meritBlockPersonal = "";
+let meritBlockPersonal   = "";
 
 /* ---- 🏆 Guld & silver ---- */
 winners.forEach(w => {
   const num = String(w.cup || "")
-    .replace(/SEC/gi, "")
-    .replace(/[^\d.]/g, "")
+    .replace(/SEC/gi,"")
+    .replace(/[^\d.]/g,"")
     .trim();
   if (!num) return;
 
   const row = allRows.find(r => {
     const turn = String(r.TURNERING || "")
-      .replace(/SEC/gi, "")
-      .replace(/[^\d.]/g, "")
+      .replace(/SEC/gi,"")
+      .replace(/[^\d.]/g,"")
       .trim();
     return turn === num;
   });
@@ -906,7 +901,8 @@ winners.forEach(w => {
   }
 });
 
-/* ---- 📊 Poängliga + målliga TOPP 3 ---- */
+
+/* ---- 📊 Poängliga + Skytteligan TOPP 3 (grupperad och sorterad) ---- */
 const pointData = await fetch(API + "?sheet=utestatsall").then(r => r.json());
 
 if (Array.isArray(pointData) && pointData.length > 1) {
@@ -933,6 +929,10 @@ if (Array.isArray(pointData) && pointData.length > 1) {
     });
   }
 
+  // ✨ Samla resultat i två listor
+  const pointRows = [];
+  const goalRows  = [];
+
   Object.keys(perCup).forEach(cupKey => {
     const list = perCup[cupKey].sort((a, b) =>
       b.pts - a.pts || b.g - a.g
@@ -944,27 +944,58 @@ if (Array.isArray(pointData) && pointData.length > 1) {
     const two   = list[1];
     const three = list[2];
 
-    if (one && norm(cleanSheetName(one.player)) === norm(cleanName)) {
-      meritBlockPersonal += `🎯 <strong>Vann poängligan i SEC ${cupLabel}</strong> (${one.pts}p – ${one.g} mål).<br>`;
-    }
+    // 📌 Poängligan
+    if (one && norm(cleanSheetName(one.player)) === norm(cleanName))
+      pointRows.push({ rank: 1, cup: cupLabel, pts: one.pts, g: one.g });
 
-    if (two && norm(cleanSheetName(two.player)) === norm(cleanName)) {
-      meritBlockPersonal += `🥈 <strong>2:a i poängligan i SEC ${cupLabel}</strong> (${two.pts}p – ${two.g} mål).<br>`;
-    }
+    if (two && norm(cleanSheetName(two.player)) === norm(cleanName))
+      pointRows.push({ rank: 2, cup: cupLabel, pts: two.pts, g: two.g });
 
-    if (three && norm(cleanSheetName(three.player)) === norm(cleanName)) {
-      meritBlockPersonal += `🥉 <strong>3:a i poängligan i SEC ${cupLabel}</strong> (${three.pts}p – ${three.g} mål).<br>`;
-    }
+    if (three && norm(cleanSheetName(three.player)) === norm(cleanName))
+      pointRows.push({ rank: 3, cup: cupLabel, pts: three.pts, g: three.g });
 
-    const goalWinner = [...perCup[cupKey]].sort((a, b) =>
+    // 📌 Skytteligan (tidigare målligan)
+    const goalSorted = [...perCup[cupKey]].sort((a, b) =>
       b.g - a.g || b.pts - a.pts
-    )[0];
+    );
 
-    if (goalWinner && norm(cleanSheetName(goalWinner.player)) === norm(cleanName)) {
-      meritBlockPersonal += `🥅 <strong>Vann målligan i SEC ${cupLabel}</strong> (${goalWinner.g} mål).<br>`;
-    }
+    const g1 = goalSorted[0];
+    const g2 = goalSorted[1];
+    const g3 = goalSorted[2];
+
+    if (g1 && norm(cleanSheetName(g1.player)) === norm(cleanName))
+      goalRows.push({ rank: 1, cup: cupLabel, g: g1.g });
+
+    if (g2 && norm(cleanSheetName(g2.player)) === norm(cleanName))
+      goalRows.push({ rank: 2, cup: cupLabel, g: g2.g });
+
+    if (g3 && norm(cleanSheetName(g3.player)) === norm(cleanName))
+      goalRows.push({ rank: 3, cup: cupLabel, g: g3.g });
   });
+
+  // ✨ Bygg ordnad merittext
+  if (pointRows.length || goalRows.length) {
+
+    meritBlockPersonal += `<div class="section-divider" style="margin-top:25px;">Personliga meriter</div>`;
+
+    // 📊 POÄNGLIGAN
+    pointRows.sort((a,b) => a.rank - b.rank).forEach(r => {
+      const medal = r.rank === 1 ? "🎯" : r.rank === 2 ? "🥈" : "🥉";
+      meritBlockPersonal += `
+        ${medal} <strong>${r.rank}:a i poängligan i SEC ${r.cup}</strong> (${r.pts}p).<br>
+      `;
+    });
+
+    // 🏹 SKYTTELIGAN
+    goalRows.sort((a,b) => a.rank - b.rank).forEach(r => {
+      const medal = r.rank === 1 ? "🏹" : r.rank === 2 ? "🥈" : "🥉";
+      meritBlockPersonal += `
+        ${medal} <strong>${r.rank}:a i skytteligan i SEC ${r.cup}</strong> (${r.g} mål).<br>
+      `;
+    });
+  }
 }
+
 
 /* ---- Slutlig sammansättning ---- */
 let meritText = "";
@@ -975,59 +1006,45 @@ if (meritBlockGoldSilver || meritBlockPersonal) {
     <div class="merit-list">${meritBlockGoldSilver}</div>
 
     ${meritBlockPersonal ? `
-      <div class="section-divider" style="margin-top:25px;">Personliga meriter</div>
       <div class="merit-list">${meritBlockPersonal}</div>
     ` : ""}
   `;
 }
 
 
-      /* BIO */
+      const cupsCount  = cupNumbers.length;
+      const teamsCount = new Set(allRows.map(r => r.TEAM)).size;
+
+      /* BIO – ny text enligt din mall */
       let bioText = `
         <div style="margin-top:10px; margin-bottom:20px; color:#ddd; font-size:0.95rem; line-height:1.65;">
           <strong>${cleanName}</strong> är en <strong>${nationality}</strong> eHockey-spelare som gjorde sitt första
           framträdande i <strong>${firstCup}</strong> för <strong>${firstTeam}</strong>.<br><br>
-      `;
-
-      if (playedOnce) {
-        bioText += `
-          Han har endast deltagit i en SEC-turnering – <strong>${firstCup}</strong>.<br><br>
-        `;
-      } else if (cupNumbers.length > 1) {
-        bioText += `
-          Totalt har han spelat i <strong>${cupNumbers.length}</strong> cuper och representerat 
-          <strong>${new Set(allRows.map(r => r.TEAM)).size}</strong> lag. I senaste upplagan – 
-          <strong>${lastCup}</strong> – spelade han för <strong>${lastTeam}</strong>.<br><br>
-        `;
-      }
-
-      bioText += `
-        Totalt står han på <strong>${totalGames}</strong> matcher i SEC.
-        ${bestCupText}
-        ${meritText}
+          Totalt har han deltagit i <strong>${cupsCount}</strong> upplagor av <strong>Svenska eHockey Cupen</strong> 
+          och representerat <strong>${teamsCount}</strong> olika lag. Senast han spelade i SEC var i 
+          <strong>${lastCup}</strong>, där han representerade <strong>${lastTeam}</strong>.<br><br>
+          Sammanlagt står han på <strong>${totalGames}</strong> matcher i SEC.
+          ${bestCupText}
+          ${meritText}
+        </div>
       `;
 
       /* Tabeller */
       let html = bioText;
-function cupSortValue(cupRaw) {
-  if (!cupRaw) return 0;
-  let c = String(cupRaw).replace("SEC", "").trim();
 
-  // dela upp nummer + fas
-  let num = parseFloat(c);        // t.ex. "19.5"
-  let phase = c.replace(/[0-9.]/g, "").trim(); // G eller S
+      function cupSortValue(cupRaw) {
+        if (!cupRaw) return 0;
+        let c = String(cupRaw).replace("SEC", "").trim();
+        let num = parseFloat(c);
+        let phase = c.replace(/[0-9.]/g, "").trim(); // G eller S
+        let phaseVal = phase === "G" ? 0 : 1;
+        return num * 10 + phaseVal;
+      }
 
-  // ge fas ett värde (G före S)
-  let phaseVal = phase === "G" ? 0 : 1;
-
-  return num * 10 + phaseVal; // säkrar att 19.5G < 19.5S
-}
-
-// Sortera utespelare
-skaters.sort((a, b) => cupSortValue(a.TURNERING) - cupSortValue(b.TURNERING));
-
-// sortera målvakter
-goalies.sort((a, b) => cupSortValue(a.TURNERING) - cupSortValue(b.TURNERING));
+      // Sortera utespelare
+      skaters.sort((a, b) => cupSortValue(a.TURNERING) - cupSortValue(b.TURNERING));
+      // sortera målvakter
+      goalies.sort((a, b) => cupSortValue(a.TURNERING) - cupSortValue(b.TURNERING));
 
       if (skaters.length) {
         html += `
@@ -1094,6 +1111,7 @@ goalies.sort((a, b) => cupSortValue(a.TURNERING) - cupSortValue(b.TURNERING));
     } catch (err) {
       console.error("Stats error:", err);
       loaderStats.style.display = "none";
+      const out = document.getElementById("statsOutput");
       out.innerHTML = `<div class="no-stats">Fel vid laddning.</div>`;
       out.style.display = "block";
     }
