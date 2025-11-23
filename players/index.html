@@ -563,43 +563,43 @@
   let allPlayers = [];
 
   async function loadAllPlayersFast() {
-    try {
-      const [uteRes, mvRes] = await Promise.all([
-        fetch(API + "?sheet=utestatsall"),
-        fetch(API + "?sheet=målvaktsstatsall")
-      ]);
+  try {
+    const uteRes = await fetch(API + "?sheet=utestatsall");
+    const mvRes  = await fetch(API + "?sheet=målvaktsstatsall"); // FIX!
 
-      const uteData = await uteRes.json();
-      const mvData = await mvRes.json();
+    const uteData = await uteRes.json();
+    const mvData  = await mvRes.json();
 
-      const names = [];
-      const seen = new Set();
+    const names = [];
+    const seen = new Set();
 
-      function addNamesFromMatrix(matrix, headerName) {
-        if (!Array.isArray(matrix) || matrix.length < 2) return;
-        const header = matrix[0];
-        const idx = header.indexOf(headerName);
-        if (idx === -1) return;
+    function addNamesFromMatrix(matrix, headerName) {
+      if (!Array.isArray(matrix) || matrix.length < 2) return;
+      const header = matrix[0];
+      const idx = header.indexOf(headerName);
+      if (idx === -1) return;
 
-        for (let i = 1; i < matrix.length; i++) {
-          const row = matrix[i];
-          const name = row[idx];
-          if (!name) continue;
-          const key = norm(name);
-          if (!key || seen.has(key)) continue;
-          seen.add(key);
-          names.push({ PLAYER: name });
-        }
+      for (let i = 1; i < matrix.length; i++) {
+        const row = matrix[i];
+        const name = row[idx];
+        if (!name) continue;
+        const key = norm(name);
+        if (!key || seen.has(key)) continue;
+        seen.add(key);
+        names.push({ PLAYER: name });
       }
-
-      addNamesFromMatrix(uteData, "PLAYERS");
-      addNamesFromMatrix(mvData, "GOALIES");
-
-      allPlayers = names;
-    } catch (err) {
-      console.error("Fel vid laddning av allplayers:", err);
     }
+
+    addNamesFromMatrix(uteData, "PLAYERS");
+    addNamesFromMatrix(mvData, "GOALIES");
+
+    allPlayers = names;
+
+  } catch (err) {
+    console.error("Fel vid laddning av allplayers:", err);
   }
+}
+
 
   /* SÖK */
   const inp = document.getElementById("playerSearch");
@@ -792,33 +792,42 @@
 
       document.getElementById("playerName").textContent = cleanName;
 
-      /* Cup-lista för bio (utan fas-bokstav) */
-      const cupNumberSet = new Set(
-        allRows.map(r =>
-          String(r.TURNERING || "")
-            .replace("SEC","")
-            .trim()
-            .replace(/[GS]$/,"")
-        )
-      );
+     /* Cup-lista för bio (utan fas-bokstav) */
+function parseCupNumber(turnString) {
+  if (!turnString) return "";
+  const clean = String(turnString)
+    .replace("SEC", "")
+    .trim()
+    .toUpperCase();
 
-      const cupNumbers = [...cupNumberSet].filter(Boolean).sort((a, b) => Number(a) - Number(b));
-      const playedOnce = cupNumbers.length === 1;
+  const parts = clean.split(/\s+/);
+  return parts[0] || "";
+}
 
-      const firstCup = cupNumbers.length ? "SEC " + cupNumbers[0] : "SEC ?";
-      const lastCup  = cupNumbers.length ? "SEC " + cupNumbers[cupNumbers.length - 1] : "SEC ?";
+// Samla alla turneringar (helt kraschsäkert)
+const cupNumberSet = new Set();
 
-      const firstRow = allRows.find(r =>
-        String(r.TURNERING || "").replace("SEC","").trim().replace(/[GS]$/,"") === cupNumbers[0]
-      );
-      const lastRow = allRows.find(r =>
-        String(r.TURNERING || "").replace("SEC","").trim().replace(/[GS]$/,"") === cupNumbers[cupNumbers.length - 1]
-      );
+allRows.forEach(r => {
+  if (!r || !r.TURNERING) return;   // <-- Viktigt!
+  const num = parseCupNumber(r.TURNERING);
+  if (num) cupNumberSet.add(num);
+});
 
-      const firstTeam = firstRow ? teamName(firstRow.TEAM) : "-";
-      const lastTeam  = lastRow ? teamName(lastRow.TEAM)  : "-";
+const cupNumbers = [...cupNumberSet].sort((a, b) => parseFloat(a) - parseFloat(b));
 
-      const totalGames = allRows.reduce((n, r) => n + Number(r.GP || 0), 0);
+// firstCup / lastCup
+const firstCup = cupNumbers.length ? "SEC " + cupNumbers[0] : "SEC ?";
+const lastCup  = cupNumbers.length ? "SEC " + cupNumbers[cupNumbers.length - 1] : "SEC ?";
+
+// firstRow / lastRow (felsäkrat)
+const firstRow = allRows.find(r => r.TURNERING && parseCupNumber(r.TURNERING) === cupNumbers[0]);
+const lastRow  = allRows.find(r => r.TURNERING && parseCupNumber(r.TURNERING) === cupNumbers[cupNumbers.length - 1]);
+
+const firstTeam = firstRow ? teamName(firstRow.TEAM) : "-";
+const lastTeam  = lastRow ? teamName(lastRow.TEAM) : "-";
+
+const totalGames = allRows.reduce((n, r) => n + Number(r.GP || 0), 0);
+
 
       /* Bästa cup */
       const bestSkater = skaters.length
@@ -902,179 +911,253 @@ winners.forEach(w => {
 });
 
 
-/* ---- 📊 Poängliga + Skytteligan + Målvakter TOPP 3 ---- */
-const pointData = await fetch(API + "?sheet=utestatsall").then(r => r.json());
+      /* ---- 📊 Poängliga + Skytteligan + Målvakter TOPP 3 ---- */
+      const pointData = await fetch(API + "?sheet=utestatsall").then(r => r.json());
 
-if (Array.isArray(pointData) && pointData.length > 1) {
+      if (Array.isArray(pointData) && pointData.length > 1) {
 
-  const header = pointData[0];
-  const iCup  = header.indexOf("CUP");
-  const iName = header.indexOf("PLAYERS");
-  const iG    = header.indexOf("G");
-  const iPTS  = header.indexOf("PTS");
+        const header = pointData[0];
+        const iCup   = header.indexOf("CUP");
+        const iName  = header.indexOf("PLAYERS");
+        const iG     = header.indexOf("G");
+        const iPTS   = header.indexOf("PTS");
+        const iTeam  = header.indexOf("TEAM");
+        const iGPsk  = header.indexOf("GP");   // lagets matcher i cupen (utespelare-GP)
 
-  const perCup = {};
+        const perCup    = {};
+        const teamGames = {}; // key: "SEC 12 G|SHW" → antal spelade matcher
 
-  for (let i = 1; i < pointData.length; i++) {
-    const r = pointData[i];
-    const rawCup = r[iCup];
-    if (!rawCup) continue;
+        for (let i = 1; i < pointData.length; i++) {
+          const r = pointData[i];
+          const rawCup = r[iCup];
+          const team   = r[iTeam];
 
-    const cupKey = String(rawCup).trim();
-    if (!perCup[cupKey]) perCup[cupKey] = [];
+          if (!rawCup || !team) continue;
 
-    perCup[cupKey].push({
-      player: r[iName],
-      pts: Number(r[iPTS] || 0),
-      g: Number(r[iG] || 0)
-    });
-  }
+          const cupKey  = String(rawCup).trim();      // t.ex. "SEC 12 G"
+          const teamKey = String(team).trim();        // t.ex. "SHW"
+          const mapKey  = `${cupKey}|${teamKey}`;
+          const gpSk    = Number(r[iGPsk] || 0);
 
-  const pointRows = [];
-  const goalRows  = [];
+          // Spara lagets matcher i cupen (max-värdet räcker)
+          if (!teamGames[mapKey] || gpSk > teamGames[mapKey]) {
+            teamGames[mapKey] = gpSk;
+          }
 
-  Object.keys(perCup).forEach(cupKey => {
-    const list = perCup[cupKey].sort((a, b) =>
-      b.pts - a.pts || b.g - a.g
-    );
+          // Samla spelare per cup för poäng-/skytteliga
+          if (!perCup[cupKey]) perCup[cupKey] = [];
+          perCup[cupKey].push({
+            player: r[iName],
+            pts: Number(r[iPTS] || 0),
+            g:   Number(r[iG]   || 0)
+          });
+        }
 
-    const cupLabel = cupKey.replace(/SEC/gi, "").trim();
+        const pointRows = [];
+        const goalRows  = [];
 
-    const one   = list[0];
-    const two   = list[1];
-    const three = list[2];
+        Object.keys(perCup).forEach(cupKey => {
+          const list = perCup[cupKey].sort((a, b) =>
+            b.pts - a.pts || b.g - a.g
+          );
 
-    // 📊 Poängligan
-    if (one && norm(cleanSheetName(one.player)) === norm(cleanName))
-      pointRows.push({ rank: 1, cup: cupLabel, pts: one.pts, g: one.g });
+          const cupLabel = cupKey.replace(/SEC/gi, "").trim();
 
-    if (two && norm(cleanSheetName(two.player)) === norm(cleanName))
-      pointRows.push({ rank: 2, cup: cupLabel, pts: two.pts, g: two.g });
+          const one   = list[0];
+          const two   = list[1];
+          const three = list[2];
 
-    if (three && norm(cleanSheetName(three.player)) === norm(cleanName))
-      pointRows.push({ rank: 3, cup: cupLabel, pts: three.pts, g: three.g });
+          // 📊 Poängligan
+          if (one && norm(cleanSheetName(one.player)) === norm(cleanName))
+            pointRows.push({ rank: 1, cup: cupLabel, pts: one.pts, g: one.g });
 
-    // 🏹 Skytteligan
-    const goalSorted = [...perCup[cupKey]].sort((a, b) =>
-      b.g - a.g || b.pts - a.pts
-    );
+          if (two && norm(cleanSheetName(two.player)) === norm(cleanName))
+            pointRows.push({ rank: 2, cup: cupLabel, pts: two.pts, g: two.g });
 
-    const g1 = goalSorted[0];
-    const g2 = goalSorted[1];
-    const g3 = goalSorted[2];
+          if (three && norm(cleanSheetName(three.player)) === norm(cleanName))
+            pointRows.push({ rank: 3, cup: cupLabel, pts: three.pts, g: three.g });
 
-    if (g1 && norm(cleanSheetName(g1.player)) === norm(cleanName))
-      goalRows.push({ rank: 1, cup: cupLabel, g: g1.g });
+          // 🏹 Skytteligan
+          const goalSorted = [...perCup[cupKey]].sort((a, b) =>
+            b.g - a.g || b.pts - a.pts
+          );
 
-    if (g2 && norm(cleanSheetName(g2.player)) === norm(cleanName))
-      goalRows.push({ rank: 2, cup: cupLabel, g: g2.g });
+          const g1 = goalSorted[0];
+          const g2 = goalSorted[1];
+          const g3 = goalSorted[2];
 
-    if (g3 && norm(cleanSheetName(g3.player)) === norm(cleanName))
-      goalRows.push({ rank: 3, cup: cupLabel, g: g3.g });
-  });
+          if (g1 && norm(cleanSheetName(g1.player)) === norm(cleanName))
+            goalRows.push({ rank: 1, cup: cupLabel, g: g1.g });
 
-/* ----------------------------
-   🧱 Topp 3 bästa målvakter i SV% (med 40%-regel)
-   ---------------------------- */
+          if (g2 && norm(cleanSheetName(g2.player)) === norm(cleanName))
+            goalRows.push({ rank: 2, cup: cupLabel, g: g2.g });
+
+          if (g3 && norm(cleanSheetName(g3.player)) === norm(cleanName))
+            goalRows.push({ rank: 3, cup: cupLabel, g: g3.g });
+        });
+
+
+/* ============================
+   🧱 OPTIMERAD MÅLVAKTS-DEL (med GP ≥ 3 krav)
+   ============================ */
+
+/* Parser för SV% */
+function parseSVPclean(v) {
+  if (!v) return 0;
+  let x = String(v).replace(",", ".").replace("%", "");
+  let num = parseFloat(x);
+  if (num > 1) return num / 100;
+  return isNaN(num) ? 0 : num;
+}
+
+/* Parser för CUP-nummer (19.5) */
+function parseCupNumber(turn) {
+  if (!turn) return "";
+  const clean = String(turn).replace("SEC", "").trim();
+  return clean.split(/\s+/)[0] || "";
+}
+
+/* Parser för CUP-grupp (G/S) */
+function parseCupGroup(turn) {
+  if (!turn) return "";
+  const clean = String(turn).replace("SEC", "").trim();
+  return (clean.split(/\s+/)[1] || "").toUpperCase();
+}
+
+/* ----------- 🧱 TOPP 3 PER CUP + GRUPP ----------- */
+
 let goalieSVBlock = "";
 
-// Gruppér målvakter per CUP+TEAM
-const goalieGroups = {}; // "SEC 3 G|VIP" → lista av goalies
+// 1) Hämta hela målvaktsmatrisen EN gång
+const goalieMatrix = await fetch(API + "?sheet=målvaktsstatsall").then(r => r.json());
 
-goalies.forEach(g => {
-  const parts = splitTurneringLabel(g.TURNERING);
-  const key = `${parts.num}${parts.group}|${g.TEAM}`;
-  if (!goalieGroups[key]) goalieGroups[key] = [];
-  goalieGroups[key].push(g);
-});
+if (Array.isArray(goalieMatrix) && goalieMatrix.length > 1) {
+  const gHeader = goalieMatrix[0];
+  const giName  = gHeader.indexOf("GOALIES");
+  const giTeam  = gHeader.indexOf("TEAM");
+  const giSVP   = gHeader.indexOf("SVP");
+  const giCup   = gHeader.indexOf("CUP");
+  const giGP    = gHeader.indexOf("GP");   // <-- GP-kolumnen !!
 
-// Räkna lagets total-GP och filtrera bort målvakter <40%
-let eligibleGoalies = [];
+  // CUP|GROUP → lista målvakter där
+  const perCupGroup = {};
 
-Object.keys(goalieGroups).forEach(key => {
-  const groupGoalies = goalieGroups[key];
+  // 2) Gruppera ALLA målvakter i hela databasen
+  for (let i = 1; i < goalieMatrix.length; i++) {
+    const row = goalieMatrix[i];
+    const gName = row[giName];
+    const gTeam = row[giTeam];
+    const gSVP  = row[giSVP];
+    const gCup  = row[giCup];
+    const gGP   = Number(row[giGP] || 0);
 
-  const totalGP = groupGoalies.reduce((sum, g) => sum + Number(g.GP || 0), 0);
-  const minGP = totalGP * 0.40; // 40%
+    if (!gName || !gCup) continue;
 
-  groupGoalies.forEach(g => {
-    const gp = Number(g.GP || 0);
+    const num = parseCupNumber(gCup);
+    const grp = parseCupGroup(gCup);
+    if (!num || !grp) continue;
 
-    if (gp >= minGP) {
-      eligibleGoalies.push(g);
+    const key = `${num}|${grp}`;
+
+    if (!perCupGroup[key]) perCupGroup[key] = [];
+
+    perCupGroup[key].push({
+      name: cleanSheetName(gName),
+      team: gTeam,
+      gp: gGP,
+      sv: parseSVPclean(gSVP),
+      svDisplay: formatSVP(gSVP)
+    });
+  }
+
+  // 3) Hitta ALLA CUP+GRUPPER som spelaren själv varit målvakt i
+  const playerGoalieCups = goalies
+    .map(g => {
+      const num = parseCupNumber(g.TURNERING);
+      const grp = parseCupGroup(g.TURNERING);
+      return num && grp ? `${num}|${grp}` : null;
+    })
+    .filter(Boolean);
+
+  const uniquePlayerCups = [...new Set(playerGoalieCups)];
+
+  // 4) För varje CUP+GRUPP spelaren deltog i
+  uniquePlayerCups.forEach(key => {
+    const list = perCupGroup[key];
+    if (!list) return;
+
+    // 🔥 GP-filter: endast målvakter med minst 3 matcher
+    const filtered = list.filter(g => g.gp >= 3);
+
+    // Om spelaren själv har färre än 3 matcher → ingen merit
+    const playerRow = filtered.find(g => norm(g.name) === norm(cleanName));
+    if (!playerRow) return;
+
+    // Sortera SV% högst först
+    const sorted = filtered.sort((a, b) => b.sv - a.sv);
+
+    const placement = sorted.findIndex(
+      g => norm(g.name) === norm(cleanName)
+    );
+
+    if (placement !== -1 && placement < 3) {
+      const medal = ["🥇", "🥈", "🥉"][placement];
+      const [cupNum, grp] = key.split("|");
+      const g = sorted[placement];
+
+      goalieSVBlock += `
+        ${medal} <strong>${placement + 1}:a bästa räddningsprocenten i SEC ${cupNum} ${grp}</strong>
+        (${g.svDisplay}) med <strong>${teamName(g.team)}</strong>.<br>
+      `;
     }
   });
-});
-
-// Sortera på SV%
-eligibleGoalies
-  .map(g => ({
-    ...g,
-    sv: parseSVP(g.SVP),
-    svDisplay: formatSVP(g.SVP)
-  }))
-  .sort((a, b) => b.sv - a.sv)
-  .slice(0, 3)
-  .forEach((g, index) => {
-    const medal = ["🥇","🥈","🥉"][index];
-    const parts = splitTurneringLabel(g.TURNERING);
-    const cupLabel = `SEC ${parts.num}${parts.group ? " " + parts.group : ""}`;
-
-    goalieSVBlock += `
-      ${medal} <strong>${index+1}:a bästa räddningsprocent i ${cupLabel}</strong> 
-      (${g.svDisplay}) med <strong>${teamName(g.TEAM)}</strong>.<br>
-    `;
-  });
-
-
-
-  /* ----------------------------------------------------
-     ✨ Bygg meritblock i ordning
-     ---------------------------------------------------- */
-  if (pointRows.length || goalRows.length || goalieSVBlock) {
-
-    meritBlockPersonal += `
-      <div class="section-divider" style="margin-top:25px;">Personliga meriter</div>
-      <div class="merit-list">
-    `;
-
-    // 📊 Poängligan
-    pointRows.sort((a,b) => a.rank - b.rank).forEach(r => {
-      const medal = r.rank === 1 ? "🎯" : r.rank === 2 ? "🥈" : "🥉";
-      meritBlockPersonal += `
-        ${medal} <strong>${r.rank}:a i poängligan i SEC ${r.cup}</strong> (${r.pts}p).<br>
-      `;
-    });
-
-    // 🏹 Skytteligan
-    goalRows.sort((a,b) => a.rank - b.rank).forEach(r => {
-      const medal = r.rank === 1 ? "🏹" : r.rank === 2 ? "🥈" : "🥉";
-      meritBlockPersonal += `
-        ${medal} <strong>${r.rank}:a i skytteligan i SEC ${r.cup}</strong> (${r.g} mål).<br>
-      `;
-    });
-
-    // 🧱 Målvakter SV%
-    meritBlockPersonal += goalieSVBlock;
-
-    meritBlockPersonal += `</div>`;
-  }
 }
 
 
-/* ---- Slutlig sammansättning ---- */
-let meritText = "";
+        /* ✨ Bygg meritblock i ordning */
+        if (pointRows.length || goalRows.length || goalieSVBlock) {
 
-if (meritBlockGoldSilver || meritBlockPersonal) {
-  meritText = `
-    <div class="section-divider">Meriter</div>
-    <div class="merit-list">${meritBlockGoldSilver}</div>
-    ${meritBlockPersonal}
-  `;
-}
+          meritBlockPersonal += `
+            <div class="section-divider" style="margin-top:25px;">Personliga meriter</div>
+            <div class="merit-list">
+          `;
 
-const cupsCount  = cupNumbers.length;
-const teamsCount = new Set(allRows.map(r => r.TEAM)).size;
+          // 📊 Poängligan
+          pointRows.sort((a,b) => a.rank - b.rank).forEach(r => {
+            const medal = r.rank === 1 ? "🎯" : r.rank === 2 ? "🥈" : "🥉";
+            meritBlockPersonal += `
+              ${medal} <strong>${r.rank}:a i poängligan i SEC ${r.cup}</strong> (${r.pts}p).<br>
+            `;
+          });
+
+          // 🏹 Skytteligan
+          goalRows.sort((a,b) => a.rank - b.rank).forEach(r => {
+            const medal = r.rank === 1 ? "🏹" : r.rank === 2 ? "🥈" : "🥉";
+            meritBlockPersonal += `
+              ${medal} <strong>${r.rank}:a i skytteligan i SEC ${r.cup}</strong> (${r.g} mål).<br>
+            `;
+          });
+
+          // 🧱 Målvakter – SV%
+          meritBlockPersonal += goalieSVBlock;
+
+          meritBlockPersonal += `</div>`;
+        }
+      }
+
+      /* ---- Slutlig sammansättning ---- */
+      let meritText = "";
+
+      if (meritBlockGoldSilver || meritBlockPersonal) {
+        meritText = `
+          <div class="section-divider">Meriter</div>
+          <div class="merit-list">${meritBlockGoldSilver}</div>
+          ${meritBlockPersonal}
+        `;
+      }
+
+      const cupsCount  = cupNumbers.length;
+      const teamsCount = new Set(allRows.map(r => r.TEAM)).size;
 
       /* BIO – ny text enligt din mall */
       let bioText = `
