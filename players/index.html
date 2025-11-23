@@ -998,10 +998,9 @@ winners.forEach(w => {
 
 
 /* ============================
-   🧱 OPTIMERAD MÅLVAKTS-DEL (med GP ≥ 3 krav)
+   🧱 OPTIMERAD MÅLVAKTS-DEL (GP ≥ 3 & 40% av lagets matcher)
    ============================ */
 
-/* Parser för SV% */
 function parseSVPclean(v) {
   if (!v) return 0;
   let x = String(v).replace(",", ".").replace("%", "");
@@ -1010,39 +1009,36 @@ function parseSVPclean(v) {
   return isNaN(num) ? 0 : num;
 }
 
-/* Parser för CUP-nummer (19.5) */
 function parseCupNumber(turn) {
   if (!turn) return "";
   const clean = String(turn).replace("SEC", "").trim();
   return clean.split(/\s+/)[0] || "";
 }
 
-/* Parser för CUP-grupp (G/S) */
 function parseCupGroup(turn) {
   if (!turn) return "";
   const clean = String(turn).replace("SEC", "").trim();
   return (clean.split(/\s+/)[1] || "").toUpperCase();
 }
 
-/* ----------- 🧱 TOPP 3 PER CUP + GRUPP ----------- */
-
 let goalieSVBlock = "";
 
-// 1) Hämta hela målvaktsmatrisen EN gång
+// 1) Hämta hela målvaktsmatrisen
 const goalieMatrix = await fetch(API + "?sheet=målvaktsstatsall").then(r => r.json());
 
 if (Array.isArray(goalieMatrix) && goalieMatrix.length > 1) {
+
   const gHeader = goalieMatrix[0];
   const giName  = gHeader.indexOf("GOALIES");
   const giTeam  = gHeader.indexOf("TEAM");
   const giSVP   = gHeader.indexOf("SVP");
   const giCup   = gHeader.indexOf("CUP");
-  const giGP    = gHeader.indexOf("GP");   // <-- GP-kolumnen !!
+  const giGP    = gHeader.indexOf("GP");
 
-  // CUP|GROUP → lista målvakter där
   const perCupGroup = {};
+  const teamGames = {}; // cup|grp|TEAM → lagets GP (max värde)
 
-  // 2) Gruppera ALLA målvakter i hela databasen
+  // 2) Bygg dataset + lagens matchantal
   for (let i = 1; i < goalieMatrix.length; i++) {
     const row = goalieMatrix[i];
     const gName = row[giName];
@@ -1058,9 +1054,14 @@ if (Array.isArray(goalieMatrix) && goalieMatrix.length > 1) {
     if (!num || !grp) continue;
 
     const key = `${num}|${grp}`;
+    const teamKey = `${key}|${gTeam}`;
+
+    // 🔥 LAGETS MATCHER = max GP för spelare i laget
+    if (!teamGames[teamKey] || gGP > teamGames[teamKey]) {
+      teamGames[teamKey] = gGP;
+    }
 
     if (!perCupGroup[key]) perCupGroup[key] = [];
-
     perCupGroup[key].push({
       name: cleanSheetName(gName),
       team: gTeam,
@@ -1070,46 +1071,50 @@ if (Array.isArray(goalieMatrix) && goalieMatrix.length > 1) {
     });
   }
 
-  // 3) Hitta ALLA CUP+GRUPPER som spelaren själv varit målvakt i
-  const playerGoalieCups = goalies
-    .map(g => {
-      const num = parseCupNumber(g.TURNERING);
-      const grp = parseCupGroup(g.TURNERING);
-      return num && grp ? `${num}|${grp}` : null;
-    })
-    .filter(Boolean);
+  // 3) Vilka CUP+GRP spelade vår målvakt i?
+  const playerGoalieCups = goalies.map(g => {
+    const num = parseCupNumber(g.TURNERING);
+    const grp = parseCupGroup(g.TURNERING);
+    return num && grp ? `${num}|${grp}` : null;
+  }).filter(Boolean);
 
   const uniquePlayerCups = [...new Set(playerGoalieCups)];
 
-  // 4) För varje CUP+GRUPP spelaren deltog i
+  // 4) Gå igenom varje relevant CUP+GRUPP
   uniquePlayerCups.forEach(key => {
     const list = perCupGroup[key];
     if (!list) return;
 
-    // 🔥 GP-filter: endast målvakter med minst 3 matcher
-    const filtered = list.filter(g => g.gp >= 3);
+    // 🔥 40% + 3 GP-filter
+    const filtered = list.filter(g => {
+      const teamKey = `${key}|${g.team}`;
+      const lagGP = teamGames[teamKey] || 0;
+      if (lagGP === 0) return false;
 
-    // Om spelaren själv har färre än 3 matcher → ingen merit
+      const gpOK = g.gp >= 3;
+      const pctOK = g.gp >= Math.ceil(lagGP * 0.4);
+
+      return gpOK && pctOK;
+    });
+
+    // Målvakten själv måste kvalificera sig
     const playerRow = filtered.find(g => norm(g.name) === norm(cleanName));
     if (!playerRow) return;
 
-    // Sortera SV% högst först
+    // Sortera
     const sorted = filtered.sort((a, b) => b.sv - a.sv);
 
-    const placement = sorted.findIndex(
-      g => norm(g.name) === norm(cleanName)
-    );
+    const placement = sorted.findIndex(g => norm(g.name) === norm(cleanName));
+    if (placement === -1 || placement >= 3) return;
 
-    if (placement !== -1 && placement < 3) {
-      const medal = ["🥇", "🥈", "🥉"][placement];
-      const [cupNum, grp] = key.split("|");
-      const g = sorted[placement];
+    const medal = ["🥇", "🥈", "🥉"][placement];
+    const [cupNum, grp] = key.split("|");
+    const g = sorted[placement];
 
-      goalieSVBlock += `
-        ${medal} <strong>${placement + 1}:a bästa räddningsprocenten i SEC ${cupNum} ${grp}</strong>
-        (${g.svDisplay}) med <strong>${teamName(g.team)}</strong>.<br>
-      `;
-    }
+    goalieSVBlock += `
+      ${medal} <strong>${placement + 1}:a bästa räddningsprocenten i SEC ${cupNum} ${grp}</strong>
+      (${g.svDisplay}) med <strong>${teamName(g.team)}</strong>.<br>
+    `;
   });
 }
 
