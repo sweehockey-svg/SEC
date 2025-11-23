@@ -586,7 +586,7 @@
         const key = norm(name);
         if (!key || seen.has(key)) continue;
         seen.add(key);
-        names.push({ PLAYER: name });
+        names.push({ PLAYER: cleanSheetName(name), RAW: name });
       }
     }
 
@@ -1111,8 +1111,9 @@ if (Array.isArray(goalieMatrix) && goalieMatrix.length > 1) {
     const [cupNum, grp] = key.split("|");
     const g = sorted[placement];
 
+    // ✅ KORRIGERAD TEXT + INGA FELAKTIGA WHITESPACE
     goalieSVBlock += `
-      ${medal} <strong>${placement + 1}:a bästa räddningsprocenten i SEC ${cupNum} ${grp}</strong>
+      ${medal} <strong>${placement + 1}:a i målvaktsligan i SEC ${cupNum} ${grp}</strong>
       (${g.svDisplay}) med <strong>${teamName(g.team)}</strong>.<br>
     `;
   });
