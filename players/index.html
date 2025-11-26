@@ -807,15 +807,19 @@ items.push({
     `).join("");
 
     /* Klick event */
-    box.querySelectorAll(".search-item").forEach(el => {
-      el.onclick = () => {
-        if (el.dataset.type === "team") {
-          location.href = `lagkort.html?team=${encodeURIComponent(el.dataset.team)}&cup=${encodeURIComponent(el.dataset.cup)}`;
-        } else {
-          location.href = `spelarkort.html?player=${encodeURIComponent(el.dataset.player)}`;
-        }
-      };
-    });
+box.querySelectorAll(".search-item").forEach(el => {
+  el.onclick = () => {
+
+    if (el.dataset.type === "team") {
+      // LAGKORT ligger i /SEC/lagkort
+      location.href = `/SEC/lagkort?team=${encodeURIComponent(el.dataset.team)}&cup=${encodeURIComponent(el.dataset.cup)}`;
+      return;
+    }
+
+    // SPELARKORT ligger i /SEC/players/
+    location.href = `/SEC/players/?player=${encodeURIComponent(el.dataset.player)}`;
+  };
+});
   }
 
   /* Input-event */
