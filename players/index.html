@@ -806,17 +806,25 @@ items.push({
       </div>
     `).join("");
 
-    /* Klick event */
     box.querySelectorAll(".search-item").forEach(el => {
-      el.onclick = () => {
-        if (el.dataset.type === "team") {
-          location.href = `lagkort.html?team=${encodeURIComponent(el.dataset.team)}&cup=${encodeURIComponent(el.dataset.cup)}`;
-        } else {
-          location.href = `spelarkort.html?player=${encodeURIComponent(el.dataset.player)}`;
-        }
-      };
-    });
-  }
+  el.onclick = () => {
+    const type = el.dataset.type;
+
+    if (type === "team") {
+      const t = el.dataset.team;
+      const c = el.dataset.cup;
+
+      // Lagkort ligger i main /SEC/
+      location.href = `/SEC/lagkort.html?team=${encodeURIComponent(t)}&cup=${encodeURIComponent(c)}`;
+      return;
+    }
+
+    // Spelarkort ligger i /SEC/players/ (index-sidan)
+    const p = el.dataset.player;
+    location.href = `/SEC/players/?player=${encodeURIComponent(p)}`;
+  };
+});
+
 
   /* Input-event */
   inp.addEventListener("input", () => {
