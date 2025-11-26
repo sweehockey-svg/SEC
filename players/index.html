@@ -812,7 +812,7 @@ box.querySelectorAll(".search-item").forEach(el => {
 
     if (el.dataset.type === "team") {
       // LAGKORT ligger i /SEC/lagkort
-      location.href = `/SEC/lagkort?team=${encodeURIComponent(el.dataset.team)}&cup=${encodeURIComponent(el.dataset.cup)}`;
+      location.href = `/SEC/lagkort.html?team=${encodeURIComponent(el.dataset.team)}&cup=${encodeURIComponent(el.dataset.cup)}`;
       return;
     }
 
