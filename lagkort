@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Svenska eHockey Cupen – Lag</title>
+
+  <style>
+.player-mini {
+  width: 60px;
+  height: 85px;
+  border-radius: 10px;
+  object-fit: cover;
+  margin-bottom: 4px;
+  border: 2px solid rgba(245,216,110,0.45);
+  background: #050712;
+}
+
+    .section-divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 35px 0 20px;
+      color: #f5d86e;
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      text-shadow: 0 0 10px rgba(245,216,110,0.3);
+    }
+
+    .section-divider::before,
+    .section-divider::after {
+      content: "";
+      flex: 1;
+      border-bottom: 1px solid rgba(245,216,110,0.35);
+      margin: 0 14px;
+    }
+
+    /* Loader */
+    .sec-loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 0 4px;
+    }
+    .loader-text {
+      font-size: 0.95rem;
+      color: #f6d66b;
+      margin-bottom: 8px;
+      letter-spacing: .04em;
+    }
+    .loader-bar {
+      width: 200px;
+      height: 10px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 6px;
+      border: 1px solid rgba(246,214,107,0.35);
+      overflow: hidden;
+      margin: 0 auto;
+    }
+    .loader-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #f6d66b, #ffe7ac);
+      animation: secBar 1.8s infinite ease-in-out;
+    }
+    @keyframes secBar {
+      0% { width: 0%; }
+      50% { width: 85%; }
+      100% { width: 0%; }
+    }
+
+    :root {
+      --sec-bg-deep: #02030a;
+      --sec-bg-top: #080f24;
+      --sec-gold: #d6b15f;
+      --sec-gold-soft: #f0d58b;
+      --sec-text-main: #e3e4f2;
+      --sec-text-muted: #b4b7d8;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+      background: #000;
+      color: var(--sec-text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+    }
+
+    #sec-bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(214,177,95,0.17) 0, transparent 55%),
+        radial-gradient(circle at 100% 0%, rgba(88,120,255,0.16) 0, transparent 55%),
+        radial-gradient(circle at 50% 100%, #010314 0, #000 70%);
+    }
+
+    .smoke-layer {
+      position: absolute;
+      inset: -20%;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(120,140,200,0.12) 0, transparent 45%),
+        radial-gradient(circle at 80% 30%, rgba(120,140,200,0.10) 0, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(80,100,160,0.12) 0, transparent 45%);
+      opacity: 0;
+      animation: smokeFade 1.4s ease forwards .8s, smokeDrift 40s linear infinite;
+      mix-blend-mode: screen;
+    }
+    .smoke-layer.smoke-back {
+      filter: blur(22px);
+      animation: smokeFade 1.8s ease forwards 1s, smokeDrift 55s linear infinite;
+    }
+    @keyframes smokeFade { from { opacity:0;} to{opacity:0.4;} }
+    @keyframes smokeDrift {
+      0% { transform:translate3d(0,0,0) scale(1);}
+      50%{ transform:translate3d(-4%,-2%,1px) scale(1.05);}
+      100%{transform:translate3d(3%,3%,0) scale(1);}
+    }
+
+    #sec-page {
+      width: 95%;
+      max-width: 1200px;
+      padding: 20px 12px 80px 12px;
+      animation: pageFade .6s ease-out;
+    }
+    @keyframes pageFade {
+      from { opacity:0; transform: translateY(8px);}
+      to { opacity:1; transform: translateY(0);}
+    }
+
+    .back-button {
+      display: inline-block;
+      cursor: pointer;
+      color: var(--sec-gold-soft);
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(214,177,95,0.35);
+      box-shadow: 0 0 18px rgba(214,177,95,0.15);
+      transition: 0.2s;
+      width: fit-content;
+    }
+    .back-button:hover {
+      background: rgba(255,215,0,0.15);
+      color: #fff;
+      transform: translateX(-3px);
+    }
+
+    .sfc-header {
+      margin-top: 12px;
+      border-radius: 22px;
+      padding: 26px 16px 22px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,0.05), transparent 40%),
+        radial-gradient(circle at top, #151b3f 0, #050614 55%, #02030a 100%);
+      border: 1px solid rgba(214,177,95,0.6);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.95);
+      text-align: center;
+    }
+    .sfc-logo {
+      width: 165px;
+      filter: drop-shadow(0 0 20px rgba(214,177,95,0.7));
+    }
+    .sfc-title {
+      font-weight: 800;
+      font-size: clamp(1.3rem, 2.6vw, 1.7rem);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+    .sfc-title strong { color: var(--sec-gold-soft); }
+    .sfc-divider {
+      width: 180px;
+      height: 3px;
+      margin: 18px auto 0;
+      border-radius: 999px;
+      background: linear-gradient(90deg,transparent,var(--sec-gold-soft),transparent);
+      box-shadow: 0 0 15px rgba(214,177,95,0.8);
+    }
+
+    .player-shell {
+      margin-top: 32px;
+      width: 95%;
+      max-width: 1100px;
+      margin-inline: auto;
+    }
+
+    /* LAGKORTET */
+    .team-card {
+      width: 100%;
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at top, rgba(255,255,255,0.04), transparent 55%),
+        linear-gradient(180deg, #060715, #02030a 60%, #000);
+      border:1px solid rgba(255,255,255,0.06);
+      padding:24px 20px 28px;
+      text-align:center;
+    }
+
+    #teamLogo {
+      width: 260px;
+      max-width: 95%;
+      border-radius:20px;
+      padding:6px;
+      background:#050712;
+      border:2px solid rgba(255,215,0,.35);
+      margin-bottom:12px;
+      object-fit: contain;
+    }
+
+    #teamName {
+      font-size:1.6rem;
+      font-weight:700;
+      color:#f5d86e;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      margin-bottom:4px;
+    }
+
+    .team-subtitle {
+      font-size:.88rem;
+      color:var(--sec-text-muted);
+      margin-bottom:6px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+
+    .ca-line {
+      font-size:.9rem;
+      color:var(--sec-text-main);
+      margin-top:6px;
+    }
+    .ca-line span {
+      font-weight:600;
+      color:#f5d86e;
+    }
+
+    .no-stats {
+      margin-top:10px;
+      background:#3a0000;
+      border:1px solid #ff4d4d;
+      padding:10px;
+      border-radius:10px;
+      text-align:center;
+      font-size:0.9rem;
+    }
+
+    .lag-section {
+      margin-top: 28px;
+      text-align: left;
+    }
+    .lag-section-title {
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: .16em;
+      color: #f5d86e;
+      margin-bottom: 6px;
+    }
+    .lag-section-card {
+      border-radius: 16px;
+      background: rgba(2,4,18,0.96);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 14px 14px 10px;
+      box-shadow: 0 14px 40px rgba(0,0,0,0.8);
+    }
+
+    .match-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: .9rem;
+    }
+    .match-row {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:8px 10px;
+      border-radius:10px;
+      background:#101326;
+    }
+    .match-row-main { font-weight:500; }
+    .match-row-sub {
+      font-size:.78rem;
+      color:var(--sec-text-muted);
+    }
+    .match-score {
+      font-weight:700;
+      min-width:48px;
+      text-align:right;
+    }
+
+    .roster-grid {
+      display:grid;
+      grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+      gap:6px 16px;
+      font-size:.9rem;
+    }
+    .roster-item-main { font-weight:500; }
+    .roster-item-sub {
+      font-size:.8rem;
+      color:var(--sec-text-muted);
+    }
+
+    /* SÖKMODUL */
+    .player-search-centered {
+      margin: 40px auto 10px auto;
+      width: 50%;
+      max-width: 550px;
+      min-width: 260px;
+      border-radius: 22px;
+      text-align: center;
+      background:
+        radial-gradient(circle at top, rgba(255,255,255,0.05) 0, transparent 55%),
+        linear-gradient(180deg, #050718, #02030a 70%, #000);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 20px 18px 22px;
+    }
+    .search-title {
+      font-size: .92rem;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-weight: 600;
+      color: var(--sec-text-muted);
+      margin-bottom: 6px;
+    }
+    .player-search-centered .search-wrapper {
+      position: relative;
+    }
+    #globalSearch {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(245,216,110,.7);
+      background: rgba(2,4,18,0.95);
+      color: #fff;
+      font-size: .95rem;
+    }
+    #globalSearch::placeholder {
+      color: rgba(180,183,216,0.75);
+    }
+    #globalResults {
+      position:absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      width:100%;
+      background:#090b17;
+      border:1px solid rgba(255,215,0,.25);
+      border-radius:14px;
+      display:none;
+      max-height:260px;
+      overflow-y:auto;
+      z-index:100;
+    }
+    .search-item {
+      padding:9px 14px;
+      color:#ddd;
+      cursor:pointer;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .search-item:hover {
+      background:rgba(255,215,0,.08);
+      color:#f5d86e;
+    }
+    .search-pill {
+      font-size:.75rem;
+      padding:2px 7px;
+      border-radius:999px;
+      border:1px solid rgba(245,216,110,.7);
+      color:#f5d86e;
+    }
+    .search-sub {
+      font-size:.78rem;
+      color:var(--sec-text-muted);
+    }
+
+    /* Footer */
+    #sec-footer-wrapper {
+      margin-top: 30px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(214,177,95,0.35);
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--sec-text-muted);
+    }
+    #sec-footer-wrapper span {
+      color: var(--sec-gold-soft);
+      font-weight: 600;
+    }
+
+    @media (max-width: 600px) {
+      .player-search-centered { width: 90%; }
+      #teamLogo { width: 220px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="sec-bg-layer">
+    <div class="smoke-layer smoke-back"></div>
+    <div class="smoke-layer"></div>
+  </div>
+
+  <div id="sec-page">
+    <div class="back-button" onclick="history.back()">
+      ← Tillbaka till lagsidan
+    </div>
+
+    <a href="https://sweehockey-svg.github.io/SEC/index.html" style="text-decoration:none; color:inherit;">
+      <div class="sfc-header">
+        <img class="sfc-logo" src="https://drive.google.com/thumbnail?id=1QybW_Uw8HO0OXo8vwQFD-zrrr-ifFrC9&sz=w1000" alt="SEC Logo">
+        <div class="sfc-title">
+          🏆 Svenska eHockey <strong>Cupen</strong> 🏒
+        </div>
+        <div class="sfc-divider"></div>
+      </div>
+    </a>
+
+    <div class="player-shell">
+      <div class="team-card">
+        <img
+  id="teamLogo"
+  alt="Laglogga"
+  src="https://drive.google.com/thumbnail?id=1QybW_Uw8HO0OXo8vwQFD-zrrr-ifFrC9&sz=w1000"
+  onerror="this.onerror=null;this.src='https://drive.google.com/thumbnail?id=1QybW_Uw8HO0OXo8vwQFD-zrrr-ifFrC9&sz=w1000';"
+/>
+
+        
+        <div id="teamName">Lagnamn</div>
+        <div class="team-subtitle" id="teamCup">SEC</div>
+        <div class="ca-line" id="caLine" style="display:none;"></div>
+
+        <div id="teamLoader" class="sec-loader" style="display:none;">
+          <div class="loader-text">Lagsida laddas…</div>
+          <div class="loader-bar">
+            <div class="loader-bar-fill"></div>
+          </div>
+        </div>
+
+        
+
+        <!-- SPELARE -->
+        <div class="lag-section">
+          <div class="lag-section-title">Spelare</div>
+          <div class="lag-section-card">
+            <div id="playerList" class="roster-grid">
+              <div class="roster-item-main" style="opacity:.7;">Inga spelare hittades.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MÅLVAKTER -->
+        <div class="lag-section">
+          <div class="lag-section-title">Målvakter</div>
+          <div class="lag-section-card">
+            <div id="goalieList" class="roster-grid">
+              <div class="roster-item-main" style="opacity:.7;">Inga målvakter hittades.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+<!-- MATCHER -->
+        <div class="lag-section">
+          <div class="lag-section-title">Matcher</div>
+          <div class="lag-section-card">
+            <div id="matchList" class="match-list">
+              <div class="match-row">
+                <div>
+                  <div class="match-row-main">Inga matcher hittades.</div>
+                  <div class="match-row-sub"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <!-- SÖK: LAG + SPELARE -->
+      <div class="player-search-centered">
+        <div class="search-title">Sök lag &amp; spelare</div>
+        <div class="search-wrapper">
+          <input id="globalSearch" placeholder="Sök lag eller spelare">
+          <div id="globalResults"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="sec-footer-wrapper">
+      © 2025 <span>Svenska eHockey Cupen</span> | Design & utveckling av <span>SWEEHOCKEY</span>
+    </div>
+  </div>
+
+  <script>
+    const API = "https://script.google.com/macros/s/AKfycbwUvylvIbUTy4_zihW5_OKIsQME2vxcPHWLldObZI28dggqJytvF2UmdsAD4Ib5Zre1/exec";
+let playerPhotos = {};
+
+async function loadPlayerPhotos() {
+  try {
+    const res = await fetch(API + "?sheet=Spelarfoton");
+    const data = await res.json();
+
+    const h = data[0];
+    const iName = h.indexOf("Spelarnamn");
+    const iDriveID = h.indexOf("DriveID");
+
+    for (let i = 1; i < data.length; i++) {
+      const r = data[i];
+      if (!r) continue;
+
+      const name = r[iName];
+      const id = r[iDriveID];
+
+      if (!name || !id) continue;
+
+      playerPhotos[name.trim()] = `https://drive.google.com/thumbnail?id=${id}&sz=w1000`;
+    }
+  } catch (e) {
+    console.error("Foto-fel:", e);
+  }
+}
+
+
+    // TEAM_MAP (kortad – fyll på med hela listan du har)
+    const TEAM_MAP = {
+      "3TU":"3Tuna Le sport","AL":"A Laget","AFT":"AFTERLIFE","AIS":"Almtuna ESPORT",
+      "AVE":"Avenyn Esport","BAC":"BACKCHECK BOYS","BAS":"Bask Nation","BEE":"Beerhouse",
+      "BIF":"Brynäs IF Esport","CAL":"Calippo HC","COG":"Company of Geeks","DIF":"Djurgården",
+      "FBK":"Färjestad BK","FHC":"Frölunda HC Academy","FR":"Frölunda HC Region",
+      "MOD":"Modo Hockey","MIK":"Mora IK","MIF":"Malmö","NF":"Nordic Falcons",
+      "NK":"Nordic Knights","NOF":"Norska förbundslaget","NVB":"Norra Västerbotten",
+      "OBK":"Örebro","OIK":"Oskarshamn IK","PAT":"Patriots","PRO":"Prowlers Esport",
+      "RBK":"Rögle","SES":"Sunne IK Esport","SPA":"Spartans eSport","SSK":"SSK eSport",
+      "TIK":"Timrå IK","TMO":"Team Modo","UNW":"Unwanted","VAX":"Växjo",
+      "VIK":"Västerås IK","VER":"Verket","WHI":"WHITE WINGS","WIS":"Wisby Islanders"
+      // ...resten av din fulla TEAM_MAP här
+    };
+
+    function norm(s){
+      return String(s||"")
+        .toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+        .replace(/\s+/g,"")
+        .replace(/[^a-z0-9]/g,"");
+    }
+    function extractCupNumber(c){
+      if(!c) return "";
+      return String(c).replace("SEC","").trim().split(" ")[0];
+    }
+
+    const params = new URLSearchParams(location.search);
+    const teamParam = params.get("team") ? decodeURIComponent(params.get("team")) : "";
+    const cupParam  = params.get("cup")  || "";
+
+    const teamNameEl = document.getElementById("teamName");
+    const teamCupEl  = document.getElementById("teamCup");
+    const logoEl     = document.getElementById("teamLogo");
+    const caLineEl   = document.getElementById("caLine");
+    const loaderEl   = document.getElementById("teamLoader");
+
+    teamNameEl.textContent = teamParam || "Okänt lag";
+    teamCupEl.textContent  = cupParam ? `SEC ${cupParam}` : "Svenska eHockey Cupen";
+
+async function loadLogo() {
+  try {
+    const res = await fetch(API + "?sheet=lagloggor");
+    const data = await res.json();
+
+    const header = data[0];
+    const iLag  = header.indexOf("Laglogga");
+    const iLink = header.indexOf("Drive-länk");
+    const iId   = header.indexOf("DriveID");
+
+    if (iLag === -1 || iId === -1) return;
+
+    const targetNorm = norm(teamParam);
+    let driveId = "";
+    let directLink = "";
+
+    // 🔎 1. EXAKT NORMALISERAD MATCHNING
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      if (!row) continue;
+
+      const name = row[iLag];
+      if (!name) continue;
+
+      if (norm(name) === targetNorm) {
+        driveId = row[iId];
+        directLink = row[iLink];
+        break;
+      }
+    }
+
+    // 🔎 2. SNÄLL MATCHNING (fallback)
+    if (!driveId) {
+      for (let i = 1; i < data.length; i++) {
+        const row = data[i];
+        if (!row) continue;
+
+        const name = row[iLag];
+        if (!name) continue;
+
+        const n = norm(name);
+        if (targetNorm.includes(n) || n.includes(targetNorm)) {
+          driveId = row[iId];
+          directLink = row[iLink];
+          break;
+        }
+      }
+    }
+
+    // 🎨 Bygg bild-url korrekt
+    if (driveId) {
+      logoEl.src = `https://drive.google.com/thumbnail?id=${driveId}&sz=w1000`;
+    } else if (directLink) {
+      // Om någon lagt in en direkt Drive-länk i arket
+      const match = directLink.match(/\/d\/([^/]+)/);
+      const id = match ? match[1] : "";
+      logoEl.src = `https://drive.google.com/thumbnail?id=${id}&sz=w1000`;
+    } else {
+      // 🟡 Fallback → SEC-logo
+      logoEl.src = "https://drive.google.com/thumbnail?id=1QybW_Uw8HO0OXo8vwQFD-zrrr-ifFrC9&sz=w1000";
+      console.warn("Ingen logga hittades för:", teamParam);
+    }
+
+  } catch (e) {
+    console.error("Logo-fel:", e);
+    logoEl.src = "https://drive.google.com/thumbnail?id=1QybW_Uw8HO0OXo8vwQFD-zrrr-ifFrC9&sz=w1000";
+  }
+}
+
+    async function loadMatches(){
+      try{
+        const res = await fetch(API + "?sheet=matcherSEC");
+        const data = await res.json();
+        const h = data[0];
+        const iDate  = h.indexOf("Date");
+        const iTime  = h.indexOf("Time");
+        const iAway  = h.indexOf("Away team");
+        const iHome  = h.indexOf("Home team");
+        const iAS    = h.indexOf("Away score");
+        const iHS    = h.indexOf("Home score");
+        const iCup   = h.indexOf("Cup");
+        const iStage = h.indexOf("Stage");
+
+        const list = [];
+        for(let i=1;i<data.length;i++){
+          const r = data[i]; if(!r) continue;
+          const cup = extractCupNumber(r[iCup]);
+          if(cupParam && cup !== cupParam) continue;
+          const home = r[iHome];
+          const away = r[iAway];
+          if(home !== teamParam && away !== teamParam) continue;
+          list.push({
+            date: r[iDate],
+            time: r[iTime],
+            home, away,
+            hs: r[iHS],
+            as: r[iAS],
+            stage: r[iStage],
+            cup
+          });
+        }
+
+        const box = document.getElementById("matchList");
+        if(!list.length){
+          box.innerHTML = '<div class="match-row"><div class="match-row-main">Inga matcher hittades.</div></div>';
+          return;
+        }
+
+        box.innerHTML = list.map(m => `
+          <div class="match-row">
+            <div>
+              <div class="match-row-main">${m.home} – ${m.away}</div>
+              <div class="match-row-sub">${m.date || ""} ${m.time || ""} · ${m.stage || ""}</div>
+            </div>
+            <div class="match-score">${m.hs ?? ""}–${m.as ?? ""}</div>
+          </div>
+        `).join("");
+      }catch(e){ console.error("Matcher-fel",e); }
+    }
+async function getPlayerPhotoMap() {
+  const res = await fetch(API + "?sheet=Spelarfoton");
+  const data = await res.json();
+
+  const header = data[0];
+  const iName = header.indexOf("Spelarnamn");
+  const iId   = header.indexOf("DriveID");
+
+  const map = {};
+
+  for (let i = 1; i < data.length; i++) {
+    const r = data[i];
+    if (!r) continue;
+
+    const name = r[iName];
+    const id   = r[iId];
+
+    if (name && id) {
+      map[name.trim().toLowerCase()] = id;
+    }
+  }
+
+  return map;
+}
+
+// fallback-bild (samma som spelarkortet)
+const FALLBACK_PLAYER_IMG =
+  "https://drive.google.com/thumbnail?id=1VAa79pJ-QbyeliY60autf914z6SBwmhp&sz=w1000";
+
+
+async function loadRoster() {
+  try {
+    loaderEl.style.display = "flex";
+
+    await loadPlayerPhotos();
+
+    const [uteRes, mvRes] = await Promise.all([
+      fetch(API + "?sheet=utestatsall").then(r=>r.json()),
+      fetch(API + "?sheet=målvaktsstatsall").then(r=>r.json())
+    ]);
+
+ const FALLBACK_IMG =
+  "https://drive.google.com/thumbnail?id=1VAa79pJ-QbyeliY60autf914z6SBwmhp&sz=w1000";
+
+
+
+/* ============ UTE ============ */
+(function () {
+  const h = uteRes[0];
+  const iPlayer = h.indexOf("PLAYERS");
+  const iTeam = h.indexOf("TEAM");
+  const iGP = h.indexOf("GP");
+  const iPTS = h.indexOf("PTS");
+  const iCup = h.indexOf("CUP");
+
+  const merged = {};
+
+  for (let i = 1; i < uteRes.length; i++) {
+    const r = uteRes[i]; if (!r) continue;
+
+    const code = r[iTeam];
+    const fullTeam = TEAM_MAP[code] || code;
+    const cup = extractCupNumber(r[iCup]);
+    if (fullTeam !== teamParam) continue;
+    if (cupParam && cup !== cupParam) continue;
+
+    const nameRaw = r[iPlayer];
+    if (!nameRaw) continue;
+
+    const clean = nameRaw.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
+
+    if (!merged[clean]) {
+      merged[clean] = {
+        name: clean,
+        gp: 0,
+        pts: 0,
+        stages: new Set()
+      };
+    }
+
+    merged[clean].gp += Number(r[iGP] || 0);
+    merged[clean].pts += Number(r[iPTS] || 0);
+
+    if (r[iCup].includes("Grupp")) merged[clean].stages.add("Grupp");
+    if (r[iCup].includes("Slutspel")) merged[clean].stages.add("Slutspel");
+  }
+
+  const rows = Object.values(merged);
+  const box = document.getElementById("playerList");
+
+  if (!rows.length) {
+    box.innerHTML = '<div class="roster-item-main" style="opacity:.7;">Inga spelare hittades.</div>';
+    return;
+  }
+
+  box.innerHTML = rows
+    .map(p => {
+      const photo = playerPhotos[p.name] || FALLBACK_PLAYER_IMG;
+      const stage = [...p.stages].join(" + ");
+
+      return `
+        <div>
+          <a href="spelarkort.html?player=${encodeURIComponent(p.name)}" style="text-decoration:none; color:inherit;">
+            <img src="${photo}" class="player-mini">
+            <div class="roster-item-main">${p.name}</div>
+          </a>
+          <div class="roster-item-sub">
+            GP: ${p.gp} · PTS: ${p.pts} · ${stage}
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+})();
+
+
+/* ============ MÅLVAKTER ============ */
+(function () {
+  const h = mvRes[0];
+  const iGoalie = h.indexOf("GOALIES");
+  const iTeam   = h.indexOf("TEAM");
+  const iGP     = h.indexOf("GP");
+  const iSV     = h.indexOf("SV%");
+  const iCup    = h.indexOf("CUP");
+
+  const merged = {};
+
+  for (let i = 1; i < mvRes.length; i++) {
+    const r = mvRes[i];
+    if (!r) continue;
+
+    const code = r[iTeam];
+    const fullTeam = TEAM_MAP[code] || code;
+    const cup = extractCupNumber(r[iCup]);
+    if (fullTeam !== teamParam) continue;
+    if (cupParam && cup !== cupParam) continue;
+
+    const nameRaw = r[iGoalie];
+    if (!nameRaw) continue;
+
+    const clean = nameRaw.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
+
+    if (!merged[clean]) {
+      merged[clean] = {
+        name: clean,
+        gp: 0,
+        svGroup: null,
+        svPlayoff: null,
+        stages: new Set()
+      };
+    }
+
+    merged[clean].gp += Number(r[iGP] || 0);
+    const svValue = (r[iSV] || "").trim();
+
+    // END – vi sparar SV% per fas
+    if (r[iCup].includes("Grupp") && svValue) {
+      merged[clean].svGroup = svValue;
+      merged[clean].stages.add("Grupp");
+    }
+    if (r[iCup].includes("Slutspel") && svValue) {
+      merged[clean].svPlayoff = svValue;
+      merged[clean].stages.add("Slutspel");
+    }
+  }
+
+  const rows = Object.values(merged);
+  const box = document.getElementById("goalieList");
+
+  if (!rows.length) {
+    box.innerHTML = '<div class="roster-item-main" style="opacity:.7;">Inga målvakter hittades.</div>';
+    return;
+  }
+
+  box.innerHTML = rows
+    .map(g => {
+      const photo = playerPhotos[g.name] || FALLBACK_PLAYER_IMG;
+
+      // ⭐ Visar ENDAST grundspels-SV%
+      const displaySV = g.svGroup ?? "-";
+
+      const stage = [...g.stages].join(" + ");
+
+      return `
+        <div>
+          <a href="spelarkort.html?player=${encodeURIComponent(g.name)}" style="text-decoration:none; color:inherit;">
+            <img src="${photo}" class="player-mini">
+            <div class="roster-item-main">${g.name}</div>
+          </a>
+          <div class="roster-item-sub">
+            GP: ${g.gp} · SV%: ${displaySV} · ${stage}
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+})();
+
+
+  } catch (e) {
+    console.error("Roster-fel", e);
+  } finally {
+    loaderEl.style.display = "none";
+  }
+}
+
+// Hjälpfunktion: Ta bort “, SWE”
+function cleanPlayerName(name) {
+  if (!name) return "";
+  return name.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
+}
+
+async function initGlobalSearch() {
+  const inp = document.getElementById("globalSearch");
+  const box = document.getElementById("globalResults");
+
+  let items = [];
+  const players = new Set();
+  const teamCups = {}; // teamName -> Set of cups
+
+  try {
+    const [uteRes, mvRes] = await Promise.all([
+      fetch(API + "?sheet=utestatsall").then(r => r.json()),
+      fetch(API + "?sheet=målvaktsstatsall").then(r => r.json())
+    ]);
+
+    // ===== UTE-SPELARE =====
+    (function () {
+      const h = uteRes[0];
+      const iPlayer = h.indexOf("PLAYERS");
+      const iTeam   = h.indexOf("TEAM");
+      const iCup    = h.indexOf("CUP");
+
+      for (let i = 1; i < uteRes.length; i++) {
+        const r = uteRes[i];
+        if (!r) continue;
+
+        const rawName = r[iPlayer];
+        if (!rawName) continue;
+
+        const name = rawName.replace(/,\s*SWE/i, "").trim();
+        const fullTeam = TEAM_MAP[r[iTeam]] || r[iTeam];
+        const cup = extractCupNumber(r[iCup]);
+
+        // Registrera lag + cup
+        if (!teamCups[fullTeam]) teamCups[fullTeam] = new Set();
+        teamCups[fullTeam].add(cup);
+
+        // Spelare — undvik dubletter
+        const key = norm(name);
+        if (!players.has(key)) {
+          players.add(key);
+          items.push({
+            type: "player",
+            label: name,
+            sub: "",      // ingen lagtext på spelare
+            player: name
+          });
+        }
+      }
+    })();
+
+    // ===== MÅLVAKTER =====
+    (function () {
+      const h = mvRes[0];
+      const iGoalie = h.indexOf("GOALIES");
+      const iTeam   = h.indexOf("TEAM");
+      const iCup    = h.indexOf("CUP");
+
+      for (let i = 1; i < mvRes.length; i++) {
+        const r = mvRes[i];
+        if (!r) continue;
+
+        const rawName = r[iGoalie];
+        if (!rawName) continue;
+
+        const name = rawName.replace(/,\s*SWE/i, "").trim();
+        const fullTeam = TEAM_MAP[r[iTeam]] || r[iTeam];
+        const cup = extractCupNumber(r[iCup]);
+
+        // Registrera lag + cup
+        if (!teamCups[fullTeam]) teamCups[fullTeam] = new Set();
+        teamCups[fullTeam].add(cup);
+
+        // Spelare utan dubletter
+        const key = norm(name);
+        if (!players.has(key)) {
+          players.add(key);
+          items.push({
+            type: "player",
+            label: name,
+            sub: "",
+            player: name
+          });
+        }
+      }
+    })();
+
+    // ===== LAG =====
+    for (const teamName of Object.keys(teamCups)) {
+      for (const cup of teamCups[teamName]) {
+        items.push({
+          type: "team",
+          label: teamName,
+          sub: `SEC ${cup}`,
+          team: teamName,
+          cup: cup
+        });
+      }
+    }
+
+  } catch (e) {
+    console.error("Search-fel:", e);
+  }
+
+  // ===== RENDER =====
+  function render(list) {
+    if (!list.length) {
+      box.style.display = "none";
+      return;
+    }
+
+    box.style.display = "block";
+
+    box.innerHTML = list
+      .map(it => `
+        <div class="search-item"
+          data-type="${it.type}"
+          data-team="${it.team || ""}"
+          data-player="${it.player || ""}"
+          data-cup="${it.cup || ""}"
+        >
+<div>
+  ${
+    it.type === "team"
+      ? `<div>${it.label} – <span class="search-sub">${it.sub}</span></div>`
+      : `<div>${it.label}</div>`
+  }
+</div>
+
+          <div class="search-pill">${it.type === "team" ? "Lag" : "Spelare"}</div>
+        </div>
+      `)
+      .join("");
+
+    // Klickhändelser
+    box.querySelectorAll(".search-item").forEach(el => {
+      el.onclick = () => {
+        const type = el.dataset.type;
+
+        if (type === "team") {
+          const t = el.dataset.team;
+          const c = el.dataset.cup;
+          location.href = `lagkort.html?team=${encodeURIComponent(t)}&cup=${encodeURIComponent(c)}`;
+        } else {
+          const p = el.dataset.player;
+          location.href = `spelarkort.html?player=${encodeURIComponent(p)}`;
+        }
+      };
+    });
+  }
+
+  // Input-händelse
+  inp.addEventListener("input", () => {
+    const q = norm(inp.value.trim());
+    if (!q) {
+      render([]);
+      return;
+    }
+
+    const result = items
+      .filter(it => norm(it.label).includes(q))
+      .slice(0, 40);
+
+    render(result);
+  });
+
+  // Klick utanför → stäng
+  document.addEventListener("click", e => {
+    if (!box.contains(e.target) && e.target !== inp) {
+      box.style.display = "none";
+    }
+  });
+}
+
+    // Init
+    loadLogo();
+    loadMatches();
+    loadRoster();
+    initGlobalSearch();
+  </script>
+</body>
+</html>
