@@ -808,12 +808,23 @@ items.push({
 
     /* Klick event */
     box.querySelectorAll(".search-item").forEach(el => {
-      el.onclick = () => {
-        if (el.dataset.type === "team") {
-          location.href = `lagkort.html?team=${encodeURIComponent(el.dataset.team)}&cup=${encodeURIComponent(el.dataset.cup)}`;
-        } else {
-          location.href = `spelarkort.html?player=${encodeURIComponent(el.dataset.player)}`;
-        }
+    el.onclick = () => {
+  const type = el.dataset.type;
+
+  if (type === "team") {
+    const t = el.dataset.team;
+    const c = el.dataset.cup;
+
+    // Lagkort ligger i /SEC/lagkort (mapp med index.html)
+    location.href = `/SEC/lagkort?team=${encodeURIComponent(t)}&cup=${encodeURIComponent(c)}`;
+    return;
+  }
+
+  // Spelarkort ligger i /SEC/players/ (index.html)
+  const p = el.dataset.player;
+  location.href = `/SEC/players/?player=${encodeURIComponent(p)}`;
+};
+
       };
     });
   }
