@@ -3642,7 +3642,31 @@ renderTable('playoff-goalie-stats','searchPlayoffGoalies','updated-playoff-goali
 })();
 </script>
 
+<script>
+document.querySelectorAll(".cup-tabs .tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    // 1. Avmarkera aktiva tabbar
+    document.querySelectorAll(".cup-tabs .tab").forEach(t =>
+      t.classList.remove("active")
+    );
+
+    // 2. Markera klickad tab
+    tab.classList.add("active");
+
+    // 3. Dölj alla paneler
+    document.querySelectorAll(".tab-panel").forEach(panel =>
+      panel.classList.remove("active")
+    );
+
+    // 4. Visa rätt panel
+    const target = tab.getAttribute("data-target");
+    const panel = document.getElementById(target);
+    if (panel) panel.classList.add("active");
+  });
+});
+</script>
 
 </body>
 </html>
+
 
