@@ -3345,180 +3345,303 @@ renderTable('playoff-goalie-stats','searchPlayoffGoalies','updated-playoff-goali
   </div>
 </div>
 
-<!-- 🔍 SPELAR-SÖK -->
-<div style="margin: 25px 0; text-align:center;">
-  <input 
-    type="text" 
-    id="playerSearch195"
-    placeholder="Sök spelare…"
-    style="
-      padding: 10px 14px;
-      width: 280px;
-      max-width: 90%;
-      border-radius: 12px;
-      border: 1px solid rgba(214,177,95,0.4);
-      background: #0a0c18;
-      color: #fff;
-      text-align:center;
-      font-size: 1rem;
-      box-shadow: 0 0 12px rgba(214,177,95,0.25);
-    "
-  >
-  <div 
-    id="searchResults195"
-    style="
-      width: 280px;
-      max-width: 90%;
-      margin: 6px auto 0;
-      background:#090b17;
-      border:1px solid rgba(255,215,0,.25);
-      border-radius:14px;
-      display:none;
-      max-height:230px;
-      overflow-y:auto;
-      text-align:left;
-    "
-  ></div>
+<!DOCTYPE html>
+<!DOCTYPE html>
+<!-- Här är SÖKRUTAN från lagkortet, flyttad och redo att användas i SEC19_5 -->
+
+<!-- SÖK: LAG + SPELARE -->
+<div class="player-search-centered">
+  <div class="search-title">Sök lag &amp; spelare</div>
+  <div class="search-wrapper">
+    <input id="globalSearch" placeholder="Sök lag eller spelare">
+    <div id="globalResults"></div>
+  </div>
 </div>
 
+<!-- Lägg detta i SEC19_5.html på samma plats som den nuvarande sökrutan -->
+
+<!-- CSS från lagkortet (lägg i <style> i HEAD i SEC19_5.html) -->
+<style>
+/* SÖKMODUL – lag + spelare (från lagkort) */
+.player-search-centered {
+  margin: 40px auto 10px auto;
+  width: 50%;
+  max-width: 550px;
+  min-width: 260px;
+  border-radius: 22px;
+  text-align: center;
+  background:
+    radial-gradient(circle at top, rgba(255,255,255,0.05) 0, transparent 55%),
+    linear-gradient(180deg, #050718, #02030a 70%, #000);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 20px 18px 22px;
+}
+.search-title {
+  font-size: .92rem;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-weight: 600;
+  color: var(--sec-text-muted);
+  margin-bottom: 6px;
+}
+.player-search-centered .search-wrapper {
+  position: relative;
+}
+#globalSearch {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(245,216,110,.7);
+  background: rgba(2,4,18,0.95);
+  color: #fff;
+  font-size: .95rem;
+}
+#globalSearch::placeholder {
+  color: rgba(180,183,216,0.75);
+}
+#globalResults {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width:100%;
+  background:#090b17;
+  border:1px solid rgba(255,215,0,.25);
+  border-radius:14px;
+  display:none;
+  max-height:260px;
+  overflow-y:auto;
+  z-index:100;
+}
+.search-item {
+  padding:9px 14px;
+  color:#ddd;
+  cursor:pointer;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.search-item:hover {
+  background:rgba(255,215,0,.08);
+  color:#f5d86e;
+}
+.search-pill {
+  font-size:.75rem;
+  padding:2px 7px;
+  border-radius:999px;
+  border:1px solid rgba(245,216,110,.7);
+  color:#f5d86e;
+}
+.search-sub {
+  font-size:.78rem;
+  color:var(--sec-text-muted);
+}
+</style>
+
 <script>
-// API som på spelarkort-sidan
-const API195 = "https://script.google.com/macros/s/AKfycbwUvylvIbUTy4_zihW5_OKIsQME2vxcPHWLldObZI28dggqJytvF2UmdsAD4Ib5Zre1/exec";
+(function() {
+  const API =
+    "https://script.google.com/macros/s/AKfycbwUvylvIbUTy4_zihW5_OKIsQME2vxcPHWLldObZI28dggqJytvF2UmdsAD4Ib5Zre1/exec";
 
-let allPlayers195 = [];
+  // valfritt: fyll på med kod -> fullständigt lagnamn
+  const TEAM_MAP = {
+    // "FBK": "Färjestad BK",
+    // "LHF": "Luleå HF",
+    // ...
+  };
 
-// Hämta alla spelare
-async function loadAllPlayers195() {
-  const res = await fetch(API195 + "?allplayers=1");
-  allPlayers195 = await res.json();
-}
-loadAllPlayers195();
-
-// Normalisering
-function norm195(s) {
-  return String(s || "")
-    .toLowerCase()
-    .replace(/[,]/g, "")
-    .replace(/\s+/g, "")
-    .replace(/[^a-z0-9]/g, "");
-}
-
-const inp195 = document.getElementById("playerSearch195");
-const box195 = document.getElementById("searchResults195");
-
-// Lyssna på input
-inp195.addEventListener("input", () => {
-  const q = norm195(inp195.value.trim());
-  if (!q) {
-    box195.style.display = "none";
-    return;
+  function norm(s) {
+    return String(s || "")
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, "")
+      .replace(/[^a-z0-9]/g, "");
   }
 
-  const results = allPlayers195
-    .filter(p => norm195(p.PLAYER).includes(q))
-    .slice(0, 20);
-
-  box195.innerHTML = results.length
-    ? results
-        .map(
-          p => `<div class="search-item195" 
-                   style="padding:9px 14px; cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.05);"
-                   onclick="location.href='players/?player=${encodeURIComponent(p.PLAYER)}'">
-                   ${p.PLAYER}
-                 </div>`
-        )
-        .join("")
-    : `<div class="search-item195" style="padding:9px 14px;">Försök igen om några sekunder</div>`;
-
-  box195.style.display = "block";
-});
-
-// Stäng ruta vid klick utanför
-document.addEventListener("click", e => {
-  if (!box195.contains(e.target) && e.target !== inp195) {
-    box195.style.display = "none";
+  function extractCupNumber(c) {
+    if (!c) return "";
+    return String(c).replace("SEC", "").trim().split(" ")[0];
   }
-});
-</script>
 
+  async function initGlobalSearch() {
+    const inp = document.getElementById("globalSearch");
+    const box = document.getElementById("globalResults");
+    if (!inp || !box) return;
 
-<script>
-document.getElementById("teamSearchInput_195").addEventListener("input", function () {
-  const value = this.value.toLowerCase();
-  const cards = document.querySelectorAll("#lag .team-card");
+    let items = [];
+    const players = new Set();
+    const teamCups = {}; // teamName -> Set of cups
 
-  cards.forEach(card => {
-    const name = card.querySelector("h3").textContent.toLowerCase();
-    card.style.display = name.includes(value) ? "block" : "none";
-  });
-});
-</script>
+    try {
+      const [uteRes, mvRes] = await Promise.all([
+        fetch(API + "?sheet=utestatsall").then(r => r.json()),
+        fetch(API + "?sheet=målvaktsstatsall").then(r => r.json())
+      ]);
 
+      // ===== UTE-SPELARE =====
+      (function () {
+        const h = uteRes[0];
+        const iPlayer = h.indexOf("PLAYERS");
+        const iTeam   = h.indexOf("TEAM");
+        const iCup    = h.indexOf("CUP");
 
-<!-- FOOTER -->
-<footer id="sec-footer-wrapper">
-  <div class="sec-footer-glow"></div>
-  <div id="sec-footer-line"></div>
-  <div id="sec-footer-text">
-    © 2025 <span>Svenska eHockey Cupen</span> | Design & utveckling av <span>SWEEHOCKEY</span>
-  </div>
-</footer>
+        for (let i = 1; i < uteRes.length; i++) {
+          const r = uteRes[i];
+          if (!r) continue;
 
+          const rawName = r[iPlayer];
+          if (!rawName) continue;
 
-  </div><!-- /sec-page -->
+          const name = rawName.replace(/,\s*SWE/i, "").trim();
+          const fullTeam = TEAM_MAP[r[iTeam]] || r[iTeam];
+          const cup = extractCupNumber(r[iCup]);
 
+          // Registrera lag + cup
+          if (!teamCups[fullTeam]) teamCups[fullTeam] = new Set();
+          teamCups[fullTeam].add(cup);
 
-
-<script>
-  const tabs   = document.querySelectorAll('.cup-tabs .tab');
-  const panels = document.querySelectorAll('.tab-panel');
-
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      const targetId = tab.dataset.target;
-
-      // uppdatera knappar
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-
-      // visa rätt panel
-      panels.forEach(p => {
-        if (p.id === targetId) {
-          p.classList.add('active');
-        } else {
-          p.classList.remove('active');
-        }
-      });
-    });
-  });
-</script>
-
-
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const footer = document.getElementById("sec-footer-wrapper");
-
-    if (!footer) return; // säkerhetskoll
-
-    const observer = new IntersectionObserver(
-      (entries, observer) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            footer.classList.add("visible");
-            observer.unobserve(footer); // trigga bara en gång
+          // Spelare — undvik dubletter
+          const key = norm(name);
+          if (!players.has(key)) {
+            players.add(key);
+            items.push({
+              type: "player",
+              label: name,
+              sub: "",
+              player: name
+            });
           }
-        });
-      },
-      {
-        root: null,
-        rootMargin: "0px 0px -50px 0px", // triggar lite tidigare
-        threshold: 0.1
-      }
-    );
+        }
+      })();
 
-    observer.observe(footer);
-  });
+      // ===== MÅLVAKTER =====
+      (function () {
+        const h = mvRes[0];
+        const iGoalie = h.indexOf("GOALIES");
+        const iTeam   = h.indexOf("TEAM");
+        const iCup    = h.indexOf("CUP");
+
+        for (let i = 1; i < mvRes.length; i++) {
+          const r = mvRes[i];
+          if (!r) continue;
+
+          const rawName = r[iGoalie];
+          if (!rawName) continue;
+
+          const name = rawName.replace(/,\s*SWE/i, "").trim();
+          const fullTeam = TEAM_MAP[r[iTeam]] || r[iTeam];
+          const cup = extractCupNumber(r[iCup]);
+
+          // Registrera lag + cup
+          if (!teamCups[fullTeam]) teamCups[fullTeam] = new Set();
+          teamCups[fullTeam].add(cup);
+
+          // Spelare utan dubletter
+          const key = norm(name);
+          if (!players.has(key)) {
+            players.add(key);
+            items.push({
+              type: "player",
+              label: name,
+              sub: "",
+              player: name
+            });
+          }
+        }
+      })();
+
+      // ===== LAG =====
+      for (const teamName of Object.keys(teamCups)) {
+        for (const cup of teamCups[teamName]) {
+          items.push({
+            type: "team",
+            label: teamName,
+            sub: `SEC ${cup}`,
+            team: teamName,
+            cup: cup
+          });
+        }
+      }
+
+    } catch (e) {
+      console.error("Search-fel:", e);
+    }
+
+    // ===== RENDER =====
+    function render(list) {
+      if (!list.length) {
+        box.style.display = "none";
+        return;
+      }
+
+      box.style.display = "block";
+
+      box.innerHTML = list
+        .map(it => `
+          <div class="search-item"
+            data-type="${it.type}"
+            data-team="${it.team || ""}"
+            data-player="${it.player || ""}"
+            data-cup="${it.cup || ""}"
+          >
+            <div>
+              ${
+                it.type === "team"
+                  ? `<div>${it.label} – <span class="search-sub">${it.sub}</span></div>`
+                  : `<div>${it.label}</div>`
+              }
+            </div>
+            <div class="search-pill">${it.type === "team" ? "Lag" : "Spelare"}</div>
+          </div>
+        `)
+        .join("");
+
+      // Klickhändelser
+      box.querySelectorAll(".search-item").forEach(el => {
+        el.onclick = () => {
+          const type = el.dataset.type;
+
+          if (type === "team") {
+            const t = el.dataset.team;
+            const c = el.dataset.cup;
+            location.href =
+              `lagkort.html?team=${encodeURIComponent(t)}&cup=${encodeURIComponent(c)}`;
+          } else {
+            const p = el.dataset.player;
+            location.href =
+              `spelarkort.html?player=${encodeURIComponent(p)}`;
+          }
+        };
+      });
+    }
+
+    // Input-händelse
+    inp.addEventListener("input", () => {
+      const q = norm(inp.value.trim());
+      if (!q) {
+        render([]);
+        return;
+      }
+
+      const result = items
+        .filter(it => norm(it.label).includes(q))
+        .slice(0, 40);
+
+      render(result);
+    });
+
+    // Klick utanför → stäng
+    document.addEventListener("click", e => {
+      if (!box.contains(e.target) && e.target !== inp) {
+        box.style.display = "none";
+      }
+    });
+  }
+
+  // Kör direkt (scriptet ligger efter HTML:n)
+  initGlobalSearch();
+})();
 </script>
+
 
 </body>
 </html>
