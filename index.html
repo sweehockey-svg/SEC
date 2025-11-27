@@ -257,6 +257,76 @@
       color: var(--sec-gold-soft);
       font-weight: 600;
     }
+/* SÖKMODUL */
+.player-search-centered {
+  margin: 40px auto 10px auto;
+  width: 50%;
+  max-width: 550px;
+  min-width: 260px;
+  border-radius: 22px;
+  text-align: center;
+  background:
+    radial-gradient(circle at top, rgba(255,255,255,0.05) 0, transparent 55%),
+    linear-gradient(180deg, #050718, #02030a 70%, #000);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 20px 18px 22px;
+}
+.search-title {
+  font-size: .92rem;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-weight: 600;
+  color: var(--sec-text-muted);
+  margin-bottom: 6px;
+}
+.player-search-centered .search-wrapper { position: relative; }
+#globalSearch {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(245,216,110,.7);
+  background: rgba(2,4,18,0.95);
+  color: #fff;
+  font-size: .95rem;
+}
+#globalSearch::placeholder { color: rgba(180,183,216,0.75); }
+#globalResults {
+  position:absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width:100%;
+  background:#090b17;
+  border:1px solid rgba(255,215,0,.25);
+  border-radius:14px;
+  display:none;
+  max-height:260px;
+  overflow-y:auto;
+  z-index:100;
+}
+.search-item {
+  padding:9px 14px;
+  color:#ddd;
+  cursor:pointer;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.search-item:hover {
+  background:rgba(255,215,0,.08);
+  color:#f5d86e;
+}
+.search-pill {
+  font-size:.75rem;
+  padding:2px 7px;
+  border-radius:999px;
+  border:1px solid rgba(245,216,110,.7);
+  color:#f5d86e;
+}
+.search-sub {
+  font-size:.78rem;
+  color:var(--sec-text-muted);
+}
+
   </style>
 </head>
 
@@ -280,9 +350,17 @@
   </div>
 </a>
 
+<!-- SÖKRUTA -->
+<div class="player-search-centered">
+  <div class="search-title">Sök lag &amp; spelare</div>
+  <div class="search-wrapper">
+    <input id="globalSearch" placeholder="Sök lag eller spelare">
+    <div id="globalResults"></div>
+  </div>
+</div>
 
-      <!-- INFO PANEL -->
-    <div class="tab-panel">
+<!-- INFO PANEL -->
+<div class="tab-panel">
       <h2>ℹ️ Välkommen</h2>
       <p>Välkommen till sidan för Svenska eHockey Cupen! Denna sida är under uppbygnad men vissa funktioner fungerar. en så länge är bara SEC 19.5 aktiv. <br><br><br>Här finns statistik, historiska resultat, matchdata, tabeller, topplistor och lagpresentationer.</p>
       
@@ -343,6 +421,161 @@
 
  
   </script>
+<script>
+(function(){
+  const API =
+    "https://script.google.com/macros/s/AKfycbwUvylvIbUTy4_zihW5_OKIsQME2vxcPHWLldObZI28dggqJytvF2UmdsAD4Ib5Zre1/exec";
+
+  function norm(s){
+    return String(s||"")
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      .replace(/\s+/g,"")
+      .replace(/[^a-z0-9]/g,"");
+  }
+
+  function extractCupNumber(c){
+    if(!c) return "";
+    return String(c).replace("SEC","").trim().split(" ")[0];
+  }
+
+  async function initGlobalSearch(){
+    const inp = document.getElementById("globalSearch");
+    const box = document.getElementById("globalResults");
+    if(!inp || !box) return;
+
+    let items = [];
+    const players = new Set();
+    const teamCups = {};
+
+    try{
+      const [uteRes,mvRes] = await Promise.all([
+        fetch(API + "?sheet=utestatsall").then(r=>r.json()),
+        fetch(API + "?sheet=målvaktsstatsall").then(r=>r.json())
+      ]);
+
+      // UTE
+      (function(){
+        const h = uteRes[0];
+        const iPlayer = h.indexOf("PLAYERS");
+        const iTeam = h.indexOf("TEAM");
+        const iCup = h.indexOf("CUP");
+
+        for(let i=1;i<uteRes.length;i++){
+          const r = uteRes[i]; if(!r) continue;
+          const name = (r[iPlayer]||"").replace(/,\s*SWE/i,"").trim();
+          const team = r[iTeam];
+          const cup = extractCupNumber(r[iCup]);
+
+          if(!teamCups[team]) teamCups[team] = new Set();
+          teamCups[team].add(cup);
+
+          const key = norm(name);
+          if(!players.has(key)){
+            players.add(key);
+            items.push({
+              type:"player",
+              label:name,
+              player:name
+            });
+          }
+        }
+      })();
+
+      // MÅLVAKTER
+      (function(){
+        const h = mvRes[0];
+        const iGoalie = h.indexOf("GOALIES");
+        const iTeam = h.indexOf("TEAM");
+        const iCup = h.indexOf("CUP");
+
+        for(let i=1;i<mvRes.length;i++){
+          const r = mvRes[i]; if(!r) continue;
+          const name = (r[iGoalie]||"").replace(/,\s*SWE/i,"").trim();
+          const team = r[iTeam];
+          const cup = extractCupNumber(r[iCup]);
+
+          if(!teamCups[team]) teamCups[team] = new Set();
+          teamCups[team].add(cup);
+
+          const key = norm(name);
+          if(!players.has(key)){
+            players.add(key);
+            items.push({
+              type:"player",
+              label:name,
+              player:name
+            });
+          }
+        }
+      })();
+
+      // LAG
+      for(const team of Object.keys(teamCups)){
+        for(const cup of teamCups[team]){
+          items.push({
+            type:"team",
+            label:team,
+            team:team,
+            cup:cup,
+            sub:`SEC ${cup}`
+          });
+        }
+      }
+
+    }catch(e){
+      console.error("Search error",e);
+    }
+
+    // Render
+    function render(list){
+      if(!list.length){ box.style.display="none"; return; }
+      box.style.display="block";
+
+      box.innerHTML = list.map(it=>`
+        <div class="search-item"
+          data-type="${it.type}"
+          data-team="${it.team||""}"
+          data-player="${it.player||""}"
+          data-cup="${it.cup||""}">
+          <div>
+            ${
+              it.type==="team"
+              ? `${it.label} – <span class="search-sub">${it.sub}</span>`
+              : it.label
+            }
+          </div>
+          <div class="search-pill">${it.type==="team"?"Lag":"Spelare"}</div>
+        </div>
+      `).join("");
+
+      box.querySelectorAll(".search-item").forEach(el=>{
+        el.onclick=()=>{
+          if(el.dataset.type==="team"){
+            location.href = `/SEC/lagkort.html?team=${encodeURIComponent(el.dataset.team)}&cup=${encodeURIComponent(el.dataset.cup)}`;
+          }else{
+            location.href = `/SEC/players/?player=${encodeURIComponent(el.dataset.player.toLowerCase())}`;
+          }
+        };
+      });
+    }
+
+    inp.addEventListener("input",()=>{
+      const q = norm(inp.value.trim());
+      if(!q){ render([]); return; }
+      render(items.filter(it=>norm(it.label).includes(q)).slice(0,40));
+    });
+
+    document.addEventListener("click",e=>{
+      if(!box.contains(e.target) && e.target!==inp){
+        box.style.display="none";
+      }
+    });
+  }
+
+  initGlobalSearch();
+})();
+</script>
 
 </body>
 
