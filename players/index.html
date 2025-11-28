@@ -1485,35 +1485,33 @@ if (Array.isArray(goalieMatrix) && goalieMatrix.length > 1) {
 
   </script>
 <script>
-document.querySelectorAll(".team-card").forEach(card => {
-    card.addEventListener("click", () => {
+document.querySelectorAll("table tr").forEach(row => {
+    const cupCell = row.querySelector("td:nth-child(1)");
+    const teamCell = row.querySelector("td:nth-child(2)");
 
-        const teamKey = card.dataset.team;
+    if (!cupCell || !teamCell) return;
 
-        // Koppla data-team → korrekt lagnamn i statistiken
-        const TEAM_NAMES = {
-            modo: "Modo Hockey",
-            ssk: "SSK Academy",
-            sunne: "Sunne IK Esport",
-            surte: "Surte Sisu HC",
-            veteran: "Veterankraft",
-            vnexs: "vNexs Vipers"
-        };
+    const cupText = cupCell.textContent.trim(); // t.ex "SEC 5 G"
+    const teamName = teamCell.textContent.trim(); // t.ex "Mora IK"
 
-        const teamName = TEAM_NAMES[teamKey];
-        const cup = "19.5"; // denna cupsida
+    if (!cupText.startsWith("SEC")) return;
 
-        if (!teamName) {
-            console.error("Fel: okänt lag:", teamKey);
-            return;
-        }
+    // Plocka ut cup-numret (SEC 5 G → 5)
+    const cupMatch = cupText.match(/SEC\s+(\d+)/i);
+    const cup = cupMatch ? cupMatch[1] : "";
 
-        // ⭐ Öppna rätt lagkort på rätt plats
+    // Gör hela team-cellen klickbar
+    teamCell.style.cursor = "pointer";
+    teamCell.style.color = "#f5d86e";
+    teamCell.style.fontWeight = "600";
+
+    teamCell.addEventListener("click", () => {
         window.location.href =
           `https://sweehockey-svg.github.io/SEC/lagkort.html?team=${encodeURIComponent(teamName)}&cup=${encodeURIComponent(cup)}`;
     });
 });
 </script>
+
 
 </body>
 </html>
