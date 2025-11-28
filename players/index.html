@@ -1484,6 +1484,36 @@ if (Array.isArray(goalieMatrix) && goalieMatrix.length > 1) {
 
 
   </script>
+<script>
+document.querySelectorAll(".team-card").forEach(card => {
+    card.addEventListener("click", () => {
+
+        const teamKey = card.dataset.team;
+
+        // Koppla data-team → korrekt lagnamn i statistiken
+        const TEAM_NAMES = {
+            modo: "Modo Hockey",
+            ssk: "SSK Academy",
+            sunne: "Sunne IK Esport",
+            surte: "Surte Sisu HC",
+            veteran: "Veterankraft",
+            vnexs: "vNexs Vipers"
+        };
+
+        const teamName = TEAM_NAMES[teamKey];
+        const cup = "19.5"; // denna cupsida
+
+        if (!teamName) {
+            console.error("Fel: okänt lag:", teamKey);
+            return;
+        }
+
+        // ⭐ Öppna rätt lagkort på rätt plats
+        window.location.href =
+          `https://sweehockey-svg.github.io/SEC/lagkort.html?team=${encodeURIComponent(teamName)}&cup=${encodeURIComponent(cup)}`;
+    });
+});
+</script>
 
 </body>
 </html>
