@@ -1484,33 +1484,31 @@ if (Array.isArray(goalieMatrix) && goalieMatrix.length > 1) {
 
 
   </script>
-<script>
-document.querySelectorAll("table tr").forEach(row => {
+/* Aktivera klick på lag i tabellerna */
+document.querySelectorAll("#statsOutput table tr").forEach(row => {
     const cupCell = row.querySelector("td:nth-child(1)");
     const teamCell = row.querySelector("td:nth-child(2)");
 
     if (!cupCell || !teamCell) return;
 
-    const cupText = cupCell.textContent.trim(); // t.ex "SEC 5 G"
-    const teamName = teamCell.textContent.trim(); // t.ex "Mora IK"
+    const cupText = cupCell.textContent.trim();
+    const team = teamCell.textContent.trim();
 
     if (!cupText.startsWith("SEC")) return;
 
-    // Plocka ut cup-numret (SEC 5 G → 5)
     const cupMatch = cupText.match(/SEC\s+(\d+)/i);
     const cup = cupMatch ? cupMatch[1] : "";
 
-    // Gör hela team-cellen klickbar
     teamCell.style.cursor = "pointer";
     teamCell.style.color = "#f5d86e";
     teamCell.style.fontWeight = "600";
 
     teamCell.addEventListener("click", () => {
         window.location.href =
-          `https://sweehockey-svg.github.io/SEC/lagkort.html?team=${encodeURIComponent(teamName)}&cup=${encodeURIComponent(cup)}`;
+          `https://sweehockey-svg.github.io/SEC/lagkort.html?team=${encodeURIComponent(team)}&cup=${encodeURIComponent(cup)}`;
     });
 });
-</script>
+
 
 
 </body>
