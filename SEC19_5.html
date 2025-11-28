@@ -3608,7 +3608,7 @@ renderTable('playoff-goalie-stats','searchPlayoffGoalies','updated-playoff-goali
           } else {
             const p = el.dataset.player;
             location.href =
-              `players?player=${encodeURIComponent(p)}`;
+              `spelarkort.html?player=${encodeURIComponent(p)}`;
           }
         };
       });
@@ -3665,8 +3665,31 @@ document.querySelectorAll(".cup-tabs .tab").forEach(tab => {
   });
 });
 </script>
+<script>
+document.querySelectorAll(".team-card").forEach(card => {
+    card.addEventListener("click", () => {
+        const teamKey = card.dataset.team;
+
+        // Mappa data-team till exakt lagnamn
+        const TEAM_NAMES = {
+            modo: "MoDo Hockey",
+            ssk: "SSK Academy",
+            sunne: "Sunne IK Esport",
+            surte: "Surte Sisu HC",
+            veteran: "Veterankraft",
+            vnexs: "vNexs Vipers"
+        };
+
+        const teamName = TEAM_NAMES[teamKey];
+        const cup = "19.5"; // eftersom detta är cupsidan för SEC 19.5
+
+        if (teamName) {
+            // Öppna lagkort
+            window.location.href = `lagkort.html?team=${encodeURIComponent(teamName)}&cup=${cup}`;
+        }
+    });
+});
+</script>
 
 </body>
 </html>
-
-
