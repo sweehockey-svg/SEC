@@ -1483,33 +1483,6 @@ if (Array.isArray(goalieMatrix) && goalieMatrix.length > 1) {
   loadStats();
 
 
- <script>
-/* Aktivera klick på lag i tabellerna */
-document.querySelectorAll("#statsOutput table tr").forEach(row => {
-    const cupCell = row.querySelector("td:nth-child(1)");
-    const teamCell = row.querySelector("td:nth-child(2)");
-
-    if (!cupCell || !teamCell) return;
-
-    const cupText = cupCell.textContent.trim();
-    const team = teamCell.textContent.trim();
-
-    if (!cupText.startsWith("SEC")) return;
-
-    const cupMatch = cupText.match(/SEC\s+(\d+)/i);
-    const cup = cupMatch ? cupMatch[1] : "";
-
-    teamCell.style.cursor = "pointer";
-    teamCell.style.color = "#f5d86e";
-    teamCell.style.fontWeight = "600";
-
-    teamCell.addEventListener("click", () => {
-        window.location.href =
-          `https://sweehockey-svg.github.io/SEC/lagkort.html?team=${encodeURIComponent(team)}&cup=${encodeURIComponent(cup)}`;
-    });
-});
-
-</script>
 
 
 </body>
