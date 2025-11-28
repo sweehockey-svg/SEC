@@ -796,7 +796,7 @@ async function loadRoster() {
 
       return `
         <div>
-          <a href="players.html?player=${encodeURIComponent(p.name)}" style="text-decoration:none; color:inherit;">
+          <a href="players?player=${encodeURIComponent(p.name)}" style="text-decoration:none; color:inherit;">
             <img src="${photo}" class="player-mini">
             <div class="roster-item-main">${p.name}</div>
           </a>
