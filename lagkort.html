@@ -665,7 +665,7 @@ async function loadLogo() {
           if(cupParam && cup !== cupParam) continue;
           const home = r[iHome];
           const away = r[iAway];
-          if(home !== teamParam && away !== teamParam) continue;
+          if (norm(home) !== norm(teamParam) && norm(away) !== norm(teamParam)) continue;
           list.push({
             date: r[iDate],
             time: r[iTime],
