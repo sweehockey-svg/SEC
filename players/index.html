@@ -1468,27 +1468,7 @@ if (Array.isArray(goalieMatrix) && goalieMatrix.length > 1) {
       out.innerHTML = html;
       out.style.display = "block";
       loaderStats.style.display = "none";
-// === GÖR "SEC 1", "SEC 2", "SEC 3" ... KLICKBARA ===
-function makeSecCupsClickable() {
-  document.querySelectorAll("td, th").forEach(cell => {
-    const text = cell.textContent.trim();
 
-    // Matchar "SEC 1", "SEC 2 G", "SEC 19.5", osv.
-    const match = text.match(/^SEC\s*([0-9.]+)/i);
-    if (!match) return;
-
-    const cupNum = match[1]; // 1 / 2 / 3 / 19.5 osv.
-    const url = `https://sweehockey-svg.github.io/SEC/SEC${cupNum}.html`;
-
-    cell.innerHTML = `<a href="${url}" style="color:#f5d86e; font-weight:600; text-decoration:none;">
-                        ${text}
-                      </a>`;
-    cell.style.cursor = "pointer";
-  });
-}
-
-// Kör funktionen när statistiken har renderats
-setTimeout(makeSecCupsClickable, 300);
 
     } catch (err) {
       console.error("Stats error:", err);
