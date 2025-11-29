@@ -557,10 +557,15 @@ async function loadPlayerPhotos() {
         .replace(/\s+/g,"")
         .replace(/[^a-z0-9]/g,"");
     }
-    function extractCupNumber(c){
-      if(!c) return "";
-      return String(c).replace("SEC","").trim().split(" ")[0];
-    }
+   function extractCupNumber(c){
+  if (!c) return "";
+  return String(c)
+    .replace("SEC","")
+    .replace(/[^\d.]/g,"")   // behåll ENDAST siffror och punkt
+    .replace(/^0+/,"")       // 01 → 1
+    .trim();
+}
+
 function parseSecDate(d, t) {
   if (!d) return new Date();
 
@@ -710,7 +715,7 @@ async function loadMatches() {
       if (!r) continue;
 
       const cup = extractCupNumber(r[iCup]);
-      if (cupParam && norm(cup) !== norm(cupParam)) continue;
+     if (cupParam && norm(cup) !== norm(cupParam)) continue;
 
 
       const home = r[iHome];
