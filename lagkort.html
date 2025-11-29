@@ -701,7 +701,8 @@ async function loadMatches() {
       if (!r) continue;
 
       const cup = extractCupNumber(r[iCup]);
-      if (cupParam && cup !== cupParam) continue;
+      if (cupParam && norm(cup) !== norm(cupParam)) continue;
+
 
       const home = r[iHome];
       const away = r[iAway];
