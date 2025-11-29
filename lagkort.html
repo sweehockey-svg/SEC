@@ -655,6 +655,15 @@ async function loadLogo() {
     logoEl.src = "https://drive.google.com/thumbnail?id=1QybW_Uw8HO0OXo8vwQFD-zrrr-ifFrC9&sz=w1000";
   }
 }
+function formatDate(date) {
+  const d = new Date(date);
+  return d.toLocaleDateString("sv-SE", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  });
+}
 
 async function loadMatches() {
   try {
@@ -746,7 +755,9 @@ list.sort((a, b) => {
       <div class="match-row">
         <div>
           <div class="match-row-main">${m.home} – ${m.away}</div>
-          <div class="match-row-sub">${m.date || ""} ${m.time || ""} · ${m.stage || ""}</div>
+          <div class="match-row-sub">
+  ${formatDate(parseSecDate(m.date, m.time))} ${m.time || ""} · ${m.stage || ""}
+</div>
         </div>
         <div class="match-score">${m.hs ?? ""}–${m.as ?? ""}</div>
       </div>
