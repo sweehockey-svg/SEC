@@ -1407,48 +1407,52 @@ if (Array.isArray(goalieMatrix) && goalieMatrix.length > 1) {
       // sortera målvakter
       goalies.sort((a, b) => cupSortValue(a.TURNERING) - cupSortValue(b.TURNERING));
 
-      if (skaters.length) {
-        html += `
-          <div class="table-title">Utespelare</div>
-          <div class="table-scroll stats-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>TURNERING</th><th>TEAM</th><th>GP</th><th>G</th><th>A</th><th>PTS</th><th>PIM</th>
-                </tr>
-              </thead>
-              <tbody>
-        `;
-skaters.forEach(r => {
+if (skaters.length) {
   html += `
-    <tr>
-      <td>
-        ${(() => {
-          const raw = r.TURNERING || "";
-          const num = raw.replace("SEC", "").trim().split(" ")[0];
-          const file = `SEC${num.replace(".", "_")}.html`;
-          return `
-            <a href="https://sweehockey-svg.github.io/SEC/${file}"
-               style="color:#f5d86e; text-decoration:none;">
-               ${raw}
-            </a>
-          `;
-        })()}
-      </td>
-      <td>${teamName(r.TEAM)}</td>
-      <td>${r.GP}</td>
-      <td>${r.G}</td>
-      <td>${r.A}</td>
-      <td>${r.PTS}</td>
-      <td>${r.PIM}</td>
-    </tr>
+    <div class="table-title">Utespelare</div>
+    <div class="table-scroll stats-table">
+      <table>
+        <thead>
+          <tr>
+            <th>TURNERING</th><th>TEAM</th><th>GP</th><th>G</th><th>A</th><th>PTS</th><th>PIM</th>
+          </tr>
+        </thead>
+        <tbody>
   `;
-});
-html += `
-    </tbody>
-  </table>
-</div>
-`;
+
+  skaters.forEach(r => {
+    html += `
+      <tr>
+        <td>
+          ${(() => {
+            const raw = r.TURNERING || "";
+            const num = raw.replace("SEC", "").trim().split(" ")[0];
+            const file = `SEC${num.replace(".", "_")}.html`;
+            return `
+              <a href="https://sweehockey-svg.github.io/SEC/${file}"
+                 style="color:#f5d86e; text-decoration:none;">
+                 ${raw}
+              </a>
+            `;
+          })()}
+        </td>
+        <td>${teamName(r.TEAM)}</td>
+        <td>${r.GP}</td>
+        <td>${r.G}</td>
+        <td>${r.A}</td>
+        <td>${r.PTS}</td>
+        <td>${r.PIM}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+}   <!-- ← DU SAKNADE DEN HÄR! -->
+
 
       if (goalies.length) {
         html += `
