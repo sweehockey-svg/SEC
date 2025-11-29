@@ -557,27 +557,141 @@ async function loadPlayerPhotos() {
         .replace(/\s+/g,"")
         .replace(/[^a-z0-9]/g,"");
     }
-   function extractCupNumber(c){
+/* ================================
+   CUP-PARSER (ROBUST)
+================================ */
+function extractCupNumber(c) {
   if (!c) return "";
   return String(c)
-    .replace("SEC","")
-    .replace(/[^\d.]/g,"")   // behåll ENDAST siffror och punkt
-    .replace(/^0+/,"")       // 01 → 1
+    .replace("SEC", "")
+    .replace(/[^\d.]/g, "")   // behåll ENDAST siffror
+    .replace(/^0+/, "")       // 01 → 1
     .trim();
 }
 
+/* ================================
+   DATUMPARSER (ALLTID VALID)
+================================ */
 function parseSecDate(d, t) {
   if (!d) return new Date();
 
-  // Ex: "Sunday October 8, 2025"
-  const clean = d.replace(/^[A-Za-z]+ /, ""); // tar bort veckodag
-  // blir: "October 8, 2025"
+  // Ta bort veckodag först
+  const clean = d.replace(/^[A-Za-zåäöÅÄÖ]+ /, "");
 
-  // Bygg ett ISO-format
-  const date = new Date(clean + " " + (t || "00:00 PM"));
+  // Skapa ett datum som JS alltid förstår
+  const date = new Date(clean + " " + (t || "00:00"));
 
   return date instanceof Date && !isNaN(date) ? date : new Date();
 }
+
+/* ================================
+   DATUMFORMAT (SVENSKA VECKODAGAR)
+================================ */
+function formatDate(date) {
+  const d = new Date(date);
+  return d.toLocaleDateString("sv-SE", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  });
+}
+
+/* ================================
+   LADDA MATCHER (FÄRDIGT BLOCK)
+================================ */
+async function loadMatches() {
+  try {
+    const res = await fetch(API + "?sheet=matcherSEC");
+    const data = await res.json();
+    const h = data[0];
+
+    const iDate  = h.indexOf("Date");
+    const iTime  = h.indexOf("Time");
+    const iAway  = h.indexOf("Away team");
+    const iHome  = h.indexOf("Home team");
+    const iAS    = h.indexOf("Away score");
+    const iHS    = h.indexOf("Home score");
+    const iCup   = h.indexOf("Cup");
+    const iStage = h.indexOf("Stage");
+
+    const normTeam = norm(teamParam);
+    const possibleTeamNames = new Set([normTeam]);
+
+    // Lägg till alias från TEAM_MAP
+    for (const code in TEAM_MAP) {
+      if (norm(TEAM_MAP[code]) === normTeam) {
+        possibleTeamNames.add(norm(TEAM_MAP[code]));
+        possibleTeamNames.add(norm(code));
+      }
+    }
+
+    const list = [];
+
+    for (let i = 1; i < data.length; i++) {
+      const r = data[i];
+      if (!r) continue;
+
+      const cup = extractCupNumber(r[iCup]);
+      if (cupParam && norm(cup) !== norm(cupParam)) continue;
+
+      const home = r[iHome];
+      const away = r[iAway];
+
+      const nh = norm(home);
+      const na = norm(away);
+
+      if (!possibleTeamNames.has(nh) && !possibleTeamNames.has(na)) continue;
+
+      list.push({
+        date: r[iDate],
+        time: r[iTime],
+        home,
+        away,
+        hs: r[iHS],
+        as: r[iAS],
+        stage: r[iStage],
+        cup
+      });
+    }
+
+    const box = document.getElementById("matchList");
+
+    if (!list.length) {
+      box.innerHTML = `
+        <div class="match-row">
+          <div class="match-row-main">Inga matcher hittades.</div>
+        </div>`;
+      return;
+    }
+
+    // 🔥 Sortera korrekt efter verkligt datum
+    list.sort((a, b) => {
+      const da = parseSecDate(a.date, a.time);
+      const db = parseSecDate(b.date, b.time);
+      return da - db;
+    });
+
+    // 🔥 Render
+    box.innerHTML = list
+      .map(m => `
+        <div class="match-row">
+          <div>
+            <div class="match-row-main">${m.home} – ${m.away}</div>
+            <div class="match-row-sub">
+              ${formatDate(parseSecDate(m.date, m.time))} ${m.time || ""} · ${m.stage || ""}
+            </div>
+          </div>
+          <div class="match-score">${m.hs ?? ""}–${m.as ?? ""}</div>
+        </div>
+      `)
+      .join("");
+
+  } catch (e) {
+    console.error("Matcher-fel", e);
+  }
+}
+
 
     const params = new URLSearchParams(location.search);
     const teamParam = params.get("team") ? decodeURIComponent(params.get("team")) : "";
