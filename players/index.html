@@ -1477,8 +1477,12 @@ function makeSecCupsClickable() {
     const match = text.match(/^SEC\s*([0-9.]+)/i);
     if (!match) return;
 
-    const cupNum = match[1]; // "17" / "19" / "19.5"
-    const url = `https://sweehockey-svg.github.io/SEC/SEC${cupNum}.html`;
+    let cupNum = match[1]; // "17" / "19" / "19.5"
+
+    // Byt ut punkt mot underscore
+    const linkNum = cupNum.replace(".", "_");
+
+    const url = `https://sweehockey-svg.github.io/SEC/SEC${linkNum}.html`;
 
     cell.innerHTML = `
       <a href="${url}"
@@ -1491,6 +1495,7 @@ function makeSecCupsClickable() {
 }
 
 setTimeout(makeSecCupsClickable, 50);
+
 
     } catch (err) {
       console.error("Stats error:", err);
