@@ -1468,6 +1468,29 @@ if (Array.isArray(goalieMatrix) && goalieMatrix.length > 1) {
       out.innerHTML = html;
       out.style.display = "block";
       loaderStats.style.display = "none";
+// === GÖR TURNERING ("SEC 17 G", "SEC 19.5 S") KLICKBARA ===
+function makeSecCupsClickable() {
+  document.querySelectorAll("td:first-child").forEach(cell => {
+    const text = cell.textContent.trim();
+
+    // Matchar SEC + nummer + ev. gruppbokstav
+    const match = text.match(/^SEC\s*([0-9.]+)/i);
+    if (!match) return;
+
+    const cupNum = match[1]; // "17" / "19" / "19.5"
+    const url = `https://sweehockey-svg.github.io/SEC/SEC${cupNum}.html`;
+
+    cell.innerHTML = `
+      <a href="${url}"
+         style="color:#f5d86e; font-weight:600; text-decoration:none;">
+        ${text}
+      </a>
+    `;
+    cell.style.cursor = "pointer";
+  });
+}
+
+setTimeout(makeSecCupsClickable, 50);
 
     } catch (err) {
       console.error("Stats error:", err);
