@@ -1419,21 +1419,32 @@ if (Array.isArray(goalieMatrix) && goalieMatrix.length > 1) {
               </thead>
               <tbody>
         `;
-        skaters.forEach(r => {
-          html += `
-            <tr>
-              <td>${r.TURNERING}</td>
-              <td>${teamName(r.TEAM)}</td>
-              <td>${r.GP}</td>
-              <td>${r.G}</td>
-              <td>${r.A}</td>
-              <td>${r.PTS}</td>
-              <td>${r.PIM}</td>
-            </tr>
+skaters.forEach(r => {
+  html += `
+    <tr>
+      <td>
+        ${(() => {
+          const raw = r.TURNERING || "";
+          const num = raw.replace("SEC", "").trim().split(" ")[0];
+          const file = `SEC${num.replace(".", "_")}.html`;
+          return `
+            <a href="https://sweehockey-svg.github.io/SEC/${file}"
+               style="color:#f5d86e; text-decoration:none;">
+               ${raw}
+            </a>
           `;
-        });
-        html += `</tbody></table></div>`;
-      }
+        })()}
+      </td>
+      <td>${teamName(r.TEAM)}</td>
+      <td>${r.GP}</td>
+      <td>${r.G}</td>
+      <td>${r.A}</td>
+      <td>${r.PTS}</td>
+      <td>${r.PIM}</td>
+    </tr>
+  `;
+});
+
 
       if (goalies.length) {
         html += `
@@ -1447,23 +1458,34 @@ if (Array.isArray(goalieMatrix) && goalieMatrix.length > 1) {
               </thead>
               <tbody>
         `;
-        goalies.forEach(r => {
-          html += `
-            <tr>
-              <td>${r.TURNERING}</td>
-              <td>${teamName(r.TEAM)}</td>
-              <td>${r.GP}</td>
-              <td>${r.SA}</td>
-              <td>${r.GA}</td>
-              <td>${r.SV}</td>
-              <td>${formatGAA(r.GAA)}</td>
-              <td>${formatSVP(r.SVP)}</td>
-              <td>${r.SO}</td>
-            </tr>
+goalies.forEach(r => {
+  html += `
+    <tr>
+      <td>
+        ${(() => {
+          const raw = r.TURNERING || "";
+          const num = raw.replace("SEC", "").trim().split(" ")[0];
+          const file = `SEC${num.replace(".", "_")}.html`;
+          return `
+            <a href="https://sweehockey-svg.github.io/SEC/${file}"
+               style="color:#f5d86e; text-decoration:none;">
+               ${raw}
+            </a>
           `;
-        });
-        html += `</tbody></table></div>`;
-      }
+        })()}
+      </td>
+      <td>${teamName(r.TEAM)}</td>
+      <td>${r.GP}</td>
+      <td>${r.SA}</td>
+      <td>${r.GA}</td>
+      <td>${r.SV}</td>
+      <td>${formatGAA(r.GAA)}</td>
+      <td>${formatSVP(r.SVP)}</td>
+      <td>${r.SO}</td>
+    </tr>
+  `;
+});
+
 
       out.innerHTML = html;
       out.style.display = "block";
