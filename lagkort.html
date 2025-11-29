@@ -561,6 +561,18 @@ async function loadPlayerPhotos() {
       if(!c) return "";
       return String(c).replace("SEC","").trim().split(" ")[0];
     }
+function parseSecDate(d, t) {
+  if (!d) return new Date();
+
+  // Ex: "Sunday October 8, 2025"
+  const clean = d.replace(/^[A-Za-z]+ /, ""); // tar bort veckodag
+  // blir: "October 8, 2025"
+
+  // Bygg ett ISO-format
+  const date = new Date(clean + " " + (t || "00:00 PM"));
+
+  return date instanceof Date && !isNaN(date) ? date : new Date();
+}
 
     const params = new URLSearchParams(location.search);
     const teamParam = params.get("team") ? decodeURIComponent(params.get("team")) : "";
