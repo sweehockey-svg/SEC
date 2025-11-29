@@ -1473,14 +1473,11 @@ function makeSecCupsClickable() {
   document.querySelectorAll("td:first-child").forEach(cell => {
     const text = cell.textContent.trim();
 
-    // Matchar SEC + nummer + ev. gruppbokstav
     const match = text.match(/^SEC\s*([0-9.]+)/i);
     if (!match) return;
 
-    let cupNum = match[1]; // "17" / "19" / "19.5"
-
-    // Byt ut punkt mot underscore
-    const linkNum = cupNum.replace(".", "_");
+    let cupNum = match[1];
+    const linkNum = cupNum.replace(".", "_"); // 19.5 → 19_5
 
     const url = `https://sweehockey-svg.github.io/SEC/SEC${linkNum}.html`;
 
@@ -1494,35 +1491,40 @@ function makeSecCupsClickable() {
   });
 }
 
-setTimeout(makeSecCupsClickable, 50);
+// === GÖR TEAM-KOLUMNEN KLICKBAR ("vNexs Vipers" → lagkortet) ===
+function makeTeamLinksClickable() {
+  document.querySelectorAll("table tbody tr").forEach(row => {
 
-// === GÖR TURNERING ("SEC 17 G", "SEC 19.5 S") KLICKBARA ===
-function makeSecCupsClickable() {
-  document.querySelectorAll("td:first-child").forEach(cell => {
-    const text = cell.textContent.trim();
+    const cupCell = row.querySelector("td:nth-child(1)");
+    const teamCell = row.querySelector("td:nth-child(2)");
+    if (!cupCell || !teamCell) return;
 
-    // Matchar SEC + nummer + ev. gruppbokstav
-    const match = text.match(/^SEC\s*([0-9.]+)/i);
+    const cupText = cupCell.textContent.trim();
+    const teamName = teamCell.textContent.trim();
+
+    const match = cupText.match(/^SEC\s*([0-9.]+)/i);
     if (!match) return;
 
-    let cupNum = match[1]; // "17" / "19" / "19.5"
+    const cupNum = match[1]; // behåll 19.5 (INGET underscore här)
 
-    // Byt ut punkt mot underscore
-    const linkNum = cupNum.replace(".", "_");
+    const url = `https://sweehockey-svg.github.io/SEC/lagkort.html?team=${encodeURIComponent(teamName)}&cup=${encodeURIComponent(cupNum)}`;
 
-    const url = `https://sweehockey-svg.github.io/SEC/SEC${linkNum}.html`;
-
-    cell.innerHTML = `
+    teamCell.innerHTML = `
       <a href="${url}"
          style="color:#f5d86e; font-weight:600; text-decoration:none;">
-        ${text}
+        ${teamName}
       </a>
     `;
-    cell.style.cursor = "pointer";
+    teamCell.style.cursor = "pointer";
   });
 }
 
-setTimeout(makeSecCupsClickable, 50);
+// Kör båda efter rendering
+setTimeout(() => {
+  makeSecCupsClickable();
+  makeTeamLinksClickable();
+}, 50);
+
 
     } catch (err) {
       console.error("Stats error:", err);
