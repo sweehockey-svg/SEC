@@ -964,7 +964,7 @@ document.addEventListener("DOMContentLoaded", initGlobalSearch);
       const bundle = await fetchBundle(player);
 
       if (!bundle || bundle.error || !Array.isArray(bundle.stats) || !bundle.stats.length) {
-      ggen statistik hittades.</div>`;
+        out.innerHTML = `<div class="no-stats">Ingen statistik hittades.</div>`;
         out.style.display = "block";
         loaderStats.style.display = "none";
         return;
@@ -1468,7 +1468,6 @@ if (Array.isArray(goalieMatrix) && goalieMatrix.length > 1) {
       out.innerHTML = html;
       out.style.display = "block";
       loaderStats.style.display = "none";
-
 
     } catch (err) {
       console.error("Stats error:", err);
