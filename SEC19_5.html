@@ -2080,13 +2080,19 @@ const makeTable = (rows, type) => {
       tdRank.textContent = i+1;
       tr.appendChild(tdRank);
 
-      const tdTeam = document.createElement('td');
-      tdTeam.innerHTML = `
-        <div class="team-cell">
-          <img src="${r.logo_url||''}" alt="${r.team_name||''}">
-          <span>${r.team_name||r.team||''}</span>
-        </div>`;
-      tr.appendChild(tdTeam);
+const tdTeam = document.createElement('td');
+const teamName = r.team_name || r.team || '';
+const teamUrl  = `lagkort.html?team=${encodeURIComponent(teamName)}&cup=19.5`;
+
+tdTeam.innerHTML = `
+  <a href="${teamUrl}" class="team-cell-link" style="color:inherit; text-decoration:none;">
+    <div class="team-cell">
+      <img src="${r.logo_url||''}" alt="${teamName}">
+      <span>${teamName}</span>
+    </div>
+  </a>`;
+tr.appendChild(tdTeam);
+
 
       ['gp','w','otw','l','otl','gd','p'].forEach(k=>{
         const td = document.createElement('td');
@@ -2356,20 +2362,34 @@ host.appendChild(wrapper);
   }
 
   // --- Kortdesign ---
-  function playoffCard(teamA, teamB, winsA, winsB) {
-    return `
-      <div class="series-card">
-        <div class="team-line">
-          <img src="${logos[teamA] || ''}" alt="${teamA}">
-          <span>${teamA}</span>
-        </div>
-        <div class="score">${winsA} - ${winsB}</div>
-        <div class="team-line">
-          <span>${teamB}</span>
-          <img src="${logos[teamB] || ''}" alt="${teamB}">
-        </div>
-      </div>`;
-  }
+function playoffCard(teamA, teamB, winsA, winsB) {
+  const highlightA = winsA > winsB ? "winner" : "";
+  const highlightB = winsB > winsA ? "winner" : "";
+  const bestOf = Math.max(winsA, winsB) * 2 - 1;
+
+  const cupParam = "19.5";
+  const urlA = `lagkort.html?team=${encodeURIComponent(teamA)}&cup=${encodeURIComponent(cupParam)}`;
+  const urlB = `lagkort.html?team=${encodeURIComponent(teamB)}&cup=${encodeURIComponent(cupParam)}`;
+
+  return `
+    <div class="series-card">
+      <div class="team-line">
+        <span class="${highlightA}">
+          <a href="${urlA}" style="color:inherit; text-decoration:none;">${teamA}</a>
+        </span>
+        <span>${winsA} – ${winsB}</span>
+      </div>
+      <div class="team-line">
+        <span class="${highlightB}">
+          <a href="${urlB}" style="color:inherit; text-decoration:none;">${teamB}</a>
+        </span>
+        <span>${winsB} – ${winsA}</span>
+      </div>
+      <div class="best-of">Bäst av ${bestOf}</div>
+    </div>
+  `;
+}
+
 })();
 </script>
 
@@ -3169,10 +3189,18 @@ function renderTable(hostId,searchId,updatedId,sheetName,sortFunc){
             v = (info.flag ? info.flag + " " : "") + link;
           }
 
-          // Mappa lag
-          if(k.toLowerCase() === 'team'){
-            v = mapTeam(v);
-          }
+// Mappa lag + länk till lagkort
+if (k.toLowerCase() === 'team') {
+  const teamDisplay = mapTeam(v);
+  const teamParam   = teamDisplay;     // samma text som i tabellerna
+  const cupParam    = "19.5";          // den här cupsidan
+
+  v = `<a href="lagkort.html?team=${encodeURIComponent(teamParam)}&cup=${encodeURIComponent(cupParam)}"
+           style="color:#ffd35c; font-weight:600; text-decoration:none;">
+         ${teamDisplay}
+       </a>`;
+}
+
 
           return `<td data-label="${k.toUpperCase()}">${v}</td>`;
         }).join('');
@@ -3690,9 +3718,29 @@ document.querySelectorAll(".team-card").forEach(card => {
     });
 });
 </script>
+<script>
+// Länka lag i MATCHER-fliken till lagkortet för SEC 19.5
+(function () {
+  const CUP_PARAM = "19.5";
+
+  function linkify(el) {
+    if (!el) return;
+    const name = el.textContent.trim();
+    if (!name) return;
+    const url = `lagkort.html?team=${encodeURIComponent(name)}&cup=${encodeURIComponent(CUP_PARAM)}`;
+    el.innerHTML = `<a href="${url}" style="color:inherit; text-decoration:none;">${name}</a>`;
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // Matchkort (överst i MATCHER-fliken)
+    document.querySelectorAll('#matcher .match-card .team').forEach(linkify);
+    // Statisk matchtabell i MATCHER-fliken
+    document.querySelectorAll('#matcher .match-table .match-team').forEach(linkify);
+  });
+})();
+</script>
 
 </body>
 </html>
-
 
 
