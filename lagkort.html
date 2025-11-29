@@ -722,11 +722,12 @@ async function loadMatches() {
     }
 
     // 🔥 Sortera matcher kronologiskt
-    list.sort((a, b) => {
-      const da = new Date(a.date + " " + a.time);
-      const db = new Date(b.date + " " + b.time);
-      return da - db;
-    });
+list.sort((a, b) => {
+  const da = parseSecDate(a.date, a.time);
+  const db = parseSecDate(b.date, b.time);
+  return da - db;
+});
+
 
     box.innerHTML = list.map(m => `
       <div class="match-row">
