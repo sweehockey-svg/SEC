@@ -1356,7 +1356,7 @@ if (Array.isArray(goalieMatrix) && goalieMatrix.length > 1) {
         if (pointRows.length || goalRows.length || goalieSVBlock) {
 
           meritBlockPersonal += `
-            <div class="merit-divider">Meriter</div>
+            <div class="merit-divider">Personliga Meriter</div>
 
 
             <div class="merit-list">
@@ -1390,7 +1390,7 @@ if (Array.isArray(goalieMatrix) && goalieMatrix.length > 1) {
 
       if (meritBlockGoldSilver || meritBlockPersonal) {
         meritText = `
-          <div class="section-divider">Personliga Meriter</div>
+          <div class="merit-divider">Meriter</div>
           <div class="merit-list">${meritBlockGoldSilver}</div>
           ${meritBlockPersonal}
         `;
