@@ -7,12 +7,12 @@
 
   <style>
 .player-mini {
-  width: 60px;
-  height: 85px;
-  border-radius: 10px;
+  width: 80px;
+  height: 110px;
+  border-radius: 12px;
   object-fit: cover;
-  margin-bottom: 4px;
-  border: 2px solid rgba(245,216,110,0.45);
+  margin-bottom: 6px;
+  border: 2px solid rgba(245,216,110,0.5);
   background: #050712;
 }
 
@@ -306,16 +306,26 @@
     }
 
     .roster-grid {
-      display:grid;
-      grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
-      gap:6px 16px;
-      font-size:.9rem;
-    }
-    .roster-item-main { font-weight:500; }
-    .roster-item-sub {
-      font-size:.8rem;
-      color:var(--sec-text-muted);
-    }
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 22px 24px;
+  justify-items: center;
+  align-items: start;
+  text-align: center;
+}
+
+    .roster-item-main {
+  font-weight: 600;
+  margin-top: 4px;
+  font-size: 0.95rem;
+}
+
+.roster-item-sub {
+  font-size: 0.82rem;
+  margin-top: 2px;
+  color: var(--sec-text-muted);
+}
+
 
     /* SÖKMODUL */
     .player-search-centered {
@@ -409,6 +419,17 @@
       .player-search-centered { width: 90%; }
       #teamLogo { width: 220px; }
     }
+    @media (max-width: 600px) {
+  .roster-grid {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 18px;
+  }
+  .player-mini {
+    width: 95px;
+    height: 130px;
+  }
+}
+
   </style>
 </head>
 
