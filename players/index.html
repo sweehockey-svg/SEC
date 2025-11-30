@@ -6,6 +6,27 @@
   <title>Svenska eHockey Cupen – Spelarkort</title>
 
   <style>
+    .merit-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 30px 0 10px;
+  color: #f5d86e;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px rgba(245,216,110,0.3);
+}
+
+.merit-divider::before,
+.merit-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid rgba(245,216,110,0.35);
+  margin: 0 14px;
+}
+
 /* === GLOBAL SÖKMODUL (från lagkortet) === */
 .player-search-centered {
   margin: 40px auto 10px auto;
