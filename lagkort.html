@@ -929,14 +929,100 @@ async function loadRoster() {
     await loadPlayerPhotos();
 
     const [uteRes, mvRes] = await Promise.all([
-      fetch(API + "?sheet=utestatsall").then(r=>r.json()),
-      fetch(API + "?sheet=målvaktsstatsall").then(r=>r.json())
+      fetch(API + "?sheet=utestatsall").then(r => r.json()),
+      fetch(API + "?sheet=målvaktsstatsall").then(r => r.json())
     ]);
 
-    const FALLBACK_IMG =
-      "https://drive.google.com/thumbnail?id=1VAa79pJ-QbyeliY60autf914z6SBwmhp&sz=w1000";
+    const MEDAL_BY_RANK = {
+      1: "🥇",
+      2: "🥈",
+      3: "🥉"
+    };
 
-    /* ============ UTE ============ */
+    // =========================
+    //  CUP-WIDE RANKING – UTE
+    // =========================
+    const uteHeader = uteRes[0];
+    const u_iPlayer = uteHeader.indexOf("PLAYERS");
+    const u_iPTS    = uteHeader.indexOf("PTS");
+    const u_iCup    = uteHeader.indexOf("CUP");
+
+    const uteTotals = {}; // name -> { pts, gp }
+
+    for (let i = 1; i < uteRes.length; i++) {
+      const r = uteRes[i];
+      if (!r) continue;
+
+      const cup = extractCupNumber(r[u_iCup]);
+      if (cupParam && cup !== cupParam) continue; // bara aktuell cup
+
+      const rawName = r[u_iPlayer];
+      if (!rawName) continue;
+
+      const name = cleanPlayerName(rawName);
+      if (!uteTotals[name]) {
+        uteTotals[name] = { pts: 0, gp: 0 };
+      }
+      uteTotals[name].pts += Number(r[u_iPTS] || 0);
+    }
+
+    const uteRank = {};
+    Object.entries(uteTotals)
+      .map(([name, s]) => ({ name, ...s }))
+      .sort((a, b) => b.pts - a.pts)     // högst poäng först
+      .slice(0, 3)                       // topp 3
+      .forEach((p, idx) => {
+        uteRank[p.name] = idx + 1;       // 1,2,3
+      });
+
+    // =============================
+    //  CUP-WIDE RANKING – MÅLVAKT
+    // =============================
+    const mvHeader = mvRes[0];
+    const m_iGoalie = mvHeader.indexOf("GOALIES");
+    const m_iSV     = mvHeader.indexOf("SV%");
+    const m_iCup    = mvHeader.indexOf("CUP");
+
+    const goalieTotals = {}; // name -> { svGroup }
+
+    for (let i = 1; i < mvRes.length; i++) {
+      const r = mvRes[i];
+      if (!r) continue;
+
+      const cup = extractCupNumber(r[m_iCup]);
+      if (cupParam && cup !== cupParam) continue;
+
+      // vi rankar på grundserie-sv%
+      if (!r[m_iCup] || !r[m_iCup].includes("Grupp")) continue;
+
+      const rawName = r[m_iGoalie];
+      if (!rawName) continue;
+
+      const name = cleanPlayerName(rawName);
+      const svStr = (r[m_iSV] || "")
+        .replace("%", "")
+        .replace(",", ".")
+        .trim();
+
+      if (!svStr) continue;
+      const svVal = parseFloat(svStr);
+      if (isNaN(svVal)) continue;
+
+      goalieTotals[name] = { svGroup: svVal };
+    }
+
+    const goalieRank = {};
+    Object.entries(goalieTotals)
+      .map(([name, s]) => ({ name, ...s }))
+      .sort((a, b) => b.svGroup - a.svGroup)
+      .slice(0, 3)
+      .forEach((g, idx) => {
+        goalieRank[g.name] = idx + 1;
+      });
+
+    // =====================
+    //  LAGETS UTE-SPELARE
+    // =====================
     (function () {
       const h = uteRes[0];
       const iPlayer = h.indexOf("PLAYERS");
@@ -948,7 +1034,7 @@ async function loadRoster() {
       const merged = {};
 
       for (let i = 1; i < uteRes.length; i++) {
-        const r = uteRes[i]; 
+        const r = uteRes[i];
         if (!r) continue;
 
         const code = r[iTeam];
@@ -960,7 +1046,7 @@ async function loadRoster() {
         const nameRaw = r[iPlayer];
         if (!nameRaw) continue;
 
-        const clean = nameRaw.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
+        const clean = cleanPlayerName(nameRaw);
 
         if (!merged[clean]) {
           merged[clean] = {
@@ -978,9 +1064,8 @@ async function loadRoster() {
         if (r[iCup].includes("Slutspel")) merged[clean].stages.add("Slutspel");
       }
 
-      // 🔢 sortera på poäng (flest först)
-      const rows = Object.values(merged).sort((a, b) => b.pts - a.pts);
-      const box  = document.getElementById("playerList");
+      const rows = Object.values(merged);
+      const box = document.getElementById("playerList");
 
       if (!rows.length) {
         box.innerHTML = '<div class="roster-item-main" style="opacity:.7;">Inga spelare hittades.</div>';
@@ -988,21 +1073,20 @@ async function loadRoster() {
       }
 
       box.innerHTML = rows
-        .map((p, index) => {
+        .map(p => {
           const photo = playerPhotos[p.name] || FALLBACK_PLAYER_IMG;
-
-          let medal = "";
-          if (index === 0) medal = "🥇 ";
-          else if (index === 1) medal = "🥈 ";
-          else if (index === 2) medal = "🥉 ";
-
           const stage = [...p.stages].join(" + ");
 
+          const rank  = uteRank[p.name];          // 1,2,3 eller undefined
+          const medal = rank ? MEDAL_BY_RANK[rank] : "";
+
           return `
-            <div class="player-entry">
+            <div>
               <a href="players?player=${encodeURIComponent(p.name)}" style="text-decoration:none; color:inherit;">
                 <img src="${photo}" class="player-mini">
-                <div class="roster-item-main">${medal}${p.name}</div>
+                <div class="roster-item-main">
+                  ${medal ? `<span class="roster-medal">${medal}</span>` : ""}${p.name}
+                </div>
               </a>
               <div class="roster-item-sub">
                 GP: ${p.gp} · PTS: ${p.pts} · ${stage}
@@ -1013,8 +1097,9 @@ async function loadRoster() {
         .join("");
     })();
 
-
-    /* ============ MÅLVAKTER ============ */
+    // =====================
+    //  LAGETS MÅLVAKTER
+    // =====================
     (function () {
       const h = mvRes[0];
       const iGoalie = h.indexOf("GOALIES");
@@ -1038,7 +1123,7 @@ async function loadRoster() {
         const nameRaw = r[iGoalie];
         if (!nameRaw) continue;
 
-        const clean = nameRaw.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
+        const clean = cleanPlayerName(nameRaw);
 
         if (!merged[clean]) {
           merged[clean] = {
@@ -1063,15 +1148,7 @@ async function loadRoster() {
         }
       }
 
-      // 🔢 sortera målisar på SV% i grundspel (högst först)
-      const rows = Object.values(merged).sort((a, b) => {
-        const aNum = parseFloat(String(a.svGroup || "").replace(",", "."));
-        const bNum = parseFloat(String(b.svGroup || "").replace(",", "."));
-        const aVal = isNaN(aNum) ? -999 : aNum;
-        const bVal = isNaN(bNum) ? -999 : bNum;
-        return bVal - aVal;
-      });
-
+      const rows = Object.values(merged);
       const box = document.getElementById("goalieList");
 
       if (!rows.length) {
@@ -1080,22 +1157,21 @@ async function loadRoster() {
       }
 
       box.innerHTML = rows
-        .map((g, index) => {
+        .map(g => {
           const photo = playerPhotos[g.name] || FALLBACK_PLAYER_IMG;
-
           const displaySV = g.svGroup ?? "-";
           const stage = [...g.stages].join(" + ");
 
-          let medal = "";
-          if (index === 0) medal = "🥇 ";
-          else if (index === 1) medal = "🥈 ";
-          else if (index === 2) medal = "🥉 ";
+          const rank  = goalieRank[g.name];
+          const medal = rank ? MEDAL_BY_RANK[rank] : "";
 
           return `
-            <div class="player-entry">
+            <div>
               <a href="players?player=${encodeURIComponent(g.name)}" style="text-decoration:none; color:inherit;">
                 <img src="${photo}" class="player-mini">
-                <div class="roster-item-main">${medal}${g.name}</div>
+                <div class="roster-item-main">
+                  ${medal ? `<span class="roster-medal">${medal}</span>` : ""}${g.name}
+                </div>
               </a>
               <div class="roster-item-sub">
                 GP: ${g.gp} · SV%: ${displaySV} · ${stage}
@@ -1112,7 +1188,6 @@ async function loadRoster() {
     loaderEl.style.display = "none";
   }
 }
-
 
 // Hjälpfunktion: Ta bort “, SWE”
 function cleanPlayerName(name) {
@@ -1152,18 +1227,16 @@ async function initGlobalSearch() {
         const fullTeam = TEAM_MAP[r[iTeam]] || r[iTeam];
         const cup = extractCupNumber(r[iCup]);
 
-        // Registrera lag + cup
         if (!teamCups[fullTeam]) teamCups[fullTeam] = new Set();
         teamCups[fullTeam].add(cup);
 
-        // Spelare — undvik dubletter
         const key = norm(name);
         if (!players.has(key)) {
           players.add(key);
           items.push({
             type: "player",
             label: name,
-            sub: "",      // ingen lagtext på spelare
+            sub: "",
             player: name
           });
         }
@@ -1188,11 +1261,9 @@ async function initGlobalSearch() {
         const fullTeam = TEAM_MAP[r[iTeam]] || r[iTeam];
         const cup = extractCupNumber(r[iCup]);
 
-        // Registrera lag + cup
         if (!teamCups[fullTeam]) teamCups[fullTeam] = new Set();
         teamCups[fullTeam].add(cup);
 
-        // Spelare utan dubletter
         const key = norm(name);
         if (!players.has(key)) {
           players.add(key);
@@ -1223,7 +1294,6 @@ async function initGlobalSearch() {
     console.error("Search-fel:", e);
   }
 
-  // ===== RENDER =====
   function render(list) {
     if (!list.length) {
       box.style.display = "none";
@@ -1240,20 +1310,18 @@ async function initGlobalSearch() {
           data-player="${it.player || ""}"
           data-cup="${it.cup || ""}"
         >
-<div>
-  ${
-    it.type === "team"
-      ? `<div>${it.label} – <span class="search-sub">${it.sub}</span></div>`
-      : `<div>${it.label}</div>`
-  }
-</div>
-
+          <div>
+            ${
+              it.type === "team"
+                ? `<div>${it.label} – <span class="search-sub">${it.sub}</span></div>`
+                : `<div>${it.label}</div>`
+            }
+          </div>
           <div class="search-pill">${it.type === "team" ? "Lag" : "Spelare"}</div>
         </div>
       `)
       .join("");
 
-    // Klickhändelser
     box.querySelectorAll(".search-item").forEach(el => {
       el.onclick = () => {
         const type = el.dataset.type;
@@ -1270,7 +1338,6 @@ async function initGlobalSearch() {
     });
   }
 
-  // Input-händelse
   inp.addEventListener("input", () => {
     const q = norm(inp.value.trim());
     if (!q) {
@@ -1285,7 +1352,6 @@ async function initGlobalSearch() {
     render(result);
   });
 
-  // Klick utanför → stäng
   document.addEventListener("click", e => {
     if (!box.contains(e.target) && e.target !== inp) {
       box.style.display = "none";
@@ -1293,11 +1359,12 @@ async function initGlobalSearch() {
   });
 }
 
-    // Init
-    loadLogo();
-    loadMatches();
-    loadRoster();
-    initGlobalSearch();
+// Init
+loadLogo();
+loadMatches();
+loadRoster();
+initGlobalSearch();
+
   </script>
 </body>
 </html>
