@@ -552,6 +552,96 @@ Fheade
         width: 220px;
       }
     }
+    /* Wrapper around each player */
+.player-card {
+  position: relative;
+  text-align: center;
+  animation: fadeIn 0.6s ease forwards;
+}
+
+/* Player image */
+.player-mini {
+  width: 135px;
+  height: 185px;
+  border-radius: 16px;
+  border: 2px solid rgba(245,216,110,0.55);
+  background: #050712;
+  object-fit: cover;
+  box-shadow: 0 0 14px rgba(245,216,110,0.18);
+  transition: 0.25s;
+}
+
+.player-mini:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 22px rgba(245,216,110,0.35);
+}
+
+/* Grid layout */
+.roster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 32px 28px;
+  justify-items: center;
+  align-items: start;
+}
+
+/* Player name */
+.roster-item-main {
+  font-weight: 700;
+  margin-top: 8px;
+  font-size: 1.05rem;
+  color: #fff;
+}
+
+/* Stats under player */
+.roster-item-sub {
+  font-size: 0.85rem;
+  color: var(--sec-text-muted);
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+/* Badges top-right */
+.player-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  padding: 4px 7px;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.65);
+  border: 1px solid rgba(245,216,110,0.55);
+  font-size: 1.05rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
+}
+
+.gold { color: #f5d86e; }
+.silver { color: #d0d0d0; }
+.bronze { color: #cd7f32; }
+
+/* MVP highlight */
+.mvp-glow {
+  box-shadow: 0 0 30px rgba(255,215,0,0.45) !important;
+  border-color: gold !important;
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile layout */
+@media (max-width: 600px) {
+  .roster-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .player-mini {
+    width: 160px;
+    height: 215px;
+  }
+}
+
   </style>
 </head>
 
