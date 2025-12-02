@@ -925,111 +925,103 @@ const FALLBACK_PLAYER_IMG =
 async function loadRoster() {
   try {
     loaderEl.style.display = "flex";
-
     await loadPlayerPhotos();
 
     const [uteRes, mvRes] = await Promise.all([
-      fetch(API + "?sheet=utestatsall").then(r => r.json()),
-      fetch(API + "?sheet=målvaktsstatsall").then(r => r.json())
+      fetch(API + "?sheet=utestatsall").then(r=>r.json()),
+      fetch(API + "?sheet=målvaktsstatsall").then(r=>r.json())
     ]);
 
-    const MEDAL_BY_RANK = {
-      1: "🥇",
-      2: "🥈",
-      3: "🥉"
-    };
+    const FALLBACK_IMG =
+      "https://drive.google.com/thumbnail?id=1VAa79pJ-QbyeliY60autf914z6SBwmhp&sz=w1000";
 
-    // =========================
-    //  CUP-WIDE RANKING – UTE
-    // =========================
-    const uteHeader = uteRes[0];
-    const u_iPlayer = uteHeader.indexOf("PLAYERS");
-    const u_iPTS    = uteHeader.indexOf("PTS");
-    const u_iCup    = uteHeader.indexOf("CUP");
+    // ============================
+    //  GLOBALA TOPPLISTOR FÖR CUPEN
+    // ============================
+    const globalUte = {};      // cup → [{name, pts}]
+    const globalGoalies = {};  // cup → [{name, sv}]
 
-    const uteTotals = {}; // name -> { pts, gp }
-
-    for (let i = 1; i < uteRes.length; i++) {
-      const r = uteRes[i];
-      if (!r) continue;
-
-      const cup = extractCupNumber(r[u_iCup]);
-      if (cupParam && cup !== cupParam) continue; // bara aktuell cup
-
-      const rawName = r[u_iPlayer];
-      if (!rawName) continue;
-
-      const name = cleanPlayerName(rawName);
-      if (!uteTotals[name]) {
-        uteTotals[name] = { pts: 0, gp: 0 };
-      }
-      uteTotals[name].pts += Number(r[u_iPTS] || 0);
-    }
-
-    const uteRank = {};
-    Object.entries(uteTotals)
-      .map(([name, s]) => ({ name, ...s }))
-      .sort((a, b) => b.pts - a.pts)     // högst poäng först
-      .slice(0, 3)                       // topp 3
-      .forEach((p, idx) => {
-        uteRank[p.name] = idx + 1;       // 1,2,3
-      });
-
-    // =============================
-    //  CUP-WIDE RANKING – MÅLVAKT
-    // =============================
-    const mvHeader = mvRes[0];
-    const m_iGoalie = mvHeader.indexOf("GOALIES");
-    const m_iSV     = mvHeader.indexOf("SV%");
-    const m_iCup    = mvHeader.indexOf("CUP");
-
-    const goalieTotals = {}; // name -> { svGroup }
-
-    for (let i = 1; i < mvRes.length; i++) {
-      const r = mvRes[i];
-      if (!r) continue;
-
-      const cup = extractCupNumber(r[m_iCup]);
-      if (cupParam && cup !== cupParam) continue;
-
-      // vi rankar på grundserie-sv%
-      if (!r[m_iCup] || !r[m_iCup].includes("Grupp")) continue;
-
-      const rawName = r[m_iGoalie];
-      if (!rawName) continue;
-
-      const name = cleanPlayerName(rawName);
-      const svStr = (r[m_iSV] || "")
-        .replace("%", "")
-        .replace(",", ".")
-        .trim();
-
-      if (!svStr) continue;
-      const svVal = parseFloat(svStr);
-      if (isNaN(svVal)) continue;
-
-      goalieTotals[name] = { svGroup: svVal };
-    }
-
-    const goalieRank = {};
-    Object.entries(goalieTotals)
-      .map(([name, s]) => ({ name, ...s }))
-      .sort((a, b) => b.svGroup - a.svGroup)
-      .slice(0, 3)
-      .forEach((g, idx) => {
-        goalieRank[g.name] = idx + 1;
-      });
-
-    // =====================
-    //  LAGETS UTE-SPELARE
-    // =====================
+    // Fyll globala listor från UTE
     (function () {
       const h = uteRes[0];
       const iPlayer = h.indexOf("PLAYERS");
       const iTeam   = h.indexOf("TEAM");
-      const iGP     = h.indexOf("GP");
       const iPTS    = h.indexOf("PTS");
       const iCup    = h.indexOf("CUP");
+
+      for (let i = 1; i < uteRes.length; i++) {
+        const r = uteRes[i];
+        if (!r) continue;
+
+        const cup = extractCupNumber(r[iCup]);
+        if (!cup) continue;
+
+        const rawName = r[iPlayer];
+        if (!rawName) continue;
+
+        const name = rawName.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
+        const pts = Number(r[iPTS] || 0);
+
+        if (!globalUte[cup]) globalUte[cup] = [];
+        globalUte[cup].push({ name, pts });
+      }
+    })();
+
+    // Fyll globala listor från MÅLVAKTER
+    (function () {
+      const h = mvRes[0];
+      const iGoalie = h.indexOf("GOALIES");
+      const iSV     = h.indexOf("SV%");
+      const iCup    = h.indexOf("CUP");
+
+      for (let i = 1; i < mvRes.length; i++) {
+        const r = mvRes[i];
+        if (!r) continue;
+
+        const cup = extractCupNumber(r[iCup]);
+        if (!cup) continue;
+
+        const rawName = r[iGoalie];
+        if (!rawName) continue;
+
+        const name = rawName.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
+
+        let sv = (r[iSV] || "").trim().replace("%", "");
+        sv = parseFloat(sv) || 0;
+
+        if (!globalGoalies[cup]) globalGoalies[cup] = [];
+        globalGoalies[cup].push({ name, sv });
+      }
+    })();
+
+    // ============================
+    //  FUNKTION: CUPENS TOPP-3
+    // ============================
+    function getCupRankings(cup) {
+      const ute = globalUte[cup] || [];
+      const goalies = globalGoalies[cup] || [];
+
+      const uteTop = [...ute].sort((a, b) => b.pts - a.pts).slice(0, 3);
+      const goalieTop = [...goalies].sort((a, b) => b.sv - a.sv).slice(0, 3);
+
+      return {
+        uteTop3: uteTop.map(p => p.name),
+        goalieTop3: goalieTop.map(g => g.name)
+      };
+    }
+
+    const rankings = getCupRankings(cupParam);
+
+    // ============================
+    //  UTE-SPELARE (lag-specifikt)
+    // ============================
+    (function () {
+      const h = uteRes[0];
+      const iPlayer = h.indexOf("PLAYERS");
+      const iTeam = h.indexOf("TEAM");
+      const iGP = h.indexOf("GP");
+      const iPTS = h.indexOf("PTS");
+      const iCup = h.indexOf("CUP");
 
       const merged = {};
 
@@ -1039,28 +1031,24 @@ async function loadRoster() {
 
         const code = r[iTeam];
         const fullTeam = TEAM_MAP[code] || code;
+
         const cup = extractCupNumber(r[iCup]);
         if (fullTeam !== teamParam) continue;
         if (cupParam && cup !== cupParam) continue;
 
-        const nameRaw = r[iPlayer];
-        if (!nameRaw) continue;
+        const rawName = r[iPlayer];
+        if (!rawName) continue;
 
-        const clean = cleanPlayerName(nameRaw);
+        const clean = rawName.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
 
         if (!merged[clean]) {
-          merged[clean] = {
-            name: clean,
-            gp: 0,
-            pts: 0,
-            stages: new Set()
-          };
+          merged[clean] = { name: clean, gp: 0, pts: 0, stages: new Set() };
         }
 
-        merged[clean].gp  += Number(r[iGP]  || 0);
+        merged[clean].gp += Number(r[iGP] || 0);
         merged[clean].pts += Number(r[iPTS] || 0);
 
-        if (r[iCup].includes("Grupp"))    merged[clean].stages.add("Grupp");
+        if (r[iCup].includes("Grupp")) merged[clean].stages.add("Grupp");
         if (r[iCup].includes("Slutspel")) merged[clean].stages.add("Slutspel");
       }
 
@@ -1074,19 +1062,17 @@ async function loadRoster() {
 
       box.innerHTML = rows
         .map(p => {
-          const photo = playerPhotos[p.name] || FALLBACK_PLAYER_IMG;
+          const photo = playerPhotos[p.name] || FALLBACK_IMG;
           const stage = [...p.stages].join(" + ");
 
-          const rank  = uteRank[p.name];          // 1,2,3 eller undefined
-          const medal = rank ? MEDAL_BY_RANK[rank] : "";
+          const isTop3 = rankings.uteTop3.includes(p.name);
+          const medal = isTop3 ? "🥉 " : "";
 
           return `
-            <div>
+            <div class="player-card">
               <a href="players?player=${encodeURIComponent(p.name)}" style="text-decoration:none; color:inherit;">
                 <img src="${photo}" class="player-mini">
-                <div class="roster-item-main">
-                  ${medal ? `<span class="roster-medal">${medal}</span>` : ""}${p.name}
-                </div>
+                <div class="roster-item-main">${medal}${p.name}</div>
               </a>
               <div class="roster-item-sub">
                 GP: ${p.gp} · PTS: ${p.pts} · ${stage}
@@ -1097,16 +1083,16 @@ async function loadRoster() {
         .join("");
     })();
 
-    // =====================
-    //  LAGETS MÅLVAKTER
-    // =====================
+    // ============================
+    //  MÅLVAKTER (lag-specifikt)
+    // ============================
     (function () {
       const h = mvRes[0];
       const iGoalie = h.indexOf("GOALIES");
-      const iTeam   = h.indexOf("TEAM");
-      const iGP     = h.indexOf("GP");
-      const iSV     = h.indexOf("SV%");
-      const iCup    = h.indexOf("CUP");
+      const iTeam = h.indexOf("TEAM");
+      const iGP = h.indexOf("GP");
+      const iSV = h.indexOf("SV%");
+      const iCup = h.indexOf("CUP");
 
       const merged = {};
 
@@ -1116,34 +1102,33 @@ async function loadRoster() {
 
         const code = r[iTeam];
         const fullTeam = TEAM_MAP[code] || code;
+
         const cup = extractCupNumber(r[iCup]);
         if (fullTeam !== teamParam) continue;
         if (cupParam && cup !== cupParam) continue;
 
-        const nameRaw = r[iGoalie];
-        if (!nameRaw) continue;
+        const rawName = r[iGoalie];
+        if (!rawName) continue;
 
-        const clean = cleanPlayerName(nameRaw);
+        const clean = rawName.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
 
         if (!merged[clean]) {
           merged[clean] = {
             name: clean,
             gp: 0,
             svGroup: null,
-            svPlayoff: null,
             stages: new Set()
           };
         }
 
         merged[clean].gp += Number(r[iGP] || 0);
-        const svValue = (r[iSV] || "").trim();
 
+        const svValue = (r[iSV] || "").trim();
         if (r[iCup].includes("Grupp") && svValue) {
           merged[clean].svGroup = svValue;
           merged[clean].stages.add("Grupp");
         }
         if (r[iCup].includes("Slutspel") && svValue) {
-          merged[clean].svPlayoff = svValue;
           merged[clean].stages.add("Slutspel");
         }
       }
@@ -1158,20 +1143,18 @@ async function loadRoster() {
 
       box.innerHTML = rows
         .map(g => {
-          const photo = playerPhotos[g.name] || FALLBACK_PLAYER_IMG;
-          const displaySV = g.svGroup ?? "-";
+          const photo = playerPhotos[g.name] || FALLBACK_IMG;
           const stage = [...g.stages].join(" + ");
+          const displaySV = g.svGroup ?? "-";
 
-          const rank  = goalieRank[g.name];
-          const medal = rank ? MEDAL_BY_RANK[rank] : "";
+          const isTop3 = rankings.goalieTop3.includes(g.name);
+          const medal = isTop3 ? "🥉 " : "";
 
           return `
-            <div>
+            <div class="player-card">
               <a href="players?player=${encodeURIComponent(g.name)}" style="text-decoration:none; color:inherit;">
                 <img src="${photo}" class="player-mini">
-                <div class="roster-item-main">
-                  ${medal ? `<span class="roster-medal">${medal}</span>` : ""}${g.name}
-                </div>
+                <div class="roster-item-main">${medal}${g.name}</div>
               </a>
               <div class="roster-item-sub">
                 GP: ${g.gp} · SV%: ${displaySV} · ${stage}
@@ -1188,6 +1171,7 @@ async function loadRoster() {
     loaderEl.style.display = "none";
   }
 }
+
 
 // Hjälpfunktion: Ta bort “, SWE”
 function cleanPlayerName(name) {
