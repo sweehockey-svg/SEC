@@ -1101,7 +1101,7 @@ async function loadRoster() {
         .join("");
     })();
 
-/* ============ MÅLVAKTER MED MEDALJER (G och S SEPARAT) ============ */
+/* ============ MÅLVAKTER MED SEPARATA LIGOR FÖR G & S ============ */
 (function () {
   const h = mvRes[0];
 
@@ -1113,124 +1113,124 @@ async function loadRoster() {
   const iSV     = h.indexOf("SV");
   const iGA     = h.indexOf("GA");
 
-  /* ============================================================
-        1. BYGG TVÅ SEPARATA MÅLVAKTSLIGOR
-           - En för Gruppspel (G)
-           - En för Slutspel (S)
-     ============================================================ */
-  const goalieLeague = { G: {}, S: {} }; // strukturen: { G: {cup: {name: place}}, S: {...} }
-  const perCup = { G: {}, S: {} };
+  /* ===============================
+        1. BYGG MÅLVAKTSLIGA PER CUP + FAS
+     =============================== */
+  const goalieLeague = (() => {
+    const perCup = {};
 
-  for (let i = 1; i < mvRes.length; i++) {
-    const r = mvRes[i];
-    if (!r) continue;
+    for (let i = 1; i < mvRes.length; i++) {
+      const r = mvRes[i];
+      if (!r) continue;
 
-    const nameRaw = r[iGoalie];
-    if (!nameRaw) continue;
+      const rawName = r[iGoalie];
+      if (!rawName) continue;
+      const name = rawName.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
 
-    const name = nameRaw.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
-    const cup = extractCupNumber(r[iCup]);
-    if (!cup) continue;
+      const cupNumber = extractCupNumber(r[iCup]);
+      if (!cupNumber) continue;
 
-    const isSlutspel = r[iCup].includes("Slutspel");
-    const phase = isSlutspel ? "S" : "G";
+      const phase = r[iCup].includes("Slutspel") ? "S" : "G";
+      const cupKey = `${cupNumber}-${phase}`;
 
-    // Läs räddningsprocent
-    let svNum = null;
-    const rawSVpct = (r[iSVpct] || "").trim();
+      let sv = null;
 
-    if (rawSVpct && rawSVpct !== "-") {
-      svNum = Number(rawSVpct.replace(",", "."));
-    } else {
-      const saves = Number(r[iSV] || 0);
-      const ga    = Number(r[iGA] || 0);
-      if (saves + ga > 0) svNum = Number((saves / (saves + ga)).toFixed(3));
+      // Försök SV% direkt
+      if (r[iSVpct] && r[iSVpct] !== "-") {
+        const fixed = r[iSVpct].replace(",", ".");  
+        sv = fixed.startsWith(".") ? Number("0" + fixed) : Number(fixed);
+      } else {
+        // Beräkna SV%
+        const saves = Number(r[iSV] || 0);
+        const ga    = Number(r[iGA] || 0);
+        if (saves + ga > 0) {
+          sv = saves / (saves + ga);
+        }
+      }
+
+      if (sv === null || isNaN(sv)) continue;
+
+      if (!perCup[cupKey]) perCup[cupKey] = [];
+      perCup[cupKey].push({
+        name,
+        sv,
+        gp: Number(r[iGP] || 0)
+      });
     }
 
-    if (svNum === null || isNaN(svNum)) continue;
-
-    if (!perCup[phase][cup]) perCup[phase][cup] = [];
-    perCup[phase][cup].push({
-      name,
-      sv: svNum,
-      gp: Number(r[iGP] || 0)
-    });
-  }
-
-  // Sortera + ta topp 3 för båda faser
-  ["G", "S"].forEach(phase => {
-    goalieLeague[phase] = {};
-
-    Object.keys(perCup[phase]).forEach(cup => {
-      const list = perCup[phase][cup];
+    // Sortera och ta topp 3
+    const out = {};
+    for (const key of Object.keys(perCup)) {
+      const list = perCup[key];
 
       list.sort((a, b) => {
         if (b.sv !== a.sv) return b.sv - a.sv;
         return b.gp - a.gp;
       });
 
-      goalieLeague[phase][cup] = {};
-      list.slice(0, 3).forEach((g, index) => {
-        goalieLeague[phase][cup][g.name] = { place: index + 1 };
+      out[key] = {};
+      list.slice(0, 3).forEach((g, idx) => {
+        out[key][g.name] = { place: idx + 1 };
       });
-    });
-  });
+    }
 
-  /* ============================================================
-        2. Bygg målvakter i laget med SV% G / S
-     ============================================================ */
+    return out;
+  })();
+
+  /* ===============================
+        2. VISA MÅLVAKTER I LAGET
+     =============================== */
+
   const merged = {};
 
   for (let i = 1; i < mvRes.length; i++) {
     const r = mvRes[i];
     if (!r) continue;
 
-    const fullTeam = TEAM_MAP[r[iTeam]] || r[iTeam];
-    const cup = extractCupNumber(r[iCup]);
-    const isSlutspel = r[iCup].includes("Slutspel");
-    const phase = isSlutspel ? "S" : "G";
-
+    const teamCode = r[iTeam];
+    const fullTeam = TEAM_MAP[teamCode] || teamCode;
     if (fullTeam !== teamParam) continue;
+
+    const cup = extractCupNumber(r[iCup]);
     if (cupParam && cup !== cupParam) continue;
 
-    const nameRaw = r[iGoalie];
-    if (!nameRaw) continue;
+    const rawName = r[iGoalie];
+    if (!rawName) continue;
 
-    const name = nameRaw.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
+    const name = rawName.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
 
     if (!merged[name]) {
       merged[name] = {
         name,
         gp: 0,
+        stages: new Set(),
         svG: null,
-        svS: null,
-        stages: new Set()
+        svS: null
       };
     }
 
     merged[name].gp += Number(r[iGP] || 0);
 
-    // SV%
-    let sv = null;
-    const rawSVpct = (r[iSVpct] || "").trim();
+    const rawSVpct = r[iSVpct] ? r[iSVpct].trim() : "-";
 
+    let svValue = null;
     if (rawSVpct && rawSVpct !== "-") {
-      sv = Number(rawSVpct.replace(",", "."));
+      const fixed = rawSVpct.replace(",", ".");
+      svValue = fixed.startsWith(".") ? Number("0" + fixed) : Number(fixed);
     } else {
       const saves = Number(r[iSV] || 0);
       const ga    = Number(r[iGA] || 0);
-      if (saves + ga > 0) sv = Number((saves / (saves + ga)).toFixed(3));
+      if (saves + ga > 0) svValue = saves / (saves + ga);
     }
 
-    if (phase === "G") merged[name].svG = sv;
-    if (phase === "S") merged[name].svS = sv;
+    const phase = r[iCup].includes("Slutspel") ? "S" : "G";
+    if (phase === "G") merged[name].svG = svValue;
+    if (phase === "S") merged[name].svS = svValue;
 
-    merged[name].stages.add(isSlutspel ? "Slutspel" : "Grupp");
+    if (phase === "G") merged[name].stages.add("Grupp");
+    if (phase === "S") merged[name].stages.add("Slutspel");
   }
 
-  /* ============================================================
-        3. Render
-     ============================================================ */
   const box = document.getElementById("goalieList");
   const rows = Object.values(merged);
 
@@ -1242,48 +1242,30 @@ async function loadRoster() {
   box.innerHTML = rows
     .map(g => {
       const photo = playerPhotos[g.name] || FALLBACK_PLAYER_IMG;
-
-      const svG = g.svG != null ? g.svG.toFixed(3) : "-";
-      const svS = g.svS != null ? g.svS.toFixed(3) : "-";
-
+      const svG = g.svG ? g.svG.toFixed(3) : "-";
+      const svS = g.svS ? g.svS.toFixed(3) : "-";
       const stage = [...g.stages].join(" + ");
 
+      const currentKey = `${cupParam}-G`;
+
       let medalHtml = "";
-      const C = cupParam;
+      if (goalieLeague[currentKey] && goalieLeague[currentKey][g.name]) {
+        const place = goalieLeague[currentKey][g.name].place;
+        const icon = place === 1 ? "🥇" :
+                     place === 2 ? "🥈" :
+                     place === 3 ? "🥉" : "";
 
-      if (C) {
-        // Grundserie-medalj
-        if (goalieLeague.G[C] && goalieLeague.G[C][g.name]) {
-          const place = goalieLeague.G[C][g.name].place;
-          const icon = place === 1 ? "🥇" :
-                       place === 2 ? "🥈" :
-                       place === 3 ? "🥉" : "";
-
-          medalHtml += `
-            <div class="roster-medal-text">
-              ${icon} ${place}:a i målvaktsligan (SEC ${C} G)
-            </div>
-          `;
-        }
-
-        // Slutspelsmedalj
-        if (goalieLeague.S[C] && goalieLeague.S[C][g.name]) {
-          const place = goalieLeague.S[C][g.name].place;
-          const icon = place === 1 ? "🥇" :
-                       place === 2 ? "🥈" :
-                       place === 3 ? "🥉" : "";
-
-          medalHtml += `
-            <div class="roster-medal-text">
-              ${icon} ${place}:a i målvaktsligan (SEC ${C} S)
-            </div>
-          `;
-        }
+        medalHtml = `
+          <div class="roster-medal-text">
+            ${icon} ${place}:a i målvaktsligan (SEC ${cupParam} G)
+          </div>
+        `;
       }
 
       return `
         <div class="roster-card">
-          <a href="players?player=${encodeURIComponent(g.name)}" style="text-decoration:none; color:inherit;">
+          <a href="players?player=${encodeURIComponent(g.name)}"
+             style="text-decoration:none; color:inherit;">
             <img src="${photo}" class="player-mini">
             <div class="roster-item-main">${g.name}</div>
           </a>
@@ -1297,7 +1279,9 @@ async function loadRoster() {
       `;
     })
     .join("");
+
 })();
+
 
 
 
