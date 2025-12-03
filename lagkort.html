@@ -693,6 +693,22 @@ function extractCupNumber(c) {
     .replace(/^0+/, "")       // 01 → 1
     .trim();
 }
+/* ================================
+   CUP + STAGE PARSER (NY)
+================================ */
+function extractCupAndStage(cupRaw) {
+  if (!cupRaw) return { cup: null, stage: null };
+
+  const str = cupRaw.toString().trim();
+
+  const cupMatch   = str.match(/(\d+(?:\.\d+)?)/); // 19.5 → cup
+  const stageMatch = str.match(/\b(G|S)\b/i);      // G / S
+
+  return {
+    cup: cupMatch ? Number(cupMatch[1]) : null,
+    stage: stageMatch ? stageMatch[1].toUpperCase() : null
+  };
+}
 
 /* ================================
    DATUMPARSER (ALLTID VALID)
