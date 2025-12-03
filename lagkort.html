@@ -1025,97 +1025,204 @@ async function loadRoster() {
 
     const currentCupKey = cupParam ? String(cupParam) : null;
 
-    // =========================
-    //  UTE SPELARE
-    // =========================
-    (function () {
-      const h = uteRes[0];
-      const iPlayer = h.indexOf("PLAYERS");
-      const iTeam   = h.indexOf("TEAM");
-      const iGP     = h.indexOf("GP");
-      const iPTS    = h.indexOf("PTS");
-      const iCup    = h.indexOf("CUP");
+/* ============================================================
+   ============ UTESPELARE MED G & S + MEDALJER ===============
+   ============================================================ */
+(function () {
 
-      const merged = {};
+  const h = uteRes[0];
 
-      for (let i = 1; i < uteRes.length; i++) {
-        const r = uteRes[i];
-        if (!r) continue;
+  const iPlayer = h.indexOf("PLAYERS");
+  const iTeam   = h.indexOf("TEAM");
+  const iCup    = h.indexOf("CUP");
+  const iGP     = h.indexOf("GP");
+  const iG      = h.indexOf("G");
+  const iA      = h.indexOf("A");
+  const iPTS    = h.indexOf("PTS");
 
-        const code = r[iTeam];
-        const fullTeam = TEAM_MAP[code] || code;
-        const cup = extractCupNumber(r[iCup]);
-        if (fullTeam !== teamParam) continue;
-        if (cupParam && cup !== cupParam) continue;
+  /* ============================================================
+        1. BYGG SEPARATA POÄNGLIGOR FÖR G & S
+     ============================================================ */
+  const scorerLeague = (() => {
+    const perCupStage = {}; // exempel: "19.5_G": [ {name, pts, g, a} ]
 
-        const nameRaw = r[iPlayer];
-        if (!nameRaw) continue;
+    for (let i = 1; i < uteRes.length; i++) {
+      const r = uteRes[i];
+      if (!r) continue;
 
-        const clean = nameRaw.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
-        if (!clean) continue;
+      const rawName = r[iPlayer];
+      if (!rawName) continue;
 
-        if (!merged[clean]) {
-          merged[clean] = {
-            name: clean,
-            gp: 0,
-            pts: 0,
-            stages: new Set()
-          };
-        }
+      const name = rawName.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
+      if (!name) continue;
 
-        merged[clean].gp  += Number(r[iGP]  || 0);
-        merged[clean].pts += Number(r[iPTS] || 0);
+      const { cup, stage } = extractCupAndStage(r[iCup]);
+      if (!cup || !stage) continue;
 
-        if (r[iCup].includes("Grupp"))    merged[clean].stages.add("Grupp");
-        if (r[iCup].includes("Slutspel")) merged[clean].stages.add("Slutspel");
+      const gp  = Number(r[iGP]  || 0);
+      const g   = Number(r[iG]   || 0);
+      const a   = Number(r[iA]   || 0);
+      const pts = Number(r[iPTS] || 0);
+
+      const key = `${cup}_${stage}`;
+      if (!perCupStage[key]) perCupStage[key] = [];
+
+      perCupStage[key].push({ name, pts, g, a, gp });
+    }
+
+    const out = {};
+
+    for (const key of Object.keys(perCupStage)) {
+      const list = perCupStage[key];
+
+      list.sort((a, b) => {
+        if (b.pts !== a.pts) return b.pts - a.pts;
+        if (b.g   !== a.g)   return b.g   - a.g;
+        if (b.a   !== a.a)   return b.a   - a.a;
+        return a.name.localeCompare(b.name);
+      });
+
+      out[key] = {};
+      list.slice(0, 3).forEach((p, idx) => {
+        out[key][p.name] = { place: idx + 1 };
+      });
+    }
+
+    return out;
+  })();
+
+
+
+  /* ============================================================
+        2. MERGA SPELARE PER LAG MED G & S SEPARAT
+     ============================================================ */
+
+  const merged = {}; // name → { gpG, gpS, gG, gS, aG, aS, ptsG, ptsS, stages }
+
+  for (let i = 1; i < uteRes.length; i++) {
+    const r = uteRes[i];
+    if (!r) continue;
+
+    const code = r[iTeam];
+    const fullTeam = TEAM_MAP[code] || code;
+
+    const { cup, stage } = extractCupAndStage(r[iCup]);
+    if (fullTeam !== teamParam) continue;
+    if (cupParam && cup !== Number(cupParam)) continue;
+
+    const rawName = r[iPlayer];
+    if (!rawName) continue;
+
+    const name = rawName.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
+    if (!name) continue;
+
+    if (!merged[name]) {
+      merged[name] = {
+        name,
+        gpG: 0, gpS: 0,
+        gG: 0,  gS: 0,
+        aG: 0,  aS: 0,
+        ptsG: 0, ptsS: 0,
+        stages: new Set()
+      };
+    }
+
+    const gp  = Number(r[iGP]  || 0);
+    const g   = Number(r[iG]   || 0);
+    const a   = Number(r[iA]   || 0);
+    const pts = Number(r[iPTS] || 0);
+
+    if (stage === "G") {
+      merged[name].gpG  += gp;
+      merged[name].gG   += g;
+      merged[name].aG   += a;
+      merged[name].ptsG += pts;
+      merged[name].stages.add("Grupp");
+    }
+
+    if (stage === "S") {
+      merged[name].gpS  += gp;
+      merged[name].gS   += g;
+      merged[name].aS   += a;
+      merged[name].ptsS += pts;
+      merged[name].stages.add("Slutspel");
+    }
+  }
+
+
+  /* ============================================================
+        3. UTSKRIFT TILL UI
+     ============================================================ */
+
+  const box = document.getElementById("playerList");
+  const rows = Object.values(merged);
+
+  if (!rows.length) {
+    box.innerHTML = '<div class="roster-item-main" style="opacity:.7;">Inga spelare hittades.</div>';
+    return;
+  }
+
+  box.innerHTML = rows
+    .map(p => {
+      const photo = playerPhotos[p.name] || FALLBACK_PLAYER_IMG;
+
+      // Medaljer G
+      const keyG = `${cupParam}_G`;
+      const medalG = scorerLeague[keyG]?.[p.name];
+
+      // Medaljer S
+      const keyS = `${cupParam}_S`;
+      const medalS = scorerLeague[keyS]?.[p.name];
+
+      const iconG = medalG
+        ? (medalG.place === 1 ? "🥇" :
+           medalG.place === 2 ? "🥈" :
+           "🥉")
+        : "";
+
+      const iconS = medalS
+        ? (medalS.place === 1 ? "🥇" :
+           medalS.place === 2 ? "🥈" :
+           "🥉")
+        : "";
+
+      let medalHtml = "";
+      if (medalG) {
+        medalHtml += `
+          <div class="roster-medal-text">
+            ${iconG} ${medalG.place}:a i poängligan (SEC ${cupParam} G)
+          </div>
+        `;
+      }
+      if (medalS) {
+        medalHtml += `
+          <div class="roster-medal-text">
+            ${iconS} ${medalS.place}:a i poängligan (SEC ${cupParam} S)
+          </div>
+        `;
       }
 
-      const rows = Object.values(merged);
-      const box = document.getElementById("playerList");
+      return `
+        <div class="roster-card">
+          <a href="players?player=${encodeURIComponent(p.name)}"
+             style="text-decoration:none; color:inherit;">
+            <img src="${photo}" class="player-mini">
+            <div class="roster-item-main">${p.name}</div>
+          </a>
 
-      if (!rows.length) {
-        box.innerHTML = '<div class="roster-item-main" style="opacity:.7;">Inga spelare hittades.</div>';
-        return;
-      }
+          ${medalHtml}
 
-      box.innerHTML = rows
-        .map(p => {
-          const photo = playerPhotos[p.name] || FALLBACK_PLAYER_IMG;
-          const stage = [...p.stages].join(" + ");
+          <div class="roster-item-sub">
+            GP G: ${p.gpG} · G G: ${p.gG} · A G: ${p.aG} · PTS G: ${p.ptsG}<br>
+            GP S: ${p.gpS} · G S: ${p.gS} · A S: ${p.aS} · PTS S: ${p.ptsS}
+          </div>
+        </div>
+      `;
+    })
+    .join("");
 
-          // Medalj-info för aktuell cup
-          let medalHtml = "";
-          if (currentCupKey && cupLeaders[currentCupKey] && cupLeaders[currentCupKey][p.name]) {
-            const place = cupLeaders[currentCupKey][p.name].place;
-            const icon =
-              place === 1 ? "🥇" :
-              place === 2 ? "🥈" :
-              place === 3 ? "🥉" : "";
+})();
 
-            const placeText = place + ":a i poängligan (SEC " + currentCupKey + ")";
-            medalHtml = `
-              <div class="roster-medal-text">
-                ${icon} ${placeText}
-              </div>
-            `;
-          }
-
-          return `
-            <div class="roster-card">
-              <a href="players?player=${encodeURIComponent(p.name)}"
-                 style="text-decoration:none; color:inherit;">
-                <img src="${photo}" class="player-mini">
-                <div class="roster-item-main">${p.name}</div>
-              </a>
-              ${medalHtml}
-              <div class="roster-item-sub">
-                GP: ${p.gp} · PTS: ${p.pts} · ${stage}
-              </div>
-            </div>
-          `;
-        })
-        .join("");
-    })();
 
 /* ============================================================
    ============ MÅLVAKTER MED MEDALJER (G + S) ============ 
