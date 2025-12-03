@@ -1386,61 +1386,59 @@ box.innerHTML = rows
   const currentCup = cupParam ? Number(cupParam) : null;
 
   box.innerHTML = rows
-    .map(g => {
-      const photo = playerPhotos[g.name] || FALLBACK_PLAYER_IMG;
+  .map(g => {
+    const photo = playerPhotos[g.name] || FALLBACK_PLAYER_IMG;
 
-      const medalLines = [];
+    const keyG = `${cupParam}_G`;
+    const keyS = `${cupParam}_S`;
 
-      if (currentCup) {
-        // Medalj för Grundspel (G)
-        const keyG = `${currentCup}_G`;
-        const mG = goalieLeague[keyG] && goalieLeague[keyG][g.name];
-        if (mG) {
-          const icon =
-            mG.place === 1 ? "🥇" :
-            mG.place === 2 ? "🥈" :
-            mG.place === 3 ? "🥉" : "";
-          medalLines.push(
-            `${icon} ${mG.place}:a i målvaktsligan (SEC ${currentCup} G)`
-          );
-        }
+    const medalG = goalieLeague[keyG]?.[g.name];
+    const medalS = goalieLeague[keyS]?.[g.name];
 
-        // Medalj för Slutspel (S)
-        const keyS = `${currentCup}_S`;
-        const mS = goalieLeague[keyS] && goalieLeague[keyS][g.name];
-        if (mS) {
-          const icon =
-            mS.place === 1 ? "🥇" :
-            mS.place === 2 ? "🥈" :
-            mS.place === 3 ? "🥉" : "";
-          medalLines.push(
-            `${icon} ${mS.place}:a i målvaktsligan (SEC ${currentCup} S)`
-          );
-        }
-      }
+    // medalj-ikoner
+    const icon = place =>
+      place === 1 ? "🥇" :
+      place === 2 ? "🥈" :
+      place === 3 ? "🥉" : "";
 
-      const medalHtml = medalLines.length
-        ? `<div class="roster-medal-text">${medalLines.join("<br>")}</div>`
-        : "";
-
-      return `
-        <div class="roster-card">
-          <a href="players?player=${encodeURIComponent(g.name)}"
-             style="text-decoration:none; color:inherit;">
-            <img src="${photo}" class="player-mini">
-            <div class="roster-item-main">${g.name}</div>
-          </a>
-
-          ${medalHtml}
-
-          <div class="roster-item-sub">
-            GP G: ${g.gpG} · SV% G: ${formatSvPercent(g.svG)}<br>
-            GP S: ${g.gpS} · SV% S: ${formatSvPercent(g.svS)}
-          </div>
+    let medalHtml = "";
+    if (medalG) {
+      medalHtml += `
+        <div class="roster-medal-text">
+          ${icon(medalG.place)} ${medalG.place}:a i målvaktsligan (SEC ${cupParam} G)
         </div>
       `;
-    })
-    .join("");
+    }
+    if (medalS) {
+      medalHtml += `
+        <div class="roster-medal-text">
+          ${icon(medalS.place)} ${medalS.place}:a i målvaktsligan (SEC ${cupParam} S)
+        </div>
+      `;
+    }
+
+    // format SV% till 85.9 istället för 0.859
+    const fmt = v => (v == null ? "-" : (v * 100).toFixed(1));
+
+    return `
+      <div class="roster-card">
+        <a href="players?player=${encodeURIComponent(g.name)}"
+           style="text-decoration:none; color:inherit;">
+          <img src="${photo}" class="player-mini">
+          <div class="roster-item-main">${g.name}</div>
+        </a>
+
+        ${medalHtml}
+
+        <div class="roster-item-sub">
+          Grupp GP: ${g.gpG} · SV%: ${fmt(g.svG)}<br>
+          Slut GP: ${g.gpS} · SV%: ${fmt(g.svS)}
+        </div>
+      </div>
+    `;
+  })
+  .join("");
+
 })();
 
 
