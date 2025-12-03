@@ -1104,64 +1104,87 @@ async function loadRoster() {
 /* ============ MÅLVAKTER MED MEDALJER (NY VERSION) ============ */
 (function () {
   const h = mvRes[0];
+
   const iGoalie = h.indexOf("GOALIES");
   const iTeam   = h.indexOf("TEAM");
-  const iGP     = h.indexOf("GP");
-  const iSV     = h.indexOf("SV%");
   const iCup    = h.indexOf("CUP");
+  const iGP     = h.indexOf("GP");
+  const iSVpct  = h.indexOf("SV%");
+  const iSV     = h.indexOf("SV");   // räddningar
+  const iGA     = h.indexOf("GA");   // insläppta mål
 
-  /* =========================
-     Bygg målvaktsliga per cup
-     ========================= */
-  const goalieLeague = {};
-  for (let i = 1; i < mvRes.length; i++) {
-    const r = mvRes[i];
-    if (!r) continue;
+  /* ===============================
+      1. BYGG MÅLVAKTSLIGA PER CUP
+     =============================== */
+  const goalieLeague = (() => {
+    const perCup = {};
 
-    const rawName = r[iGoalie];
-    if (!rawName) continue;
-    const name = rawName.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
+    for (let i = 1; i < mvRes.length; i++) {
+      const r = mvRes[i];
+      if (!r) continue;
 
-    const cupNumber = extractCupNumber(r[iCup]);
-    if (!cupNumber) continue;
+      const nameRaw = r[iGoalie];
+      if (!nameRaw) continue;
 
-    // Endast grundserie räknas
-    if (typeof r[iCup] === "string" && r[iCup].includes("Slutspel")) continue;
+      const name = nameRaw.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
+      const cup = extractCupNumber(r[iCup]);
+      if (!cup) continue;
 
-    const svRaw = (r[iSV] || "").trim();
-    if (!svRaw || svRaw === "-") continue;
+      // Bara gruppspel ska räknas
+      if (typeof r[iCup] === "string" && r[iCup].includes("Slutspel")) continue;
 
-    const svNum = Number(svRaw.replace(",", "."));
-    if (isNaN(svNum)) continue;
+      // Läs SV%
+      let svNum = null;
+      const rawSVpct = (r[iSVpct] || "").trim();
 
-    if (!goalieLeague[cupNumber]) goalieLeague[cupNumber] = [];
-    goalieLeague[cupNumber].push({
-      name,
-      sv: svNum,
-      gp: Number(r[iGP] || 0)
-    });
-  }
+      if (rawSVpct && rawSVpct !== "-") {
+        svNum = Number(rawSVpct.replace(",", "."));
+      } else {
+        // Fallback: räkna ut SV% manuellt
+        const saves = Number(r[iSV] || 0);
+        const ga    = Number(r[iGA] || 0);
 
-  // Sortera och märk topp 3
-  const goalieLeaders = {};
-  Object.keys(goalieLeague).forEach(cup => {
-    const arr = goalieLeague[cup];
+        if (saves + ga > 0) {
+          svNum = saves / (saves + ga);
+          svNum = Number(svNum.toFixed(3));
+        }
+      }
 
-    arr.sort((a, b) => {
-      if (b.sv !== a.sv) return b.sv - a.sv;
-      return b.gp - a.gp; // tiebreak: flest matcher
-    });
+      if (svNum === null || isNaN(svNum)) continue;
 
-    goalieLeaders[cup] = {};
-    arr.slice(0, 3).forEach((g, idx) => {
-      goalieLeaders[cup][g.name] = { place: idx + 1 };
-    });
-  });
+      if (!perCup[cup]) perCup[cup] = [];
+      perCup[cup].push({
+        name,
+        sv: svNum,
+        gp: Number(r[iGP] || 0)
+      });
+    }
 
-  /* =========================
-     Rendera målvakter i laget
-     ========================= */
+    // Sortera + plocka topp 3
+    const out = {};
+    for (const cup of Object.keys(perCup)) {
+      const list = perCup[cup];
+
+      list.sort((a, b) => {
+        if (b.sv !== a.sv) return b.sv - a.sv;
+        return b.gp - a.gp; // tiebreak
+      });
+
+      out[cup] = {};
+      list.slice(0, 3).forEach((g, index) => {
+        out[cup][g.name] = { place: index + 1 };
+      });
+    }
+
+    return out;
+  })();
+
+
+  /* ===============================
+      2. VISA MÅLVAKTER I LAGET
+     =============================== */
   const merged = {};
+
   for (let i = 1; i < mvRes.length; i++) {
     const r = mvRes[i];
     if (!r) continue;
@@ -1169,34 +1192,42 @@ async function loadRoster() {
     const code = r[iTeam];
     const fullTeam = TEAM_MAP[code] || code;
     const cup = extractCupNumber(r[iCup]);
+
     if (fullTeam !== teamParam) continue;
     if (cupParam && cup !== cupParam) continue;
 
-    const rawName = r[iGoalie];
-    if (!rawName) continue;
+    const nameRaw = r[iGoalie];
+    if (!nameRaw) continue;
 
-    const clean = rawName.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
-    if (!clean) continue;
+    const name = nameRaw.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
+    if (!name) continue;
 
-    if (!merged[clean]) {
-      merged[clean] = {
-        name: clean,
+    if (!merged[name]) {
+      merged[name] = {
+        name,
         gp: 0,
-        svGroup: null,
-        stages: new Set()
+        stages: new Set(),
+        sv: null
       };
     }
 
-    merged[clean].gp += Number(r[iGP] || 0);
-    const svValue = (r[iSV] || "").trim();
+    merged[name].gp += Number(r[iGP] || 0);
+    const rawSVpct = (r[iSVpct] || "").trim();
 
-    if (r[iCup].includes("Grupp") && svValue !== "-") {
-      merged[clean].svGroup = svValue;
-      merged[clean].stages.add("Grupp");
+    // SV% prioritet: direkt värde -> fallback
+    if (rawSVpct && rawSVpct !== "-") {
+      merged[name].sv = Number(rawSVpct.replace(",", ".")).toFixed(3);
+    } else {
+      const saves = Number(r[iSV] || 0);
+      const ga    = Number(r[iGA] || 0);
+
+      if (saves + ga > 0) {
+        merged[name].sv = (saves / (saves + ga)).toFixed(3);
+      }
     }
-    if (r[iCup].includes("Slutspel")) {
-      merged[clean].stages.add("Slutspel");
-    }
+
+    if (r[iCup].includes("Grupp"))    merged[name].stages.add("Grupp");
+    if (r[iCup].includes("Slutspel")) merged[name].stages.add("Slutspel");
   }
 
   const box = document.getElementById("goalieList");
@@ -1210,14 +1241,16 @@ async function loadRoster() {
   box.innerHTML = rows
     .map(g => {
       const photo = playerPhotos[g.name] || FALLBACK_PLAYER_IMG;
-      const displaySV = g.svGroup ?? "-";
       const stage = [...g.stages].join(" + ");
+      const sv = g.sv ?? "-";
 
-      // Medalj?
       let medalHtml = "";
-      if (cupParam && goalieLeaders[cupParam] && goalieLeaders[cupParam][g.name]) {
-        const place = goalieLeaders[cupParam][g.name].place;
-        const icon = place === 1 ? "🥇" : place === 2 ? "🥈" : "🥉";
+      if (cupParam && goalieLeague[cupParam] && goalieLeague[cupParam][g.name]) {
+        const place = goalieLeague[cupParam][g.name].place;
+        const icon =
+          place === 1 ? "🥇" :
+          place === 2 ? "🥈" :
+          place === 3 ? "🥉" : "";
 
         medalHtml = `
           <div class="roster-medal-text">
@@ -1237,13 +1270,14 @@ async function loadRoster() {
           ${medalHtml}
 
           <div class="roster-item-sub">
-            GP: ${g.gp} · SV%: ${displaySV} · ${stage}
+            GP: ${g.gp} · SV%: ${sv} · ${stage}
           </div>
         </div>
       `;
     })
     .join("");
 })();
+
 
 
 } catch (e) {
