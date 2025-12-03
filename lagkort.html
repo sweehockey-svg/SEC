@@ -1162,64 +1162,65 @@ async function loadRoster() {
     return;
   }
 
-  box.innerHTML = rows
-    .map(p => {
-      const photo = playerPhotos[p.name] || FALLBACK_PLAYER_IMG;
+box.innerHTML = rows
+  .map(p => {
+    const photo = playerPhotos[p.name] || FALLBACK_PLAYER_IMG;
 
-      // Medaljer G
-      const keyG = `${cupParam}_G`;
-      const medalG = scorerLeague[keyG]?.[p.name];
+    // Medaljer G
+    const keyG = `${cupParam}_G`;
+    const medalG = scorerLeague[keyG]?.[p.name];
 
-      // Medaljer S
-      const keyS = `${cupParam}_S`;
-      const medalS = scorerLeague[keyS]?.[p.name];
+    // Medaljer S
+    const keyS = `${cupParam}_S`;
+    const medalS = scorerLeague[keyS]?.[p.name];
 
-      const iconG = medalG
-        ? (medalG.place === 1 ? "🥇" :
-           medalG.place === 2 ? "🥈" :
-           "🥉")
-        : "";
+    const iconG = medalG
+      ? (medalG.place === 1 ? "🥇" :
+         medalG.place === 2 ? "🥈" :
+         "🥉")
+      : "";
 
-      const iconS = medalS
-        ? (medalS.place === 1 ? "🥇" :
-           medalS.place === 2 ? "🥈" :
-           "🥉")
-        : "";
+    const iconS = medalS
+      ? (medalS.place === 1 ? "🥇" :
+         medalS.place === 2 ? "🥈" :
+         "🥉")
+      : "";
 
-      let medalHtml = "";
-      if (medalG) {
-        medalHtml += `
-          <div class="roster-medal-text">
-            ${iconG} ${medalG.place}:a i poängligan (SEC ${cupParam} G)
-          </div>
-        `;
-      }
-      if (medalS) {
-        medalHtml += `
-          <div class="roster-medal-text">
-            ${iconS} ${medalS.place}:a i poängligan (SEC ${cupParam} S)
-          </div>
-        `;
-      }
-
-      return `
-        <div class="roster-card">
-          <a href="players?player=${encodeURIComponent(p.name)}"
-             style="text-decoration:none; color:inherit;">
-            <img src="${photo}" class="player-mini">
-            <div class="roster-item-main">${p.name}</div>
-          </a>
-
-          ${medalHtml}
-
-          <div class="roster-item-sub">
-            GP G: ${p.gpG} · G G: ${p.gG} · A G: ${p.aG} · PTS G: ${p.ptsG}<br>
-            GP S: ${p.gpS} · G S: ${p.gS} · A S: ${p.aS} · PTS S: ${p.ptsS}
-          </div>
+    let medalHtml = "";
+    if (medalG) {
+      medalHtml += `
+        <div class="roster-medal-text">
+          ${iconG} ${medalG.place}:a i poängligan (SEC ${cupParam} G)
         </div>
       `;
-    })
-    .join("");
+    }
+    if (medalS) {
+      medalHtml += `
+        <div class="roster-medal-text">
+          ${iconS} ${medalS.place}:a i poängligan (SEC ${cupParam} S)
+        </div>
+      `;
+    }
+
+    return `
+      <div class="roster-card">
+        <a href="players?player=${encodeURIComponent(p.name)}"
+           style="text-decoration:none; color:inherit;">
+          <img src="${photo}" class="player-mini">
+          <div class="roster-item-main">${p.name}</div>
+        </a>
+
+        ${medalHtml}
+
+        <div class="roster-item-sub">
+          Grupp GP: ${p.gpG} · G: ${p.gG} · A: ${p.aG} · PTS: ${p.ptsG}<br>
+          Slut GP: ${p.gpS} · G: ${p.gS} · A: ${p.aS} · PTS: ${p.ptsS}
+        </div>
+      </div>
+    `;
+  })
+  .join("");
+
 
 })();
 
