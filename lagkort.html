@@ -1101,7 +1101,7 @@ async function loadRoster() {
         .join("");
     })();
 
- /* ============ MÅLVAKTER MED MEDALJER ============ */
+/* ============ MÅLVAKTER MED MEDALJER (NY VERSION) ============ */
 (function () {
   const h = mvRes[0];
   const iGoalie = h.indexOf("GOALIES");
@@ -1110,72 +1110,72 @@ async function loadRoster() {
   const iSV     = h.indexOf("SV%");
   const iCup    = h.indexOf("CUP");
 
-  // =========================
-  //  Målvaktsliga per cup
-  // =========================
-  const goalieLeague = (() => {
-    if (!mvRes || mvRes.length < 2) return {};
-
-    const perCup = {};
-
-    for (let i = 1; i < mvRes.length; i++) {
-      const r = mvRes[i];
-      if (!r) continue;
-
-      const rawName = r[iGoalie];
-      if (!rawName) continue;
-
-      const name = rawName.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
-      const cup  = extractCupNumber(r[iCup]);
-      if (!cup) continue;
-
-      if (typeof r[iCup] === "string" && r[iCup].includes("Slutspel")) continue;
-
-      const svStr = (r[iSV] || "").trim();
-      if (!svStr || svStr === "-") continue;
-
-      const svNum = Number(svStr.replace(",", "."));
-      if (!perCup[cup]) perCup[cup] = [];
-
-      perCup[cup].push({
-        name,
-        sv: svNum,
-        gp: Number(r[iGP] || 0)
-      });
-    }
-
-    const out = {};
-
-    Object.keys(perCup).forEach(cup => {
-      const arr = perCup[cup];
-
-      arr.sort((a, b) => {
-        if (b.sv !== a.sv) return b.sv - a.sv;
-        return b.gp - a.gp;
-      });
-
-      out[cup] = {};
-      arr.slice(0, 3).forEach((g, idx) => {
-        out[cup][g.name] = { place: idx + 1 };
-      });
-    });
-
-    return out;
-  })();
-
-  const box = document.getElementById("goalieList");
-  const merged = {};
-
+  /* =========================
+     Bygg målvaktsliga per cup
+     ========================= */
+  const goalieLeague = {};
   for (let i = 1; i < mvRes.length; i++) {
     const r = mvRes[i];
     if (!r) continue;
 
-    const fullTeam = TEAM_MAP[r[iTeam]] || r[iTeam];
+    const rawName = r[iGoalie];
+    if (!rawName) continue;
+    const name = rawName.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
+
+    const cupNumber = extractCupNumber(r[iCup]);
+    if (!cupNumber) continue;
+
+    // Endast grundserie räknas
+    if (typeof r[iCup] === "string" && r[iCup].includes("Slutspel")) continue;
+
+    const svRaw = (r[iSV] || "").trim();
+    if (!svRaw || svRaw === "-") continue;
+
+    const svNum = Number(svRaw.replace(",", "."));
+    if (isNaN(svNum)) continue;
+
+    if (!goalieLeague[cupNumber]) goalieLeague[cupNumber] = [];
+    goalieLeague[cupNumber].push({
+      name,
+      sv: svNum,
+      gp: Number(r[iGP] || 0)
+    });
+  }
+
+  // Sortera och märk topp 3
+  const goalieLeaders = {};
+  Object.keys(goalieLeague).forEach(cup => {
+    const arr = goalieLeague[cup];
+
+    arr.sort((a, b) => {
+      if (b.sv !== a.sv) return b.sv - a.sv;
+      return b.gp - a.gp; // tiebreak: flest matcher
+    });
+
+    goalieLeaders[cup] = {};
+    arr.slice(0, 3).forEach((g, idx) => {
+      goalieLeaders[cup][g.name] = { place: idx + 1 };
+    });
+  });
+
+  /* =========================
+     Rendera målvakter i laget
+     ========================= */
+  const merged = {};
+  for (let i = 1; i < mvRes.length; i++) {
+    const r = mvRes[i];
+    if (!r) continue;
+
+    const code = r[iTeam];
+    const fullTeam = TEAM_MAP[code] || code;
     const cup = extractCupNumber(r[iCup]);
     if (fullTeam !== teamParam) continue;
     if (cupParam && cup !== cupParam) continue;
 
-    const clean = r[iGoalie].replace(/,\s*[A-Z]{2,3}$/i, "").trim();
+    const rawName = r[iGoalie];
+    if (!rawName) continue;
+
+    const clean = rawName.replace(/,\s*[A-Z]{2,3}$/i, "").trim();
     if (!clean) continue;
 
     if (!merged[clean]) {
@@ -1188,51 +1188,63 @@ async function loadRoster() {
     }
 
     merged[clean].gp += Number(r[iGP] || 0);
-    const sv = (r[iSV] || "").trim();
+    const svValue = (r[iSV] || "").trim();
 
-    if (r[iCup].includes("Grupp") && sv) merged[clean].svGroup = sv;
-    if (r[iCup].includes("Grupp")) merged[clean].stages.add("Grupp");
-    if (r[iCup].includes("Slutspel")) merged[clean].stages.add("Slutspel");
+    if (r[iCup].includes("Grupp") && svValue !== "-") {
+      merged[clean].svGroup = svValue;
+      merged[clean].stages.add("Grupp");
+    }
+    if (r[iCup].includes("Slutspel")) {
+      merged[clean].stages.add("Slutspel");
+    }
   }
 
+  const box = document.getElementById("goalieList");
   const rows = Object.values(merged);
+
   if (!rows.length) {
     box.innerHTML = '<div class="roster-item-main" style="opacity:.7;">Inga målvakter hittades.</div>';
     return;
   }
 
-  box.innerHTML = rows.map(g => {
-    const photo = playerPhotos[g.name] || FALLBACK_PLAYER_IMG;
-    const displaySV = g.svGroup ?? "-";
-    const stage = [...g.stages].join(" + ");
+  box.innerHTML = rows
+    .map(g => {
+      const photo = playerPhotos[g.name] || FALLBACK_PLAYER_IMG;
+      const displaySV = g.svGroup ?? "-";
+      const stage = [...g.stages].join(" + ");
 
-    let medalHtml = "";
-    if (cupParam && goalieLeague[cupParam] && goalieLeague[cupParam][g.name]) {
-      const place = goalieLeague[cupParam][g.name].place;
-      const icon = place === 1 ? "🥇" :
-                   place === 2 ? "🥈" :
-                   place === 3 ? "🥉" : "";
-      medalHtml = `
-        <div class="roster-medal-text">
-          ${icon} ${place}:a i målvaktsligan (SEC ${cupParam})
+      // Medalj?
+      let medalHtml = "";
+      if (cupParam && goalieLeaders[cupParam] && goalieLeaders[cupParam][g.name]) {
+        const place = goalieLeaders[cupParam][g.name].place;
+        const icon = place === 1 ? "🥇" : place === 2 ? "🥈" : "🥉";
+
+        medalHtml = `
+          <div class="roster-medal-text">
+            ${icon} ${place}:a i målvaktsligan (SEC ${cupParam})
+          </div>
+        `;
+      }
+
+      return `
+        <div class="roster-card">
+          <a href="players?player=${encodeURIComponent(g.name)}"
+             style="text-decoration:none; color:inherit;">
+            <img src="${photo}" class="player-mini">
+            <div class="roster-item-main">${g.name}</div>
+          </a>
+
+          ${medalHtml}
+
+          <div class="roster-item-sub">
+            GP: ${g.gp} · SV%: ${displaySV} · ${stage}
+          </div>
         </div>
       `;
-    }
-
-    return `
-      <div class="roster-card">
-        <a href="players?player=${encodeURIComponent(g.name)}" style="text-decoration:none; color:inherit;">
-          <img src="${photo}" class="player-mini">
-          <div class="roster-item-main">${g.name}</div>
-        </a>
-        ${medalHtml}
-        <div class="roster-item-sub">
-          GP: ${g.gp} · SV%: ${displaySV} · ${stage}
-        </div>
-      </div>
-    `;
-  }).join("");
+    })
+    .join("");
 })();
+
 
 } catch (e) {
   console.error("Roster-fel", e);
