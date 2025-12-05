@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -484,74 +483,6 @@ html, body {
   overflow-x: hidden;
   width: 100%;
   max-width: 100%;
-}
-.bracket-wrapper {
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px 16px;
-    box-sizing: border-box;
-}
-
-.bracket-box {
-    background: linear-gradient(180deg, #1a1a1a, #0f0f0f);
-    border: 2px solid rgba(255, 215, 0, 0.35);
-    border-radius: 18px;
-    padding: 25px 18px;
-    margin-bottom: 30px;
-    box-sizing: border-box;
-}
-
-.final-section {
-    margin-top: 40px;
-    text-align: center;
-}
-
-.final-match {
-    display: flex;
-    justify-content: space-between;
-    padding: 12px 0;
-    font-size: 1.15rem;
-}
-
-.champion-box {
-    margin-top: 40px;
-    background: #0d0d1a;
-    border: 2px solid rgba(255, 215, 0, 0.35);
-    border-radius: 18px;
-    padding: 25px 18px;
-    text-align: center;
-}
-
-.champion-logo {
-    width: 160px;
-    height: auto;
-    margin: 0 auto 12px auto;
-}
-.bracket {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 16px;
-  box-sizing: border-box;
-}
-
-.final-and-champion {
-  background: rgba(255, 215, 0, 0.12);
-  border: 2px solid rgba(255, 215, 0, 0.35);
-  border-radius: 16px;
-  padding: 20px;
-  margin-top: 20px;
-}
-
-.champion-box {
-  text-align: center;
-  margin-top: 25px;
-}
-
-.champion-box img {
-  width: 150px;
-  height: auto;
-  margin-bottom: 10px;
 }
 
 </style>
@@ -1235,91 +1166,91 @@ host.appendChild(wrapper);
       container.innerHTML = `<div style="color:#f66;padding:12px;">Fel vid hämtning av slutspelsdata: ${err}</div>`;
     });
 
-function renderPlayoffBracket(rows) {
-  if (!rows || !rows.length) {
-    container.innerHTML = "<div style='color:#ccc;padding:12px;'>Ingen slutspelsdata hittades.</div>";
-    return;
-  }
+  function renderPlayoffBracket(rows) {
+    if (!rows || !rows.length) {
+      container.innerHTML = "<div style='color:#ccc;padding:12px;'>Ingen slutspelsdata hittades.</div>";
+      return;
+    }
 
-  const groupedByRound = {};
-  rows.forEach(m => {
-    if (!groupedByRound[m.round]) groupedByRound[m.round] = [];
-    groupedByRound[m.round].push(m);
-  });
-
-  let champion = "";
-
-  function calculateSeries(matches) {
-    const scoreMap = {};
-    matches.forEach(m => {
-      if (!scoreMap[m.home_team]) scoreMap[m.home_team] = 0;
-      if (!scoreMap[m.away_team]) scoreMap[m.away_team] = 0;
-      if (m.home_score > m.away_score) scoreMap[m.home_team]++;
-      else scoreMap[m.away_team]++;
+    const groupedByRound = {};
+    rows.forEach(m => {
+      if (!groupedByRound[m.round]) groupedByRound[m.round] = [];
+      groupedByRound[m.round].push(m);
     });
 
-    const teams = Object.keys(scoreMap);
-    return {
-      teamA: teams[0],
-      teamB: teams[1],
-      winsA: scoreMap[teams[0]],
-      winsB: scoreMap[teams[1]],
-      winner: scoreMap[teams[0]] > scoreMap[teams[1]] ? teams[0] : teams[1]
-    };
-  }
+    let html = "";
+    let champion = "";
 
-  // Semifinaler
-  const semiSeries = {};
-  (groupedByRound["ROUND 1 - SEMIFINAL"] || []).forEach(m => {
-    const key = [m.home_team, m.away_team].sort().join("_");
-    (semiSeries[key] = semiSeries[key] || []).push(m);
-  });
+    // --- Funktion för att räkna matchserie ---
+    function calculateSeries(matches) {
+      const scoreMap = {};
+      matches.forEach(m => {
+        if (!scoreMap[m.home_team]) scoreMap[m.home_team] = 0;
+        if (!scoreMap[m.away_team]) scoreMap[m.away_team] = 0;
 
-  const semiHTML = Object.values(semiSeries)
-    .map(series => {
+        if (m.home_score > m.away_score) scoreMap[m.home_team]++;
+        else if (m.away_score > m.home_score) scoreMap[m.away_team]++;
+      });
+
+      const teams = Object.keys(scoreMap);
+      return {
+        teamA: teams[0],
+        teamB: teams[1],
+        winsA: scoreMap[teams[0]],
+        winsB: scoreMap[teams[1]],
+        winner: scoreMap[teams[0]] > scoreMap[teams[1]] ? teams[0] : teams[1]
+      };
+    }
+
+    // --- Semifinaler ---
+    const semis = groupedByRound["ROUND 1 - SEMIFINAL"] || [];
+    const seriesMap = {};
+    semis.forEach(m => {
+      const key = [m.home_team, m.away_team].sort().join("_");
+      if (!seriesMap[key]) seriesMap[key] = [];
+      seriesMap[key].push(m);
+    });
+
+    const semiResults = Object.values(seriesMap).map(series => calculateSeries(series));
+    const semiHTML = semiResults.map(s => playoffCard(s.teamA, s.teamB, s.winsA, s.winsB)).join("");
+
+    // --- Final ---
+    const finals = groupedByRound["ROUND 2 - FINAL"] || [];
+    const finalMap = {};
+    finals.forEach(m => {
+      const key = [m.home_team, m.away_team].sort().join("_");
+      if (!finalMap[key]) finalMap[key] = [];
+      finalMap[key].push(m);
+    });
+
+    let finalHTML = "";
+    Object.values(finalMap).forEach(series => {
       const s = calculateSeries(series);
-      return playoffCard(s.teamA, s.teamB, s.winsA, s.winsB);
-    })
-    .join("");
+      champion = s.winner;
+      finalHTML = playoffCard(s.teamA, s.teamB, s.winsA, s.winsB);
+    });
 
-  // Final
-  const finalSeries = {};
-  (groupedByRound["ROUND 2 - FINAL"] || []).forEach(m => {
-    const key = [m.home_team, m.away_team].sort().join("_");
-    (finalSeries[key] = finalSeries[key] || []).push(m);
-  });
+    html += `
+      <div class="bracket">
+        <div class="semifinals">
+          <h3>🏒 Semifinaler</h3>
+          <div class="semi-pair">${semiHTML}</div>
+        </div>
 
-  let finalHTML = "";
-  Object.values(finalSeries).forEach(series => {
-    const s = calculateSeries(series);
-    champion = s.winner;
-    finalHTML = playoffCard(s.teamA, s.teamB, s.winsA, s.winsB);
-  });
+        <div class="final-section">
+          <h3>🥇 Final</h3>
+          <div class="final">${finalHTML}</div>
+        </div>
 
-  // NY ren layout
-  const html = `
-    <div class="slutspel-wrapper">
+   <div class="champion-box">
+  <img src="${logos[champion] || ''}" alt="${champion}">
+  🏆 <strong>Mästare: ${champion}</strong>
+</div>
 
-      <h3 class="section-title">🏒 Semifinaler</h3>
-      <div class="semi-grid">${semiHTML}</div>
+    `;
 
-      <div class="gold-divider"></div>
-
-      <h3 class="section-title">🥇 Final</h3>
-      <div class="final-box">${finalHTML}</div>
-
-      <div class="champion-clean">
-        <img src="${logos[champion] || ''}">
-        🏆 <strong>${champion}</strong>
-      </div>
-
-    </div>
-  `;
-
-  container.innerHTML = html;
-}
-
-
+    container.innerHTML = html;
+  }
 
   // --- Kortdesign ---
 function playoffCard(teamA, teamB, winsA, winsB) {
@@ -1352,80 +1283,164 @@ function playoffCard(teamA, teamB, winsA, winsB) {
 
 })();
 </script>
+
 <style>
-.slutspel-wrapper {
+#playoff-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 36px;
-  width: 100%;
-  max-width: 850px;
-  margin: auto;
+  gap: 40px;
 }
 
-.section-title {
-  font-size: 1.7rem;
+/* --- Layout --- */
+.bracket {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 60px;
+}
+
+.semi-pair {
+  display: flex;
+  gap: 100px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.final-section {
   text-align: center;
-  color: #f6d776;
-  font-weight: 600;
-}
-
-.semi-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
   width: 100%;
 }
 
-.final-box {
+.final {
   display: flex;
   justify-content: center;
-  width: 100%;
+  margin-top: 20px;
 }
 
+/* --- Kortdesign --- */
 .series-card {
-  background: rgba(255,215,0,0.06);
+  background: linear-gradient(145deg, rgba(255,215,0,0.06), rgba(255,215,0,0.1));
   border: 1px solid rgba(255,215,0,0.25);
-  border-radius: 14px;
-  padding: 18px 22px;
-  min-width: 240px;
+  border-radius: 18px;
+  padding: 22px 28px;
   text-align: center;
-  color: white;
+  min-width: 320px;
+  color: #fff;
+  box-shadow: 0 0 18px rgba(255, 215, 0, 0.12);
+  transition: transform 0.25s, box-shadow 0.25s;
+  position: relative;
+}
+.series-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 22px rgba(255, 215, 0, 0.3);
+}
+.series-card img {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+.series-card .team-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.series-card .score {
+  font-weight: bold;
+  font-size: 1.5em;
+  margin: 12px 0;
+  color: #e5c56a;
 }
 
-.champion-clean {
-  background: rgba(20,20,40,0.9);
-  border: 1px solid rgba(255,215,0,0.3);
-  border-radius: 14px;
-  padding: 22px 25px;
-  text-align: center;
+/* --- Finalkort --- */
+.final .series-card {
+  width: 80%;
+  max-width: 650px;
+  padding: 30px 40px;
+  border: 1px solid rgba(255,215,0,0.35);
+  background: linear-gradient(160deg, rgba(255,215,0,0.1), rgba(255,215,0,0.18));
+  box-shadow: 0 0 28px rgba(255,215,0,0.25);
+}
+.final .series-card .score {
+  font-size: 1.8em;
+}
+
+/* --- Winner box --- */
+.champion-box {
+  background: linear-gradient(145deg, #0b0f2b, #11153d);
   color: #f6d776;
-  font-size: 1.4rem;
+  border: 1px solid rgba(255,215,0,0.4);
+  border-radius: 18px;
+  padding: 28px 40px;
+  font-size: 1.4em;
   font-weight: 700;
+  text-align: center;
+  box-shadow: 0 0 35px rgba(255,215,0,0.4);
+  width: 60%;
+  min-width: 340px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
 }
-
-.champion-clean img {
-  width: 70px;
-  height: 70px;
+.champion-box img {
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
   object-fit: contain;
   filter: drop-shadow(0 0 6px rgba(255,215,0,0.4));
 }
 
-.gold-divider {
-  height: 2px;
-  background: linear-gradient(to right, transparent, rgba(255,215,0,0.4), transparent);
-  width: 60%;
-  margin: 0 auto;
+/* --- Guldlinjer mellan sektioner --- */
+.final-section::before {
+  content: "";
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  width: 2px;
+  height: 40px;
+  background: rgba(255,215,0,0.3);
+  transform: translateX(-50%);
+}
+.final-section,
+.semi-pair {
+  position: relative;
 }
 
-@media(max-width: 700px) {
-  .semi-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
+/* --- Mobilanpassning --- */
+@media (max-width: 800px) {
+  .semi-pair {
+    flex-direction: column;
+    gap: 40px;
+    align-items: center;
   }
-  .champion-clean {
-    width: 90%;
+  .series-card {
+    min-width: 90%;
   }
+  .final .series-card {
+    width: 95%;
+  }
+  .champion-box {
+    flex-direction: column;
+    width: 85%;
+    gap: 10px;
+    font-size: 1.2em;
+    padding: 20px 24px;
+  }
+  .champion-box img {
+    width:70px;
+    height:70px;
+  }
+}  /* 👈  STÄNG media-blocket här! */
+
+/* === Tabs fix === */
+.tab-panel {
+  display: none;
+}
+.tab-panel.active {
+  display: block;
 }
 </style>
 </div> <!-- 👈 Stänger bara slutspelssektionen här -->
@@ -1604,15 +1619,14 @@ function playoffCard(teamA, teamB, winsA, winsB) {
   letter-spacing: 0.5px;
   text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
 }
-.teams {
+..teams {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: center; /* centrera allt horisontellt */
   gap: 12px;
   flex-wrap: wrap;
   position: relative;
 }
-
 
 /* Lagen ligger på vardera sida om resultatet */
 .team {
@@ -2619,12 +2633,6 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
-
-
-
-
-
-
 
 
 
