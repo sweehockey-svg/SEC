@@ -609,6 +609,55 @@ html, body {
         width: 70% !important;
     }
 }
+/* === FULLBREDDAD TABELL PÅ MOBIL — OVERRIDES === */
+@media (max-width: 800px) {
+
+  /* Ta bort max-width och padding från panelen */
+  .tab-panel {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  /* Behållaren runt tabellen ska inte ha padding/marginal */
+  .responsive-table,
+  .stats-table-wrapper,
+  #utespelar-container,
+  #malvakt-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Tabellen ska fylla skärmen */
+  table {
+    width: 100% !important;
+    min-width: unset !important;
+    table-layout: fixed !important;
+  }
+
+  /* Kolumn 1 hålls kompakt (placering) */
+  table th:nth-child(1),
+  table td:nth-child(1) {
+    width: 45px !important;
+    text-align: center !important;
+  }
+
+  /* Spelarnamns-kolumnen får all plats */
+  table th:nth-child(2),
+  table td:nth-child(2) {
+    width: auto !important;
+    max-width: none !important;
+    white-space: normal !important;
+  }
+
+  /* Övrig cellstil */
+  table th, table td {
+    padding: 12px 10px !important;
+    font-size: 1rem !important;
+  }
+}
 
 </style>
 </head>
@@ -2692,6 +2741,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
