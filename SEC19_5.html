@@ -574,6 +574,35 @@ html, body {
         padding: 12px 10px;
     }
 }
+/* 📱 FIXAR MOBIL-BREDD FÖR SPELARTABELLER */
+@media (max-width: 700px) {
+
+  /* Gör hela wrappern fullbredd */
+  #statistik .wrap {
+    width: 100% !important;
+    min-width: 100% !important;
+    overflow-x: auto;
+  }
+
+  /* Gör tabellen större så allting får plats utan att tryckas ihop */
+  #statistik table {
+    min-width: 900px !important; /* prova 850–1000 om du vill ha större */
+  }
+
+  /* Låt celler krympa utan att trycka ihop varandra */
+  #statistik td,
+  #statistik th {
+    white-space: nowrap;
+  }
+
+  /* Spelarnamn får egen maxbredd för att inte pressa kolumner */
+  #statistik td[data-label="PLAYERS"],
+  #statistik td[data-label="GOALIES"] {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
 
 </style>
 </head>
@@ -2657,6 +2686,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
