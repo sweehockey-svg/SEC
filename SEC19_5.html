@@ -484,6 +484,49 @@ html, body {
   width: 100%;
   max-width: 100%;
 }
+.bracket-wrapper {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px 16px;
+    box-sizing: border-box;
+}
+
+.bracket-box {
+    background: linear-gradient(180deg, #1a1a1a, #0f0f0f);
+    border: 2px solid rgba(255, 215, 0, 0.35);
+    border-radius: 18px;
+    padding: 25px 18px;
+    margin-bottom: 30px;
+    box-sizing: border-box;
+}
+
+.final-section {
+    margin-top: 40px;
+    text-align: center;
+}
+
+.final-match {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    font-size: 1.15rem;
+}
+
+.champion-box {
+    margin-top: 40px;
+    background: #0d0d1a;
+    border: 2px solid rgba(255, 215, 0, 0.35);
+    border-radius: 18px;
+    padding: 25px 18px;
+    text-align: center;
+}
+
+.champion-logo {
+    width: 160px;
+    height: auto;
+    margin: 0 auto 12px auto;
+}
 
 </style>
 </head>
@@ -1231,23 +1274,33 @@ host.appendChild(wrapper);
     });
 
     html += `
-      <div class="bracket">
-        <div class="semifinals">
-          <h3>🏒 Semifinaler</h3>
-          <div class="semi-pair">${semiHTML}</div>
+     html += `
+  <div class="bracket">
+
+    <div class="semifinals">
+      <h3>🏒 Semifinaler</h3>
+      <div class="semi-pair">${semiHTML}</div>
+    </div>
+
+    <div class="final-and-champion">
+
+      <div class="final-section">
+        <h3>🥇 Final</h3>
+        <div class="final">${finalHTML}</div>
+      </div>
+
+      <div class="champion-box">
+        <img src="${logos[champion] || ''}" alt="${champion}">
+        <div class="champion-title">
+          🏆 <strong>Mästare: ${champion}</strong>
         </div>
+      </div>
 
-        <div class="final-section">
-          <h3>🥇 Final</h3>
-          <div class="final">${finalHTML}</div>
-        </div>
+    </div>
 
-   <div class="champion-box">
-  <img src="${logos[champion] || ''}" alt="${champion}">
-  🏆 <strong>Mästare: ${champion}</strong>
-</div>
+  </div>
+`;
 
-    `;
 
     container.innerHTML = html;
   }
@@ -2634,6 +2687,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
