@@ -1234,101 +1234,105 @@ host.appendChild(wrapper);
       container.innerHTML = `<div style="color:#f66;padding:12px;">Fel vid hämtning av slutspelsdata: ${err}</div>`;
     });
 
-  function renderPlayoffBracket(rows) {
-    if (!rows || !rows.length) {
-      container.innerHTML = "<div style='color:#ccc;padding:12px;'>Ingen slutspelsdata hittades.</div>";
-      return;
-    }
-
-    const groupedByRound = {};
-    rows.forEach(m => {
-      if (!groupedByRound[m.round]) groupedByRound[m.round] = [];
-      groupedByRound[m.round].push(m);
-    });
-
-    let html = "";
-    let champion = "";
-
-    // --- Funktion för att räkna matchserie ---
-    function calculateSeries(matches) {
-      const scoreMap = {};
-      matches.forEach(m => {
-        if (!scoreMap[m.home_team]) scoreMap[m.home_team] = 0;
-        if (!scoreMap[m.away_team]) scoreMap[m.away_team] = 0;
-
-        if (m.home_score > m.away_score) scoreMap[m.home_team]++;
-        else if (m.away_score > m.home_score) scoreMap[m.away_team]++;
-      });
-
-      const teams = Object.keys(scoreMap);
-      return {
-        teamA: teams[0],
-        teamB: teams[1],
-        winsA: scoreMap[teams[0]],
-        winsB: scoreMap[teams[1]],
-        winner: scoreMap[teams[0]] > scoreMap[teams[1]] ? teams[0] : teams[1]
-      };
-    }
-
-    // --- Semifinaler ---
-    const semis = groupedByRound["ROUND 1 - SEMIFINAL"] || [];
-    const seriesMap = {};
-    semis.forEach(m => {
-      const key = [m.home_team, m.away_team].sort().join("_");
-      if (!seriesMap[key]) seriesMap[key] = [];
-      seriesMap[key].push(m);
-    });
-
-    const semiResults = Object.values(seriesMap).map(series => calculateSeries(series));
-    const semiHTML = semiResults.map(s => playoffCard(s.teamA, s.teamB, s.winsA, s.winsB)).join("");
-
-    // --- Final ---
-    const finals = groupedByRound["ROUND 2 - FINAL"] || [];
-    const finalMap = {};
-    finals.forEach(m => {
-      const key = [m.home_team, m.away_team].sort().join("_");
-      if (!finalMap[key]) finalMap[key] = [];
-      finalMap[key].push(m);
-    });
-
-    let finalHTML = "";
-    Object.values(finalMap).forEach(series => {
-      const s = calculateSeries(series);
-      champion = s.winner;
-      finalHTML = playoffCard(s.teamA, s.teamB, s.winsA, s.winsB);
-    });
-
-    html += `
-     html += `
-  <div class="bracket">
-
-    <div class="semifinals">
-      <h3>🏒 Semifinaler</h3>
-      <div class="semi-pair">${semiHTML}</div>
-    </div>
-
-    <div class="final-and-champion">
-
-      <div class="final-section">
-        <h3>🥇 Final</h3>
-        <div class="final">${finalHTML}</div>
-      </div>
-
-      <div class="champion-box">
-        <img src="${logos[champion] || ''}" alt="${champion}">
-        <div class="champion-title">
-          🏆 <strong>Mästare: ${champion}</strong>
-        </div>
-      </div>
-
-    </div>
-
-  </div>
-`;
-
-
-    container.innerHTML = html;
+ function renderPlayoffBracket(rows) {
+  if (!rows || !rows.length) {
+    container.innerHTML = "<div style='color:#ccc;padding:12px;'>Ingen slutspelsdata hittades.</div>";
+    return;
   }
+
+  const groupedByRound = {};
+  rows.forEach(m => {
+    if (!groupedByRound[m.round]) groupedByRound[m.round] = [];
+    groupedByRound[m.round].push(m);
+  });
+
+  let champion = "";
+
+  // --- Beräkna matchserier ---
+  function calculateSeries(matches) {
+    const scoreMap = {};
+    matches.forEach(m => {
+      if (!scoreMap[m.home_team]) scoreMap[m.home_team] = 0;
+      if (!scoreMap[m.away_team]) scoreMap[m.away_team] = 0;
+
+      if (m.home_score > m.away_score) scoreMap[m.home_team]++;
+      else if (m.away_score > m.home_score) scoreMap[m.away_team]++;
+    });
+
+    const teams = Object.keys(scoreMap);
+    return {
+      teamA: teams[0],
+      teamB: teams[1],
+      winsA: scoreMap[teams[0]],
+      winsB: scoreMap[teams[1]],
+      winner: scoreMap[teams[0]] > scoreMap[teams[1]] ? teams[0] : teams[1]
+    };
+  }
+
+  // --- SEMIFINALER ---
+  const semiRaw = groupedByRound["ROUND 1 - SEMIFINAL"] || [];
+  const semiSeries = {};
+
+  semiRaw.forEach(m => {
+    const key = [m.home_team, m.away_team].sort().join("_");
+    if (!semiSeries[key]) semiSeries[key] = [];
+    semiSeries[key].push(m);
+  });
+
+  const semiHTML = Object.values(semiSeries)
+    .map(series => {
+      const s = calculateSeries(series);
+      return playoffCard(s.teamA, s.teamB, s.winsA, s.winsB);
+    })
+    .join("");
+
+  // --- FINAL ---
+  const finalRaw = groupedByRound["ROUND 2 - FINAL"] || [];
+  const finalSeries = {};
+
+  finalRaw.forEach(m => {
+    const key = [m.home_team, m.away_team].sort().join("_");
+    if (!finalSeries[key]) finalSeries[key] = [];
+    finalSeries[key].push(m);
+  });
+
+  let finalHTML = "";
+
+  Object.values(finalSeries).forEach(series => {
+    const s = calculateSeries(series);
+    champion = s.winner;
+    finalHTML = playoffCard(s.teamA, s.teamB, s.winsA, s.winsB);
+  });
+
+  // --- BRACKET HTML ---
+  const html = `
+    <div class="bracket">
+
+      <div class="semifinals">
+        <h3>🏒 Semifinaler</h3>
+        <div class="semi-pair">${semiHTML}</div>
+      </div>
+
+      <div class="final-and-champion">
+
+        <div class="final-section">
+          <h3>🥇 Final</h3>
+          <div class="final">${finalHTML}</div>
+        </div>
+
+        <div class="champion-box">
+          <img src="${logos[champion] || ''}" alt="${champion}">
+          <div class="champion-title">🏆 <strong>Mästare: ${champion}</strong></div>
+        </div>
+
+      </div>
+
+    </div>
+  `;
+
+  container.innerHTML = html;
+}
+
 
   // --- Kortdesign ---
 function playoffCard(teamA, teamB, winsA, winsB) {
@@ -2712,6 +2716,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
