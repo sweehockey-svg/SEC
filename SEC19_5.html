@@ -552,6 +552,28 @@ html, body {
   height: auto;
   margin-bottom: 10px;
 }
+/* Gör alla tabeller fullbredd och mobilvänliga */
+.responsive-table {
+    width: 100%;
+    overflow-x: auto;
+    display: block;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Förhindrar ihoptryckta kolumner */
+.responsive-table table {
+    width: 100%;
+    min-width: 650px; /* eller 750–900 om du vill ha större kolumner */
+    border-collapse: collapse;
+}
+
+/* Lite extra snygg padding på mobil */
+@media (max-width: 700px) {
+    .responsive-table table th,
+    .responsive-table table td {
+        padding: 12px 10px;
+    }
+}
 
 </style>
 </head>
@@ -2635,6 +2657,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
