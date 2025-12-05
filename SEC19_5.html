@@ -603,6 +603,34 @@ html, body {
     text-overflow: ellipsis;
   }
 }
+/* MOBIL – utnyttja hela bredden */
+@media (max-width: 800px) {
+
+  .stats-table-wrapper,
+  .responsive-table,
+  table {
+    width: 100% !important;
+    margin: 0;
+  }
+
+  table th, table td {
+    padding: 16px 14px !important;   /* större celler */
+    font-size: 1.1rem;
+  }
+
+  /* Spelarnamns-kolumnen får mer plats */
+  table td:nth-child(2),
+  table th:nth-child(2) {
+    width: 70% !important;
+  }
+
+  /* Rankkolumn smal */
+  table td:nth-child(1),
+  table th:nth-child(1) {
+    width: 10% !important;
+    text-align: center;
+  }
+}
 
 </style>
 </head>
@@ -2686,6 +2714,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
