@@ -2244,55 +2244,40 @@ if (cupFilter) {
     });
 }
 
-/* ============================
-   Gruppspel
-============================ */
-
-/* Utespelare */
+/* Gruppspel */
 renderTable(
-  "group-player-stats",
-  "searchGroupSkaters",
-  "updated-group-skaters",
-  "utestatsall",
-  null, // ingen CUP-filter här – vi filtrerar manuellt
-  (a, b) => (+b.PTS || 0) - (+a.PTS || 0),
-  "SEC 19.5 G" // läggs till nedan som extra filter
+  'group-player-stats',
+  'searchGroupSkaters',
+  'updated-group-skaters',
+  'utestatsall',
+  (a,b)=>(+b.pts||0)-(+a.pts||0)||(+b.g||0)-(+a.g||0)
 );
 
-/* Målvakter */
 renderTable(
-  "group-goalie-stats",
-  "searchGroupGoalies",
-  "updated-group-goalies",
-  "målvaktsstatsall",
-  null,
-  (a, b) => (parseFloat(b.SVP) || 0) - (parseFloat(a.SVP) || 0),
-  "SEC 19.5 G"
+  'group-goalie-stats',
+  'searchGroupGoalies',
+  'updated-group-goalies',
+  'målvaktsstatsall',
+  (a,b)=>(parseFloat(b['SVP']||0)||0)-(parseFloat(a['SVP']||0)||0)
 );
 
-/* ============================
-   Slutspel
-============================ */
-
-/* Utespelare */
+/* Slutspel */
 renderTable(
-  "playoff-player-stats",
-  "searchPlayoffSkaters",
-  "updated-playoff-skaters",
-  "Spelarstats slut 19.5",
-  null, // denna sheet innehåller bara slutspel – ingen filtrering behövs
-  (a, b) => (+b.PTS || 0) - (+a.PTS || 0)
+  'playoff-player-stats',
+  'searchPlayoffSkaters',
+  'updated-playoff-skaters',
+  'utestatsall',
+  (a,b)=>(+b.pts||0)-(+a.pts||0)||(+b.g||0)-(+a.g||0)
 );
 
-/* Målvakter */
 renderTable(
-  "playoff-goalie-stats",
-  "searchPlayoffGoalies",
-  "updated-playoff-goalies",
-  "Målvaktsstats slut 19.5",
-  null,
-  (a, b) => (parseFloat(b.SVP) || 0) - (parseFloat(a.SVP) || 0)
+  'playoff-goalie-stats',
+  'searchPlayoffGoalies',
+  'updated-playoff-goalies',
+  'målvaktsstatsall',
+  (a,b)=>(parseFloat(b['SVP']||0)||0)-(parseFloat(a['SVP']||0)||0)
 );
+
 
 </script>
 
@@ -2791,6 +2776,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
