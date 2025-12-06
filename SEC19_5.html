@@ -2154,86 +2154,72 @@ function renderTable(hostId, searchId, updatedId, sheetName, cupFilter, sortFunc
 
   fetch(`${API_BASE}?sheet=${encodeURIComponent(sheetName)}&_t=${Date.now()}`)
     .then(r => r.json())
-    .then(rows => {
-if (cupFilter) {
-  rows = rows.filter(r => (r.CUP || "").trim() === cupFilter);
-}
+    .then(data => {
 
-      if (!rows || !rows.length) {
-        host.textContent = "Ingen data i sheetet.";
+      console.log("API RAW:", data);
+
+      // 🟡 Gör rows till en array oavsett format
+      let rows = Array.isArray(data)
+        ? data
+        : data.result || data.rows || data.data || [];
+
+      // 🔴 Om fortfarande ingen array → avbryt
+      if (!Array.isArray(rows)) {
+        console.error("API returnerade ingen array:", rows);
+        host.textContent = "Fel: ogiltigt datasvar.";
         return;
       }
 
-      // 🔥 FILTRERA PÅ CUP-KOLUMNEN
-      rows = rows.filter(r => (r.CUP || "").trim() === cupFilter);
+      // 🟡 Filtrera på CUP om cupFilter finns
+      if (cupFilter) {
+        rows = rows.filter(r => (r.CUP || "").trim() === cupFilter);
+      }
 
       if (!rows.length) {
         host.textContent = "Ingen data för vald fas.";
         return;
       }
 
+      // ⭐ Sortering
       if (sortFunc) rows.sort(sortFunc);
 
+      // ⭐ Bygg tabell
       const headers = Object.keys(rows[0]);
       const table = document.createElement("table");
 
-      // HEADER
-      table.innerHTML = `
-      <thead>
-        <tr>
-          <th>#</th>
-          ${headers.map(h => `<th>${h.toUpperCase()}</th>`).join("")}
-        </tr>
-      </thead>`;
+      const thead = document.createElement("thead");
+      const hr = document.createElement("tr");
+      hr.innerHTML = `<th>#</th>` + headers.map(h => `<th>${h.toUpperCase()}</th>`).join("");
+      thead.appendChild(hr);
+      table.appendChild(thead);
 
-      // BODY
       const tbody = document.createElement("tbody");
 
       rows.forEach((r, i) => {
         const tr = document.createElement("tr");
-
         tr.innerHTML =
           `<td>${i + 1}</td>` +
-          headers.map(k => {
-            let v = r[k] || "";
-
-            // Spelarnamn + flagga
-            if (/players|goalies/i.test(k)) {
-              const info = flagify(v);
-              const raw = info.text;
-              v = `${info.flag ? info.flag + " " : ""}<a 
-                     href="players/?player=${encodeURIComponent(raw)}"
-                     style="color:#ffd35c; font-weight:600; text-decoration:none;">
-                     ${raw}</a>`;
-            }
-
-            // Lag + länk
-            if (k.toLowerCase() === "team") {
-              const teamDisplay = mapTeam(v);
-              v = `<a href="lagkort.html?team=${encodeURIComponent(teamDisplay)}&cup=19.5"
-                     style="color:#ffd35c; font-weight:600; text-decoration:none;">
-                     ${teamDisplay}</a>`;
-            }
-
-            return `<td data-label="${k.toUpperCase()}">${v}</td>`;
-          }).join("");
-
+          headers.map(k => `<td data-label="${k.toUpperCase()}">${r[k] || ""}</td>`).join("");
         tbody.appendChild(tr);
       });
 
       table.appendChild(tbody);
+
       host.innerHTML = "";
-      host.appendChild(table);
+      const wrap = document.createElement("div");
+      wrap.className = "wrap";
+      wrap.appendChild(table);
+      host.appendChild(wrap);
 
       updated.textContent = "Senast uppdaterad: " + new Date().toLocaleString("sv-SE");
 
-      // Sökfunktion
+      // 🔍 Sökfunktion
       search.addEventListener("input", () => {
-        const term = search.value.toLowerCase();
-        [...tbody.rows].forEach(row => {
-          row.style.display = [...row.cells].some(td =>
-            td.textContent.toLowerCase().includes(term)
-          ) ? "" : "none";
+        [...tbody.rows].forEach(tr => {
+          const match = [...tr.cells].some(td =>
+            td.textContent.toLowerCase().includes(search.value.toLowerCase())
+          );
+          tr.style.display = match ? "" : "none";
         });
       });
 
@@ -2243,6 +2229,7 @@ if (cupFilter) {
       console.error(err);
     });
 }
+
 
 /* Gruppspel */
 renderTable(
@@ -2776,6 +2763,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
