@@ -1973,6 +1973,32 @@ function playoffCard(teamA, teamB, winsA, winsB) {
 .stat-section.active { display: block; }
 .stat-subsection { display: none; }
 .stat-subsection.active { display: block; }
+  @media (max-width: 768px) {
+  #statistik {
+    max-width: 100% !important;
+    padding: 20px 0px; /* mindre marginaler */
+  }
+}
+@media (max-width: 768px) {
+  #statistik .wrap {
+    width: 100%;
+    border-radius: 0; /* tar bort rundade hörn för full-width-look */
+    border-left: none;
+    border-right: none;
+  }
+
+  #statistik table {
+    width: 100%;
+    min-width: 0 !important; /* låter den skalas ned helt */
+  }
+
+  #statistik thead th,
+  #statistik tbody td {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
 </style>
 
 <!-- 🔹 SCRIPT -->
@@ -2630,6 +2656,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
