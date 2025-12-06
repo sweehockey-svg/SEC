@@ -2155,6 +2155,9 @@ function renderTable(hostId, searchId, updatedId, sheetName, cupFilter, sortFunc
   fetch(`${API_BASE}?sheet=${encodeURIComponent(sheetName)}&_t=${Date.now()}`)
     .then(r => r.json())
     .then(rows => {
+if (cupFilter) {
+  rows = rows.filter(r => (r.CUP || "").trim() === cupFilter);
+}
 
       if (!rows || !rows.length) {
         host.textContent = "Ingen data i sheetet.";
@@ -2241,67 +2244,56 @@ function renderTable(hostId, searchId, updatedId, sheetName, cupFilter, sortFunc
     });
 }
 
-/* ============
-   HÄMTNINGAR
-   ============ */
+/* ============================
+   Gruppspel
+============================ */
 
-/* Gruppspel */
+/* Utespelare */
 renderTable(
   "group-player-stats",
   "searchGroupSkaters",
   "updated-group-skaters",
   "utestatsall",
-  "SEC 19.5 G",
-  (a, b) => (+b.PTS||0) - (+a.PTS||0)
+  null, // ingen CUP-filter här – vi filtrerar manuellt
+  (a, b) => (+b.PTS || 0) - (+a.PTS || 0),
+  "SEC 19.5 G" // läggs till nedan som extra filter
 );
 
+/* Målvakter */
 renderTable(
   "group-goalie-stats",
   "searchGroupGoalies",
   "updated-group-goalies",
   "målvaktsstatsall",
-  "SEC 19.5 G",
-  (a, b) => (parseFloat(b.SVP)||0) - (parseFloat(a.SVP)||0)
+  null,
+  (a, b) => (parseFloat(b.SVP) || 0) - (parseFloat(a.SVP) || 0),
+  "SEC 19.5 G"
 );
 
-/* Slutspel */
+/* ============================
+   Slutspel
+============================ */
+
+/* Utespelare */
 renderTable(
   "playoff-player-stats",
   "searchPlayoffSkaters",
   "updated-playoff-skaters",
-  "utestatsall",
-  "SEC 19.5 S",
-  (a, b) => (+b.PTS||0) - (+a.PTS||0)
+  "Spelarstats slut 19.5",
+  null, // denna sheet innehåller bara slutspel – ingen filtrering behövs
+  (a, b) => (+b.PTS || 0) - (+a.PTS || 0)
 );
 
+/* Målvakter */
 renderTable(
   "playoff-goalie-stats",
   "searchPlayoffGoalies",
   "updated-playoff-goalies",
-  "målvaktsstatsall",
-  "SEC 19.5 S",
-  (a, b) => (parseFloat(b.SVP)||0) - (parseFloat(a.SVP)||0)
+  "Målvaktsstats slut 19.5",
+  null,
+  (a, b) => (parseFloat(b.SVP) || 0) - (parseFloat(a.SVP) || 0)
 );
 
-
-/* SLUTSPEL — CUP = SEC 19.5 S */
-renderTableFiltered(
-  "playoff-player-stats",
-  "searchPlayoffSkaters",
-  "updated-playoff-skaters",
-  "utestatsall",
-  "SEC 19.5 S",
-  (a,b) => (+b.PTS||0) - (+a.PTS||0)
-);
-
-renderTableFiltered(
-  "playoff-goalie-stats",
-  "searchPlayoffGoalies",
-  "updated-playoff-goalies",
-  "målvaktsstatsall",
-  "SEC 19.5 S",
-  (a,b) => parseFloat(b.SVP||0) - parseFloat(a.SVP||0)
-);
 </script>
 
 
@@ -2799,6 +2791,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
