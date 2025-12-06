@@ -6,264 +6,563 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Svenska eHockey Cupen 19.5</title>
 
- <style>
-/* --- Globala länkar --- */
+  <style>
 .player-link {
-    color: #fff !important;
+    color: #fff !important;        /* vit text */
     text-decoration: none !important;
 }
+
 .player-link:hover {
-    opacity: 0.7;
+    opacity: 0.7;                  /* valfri hover-effekt */
 }
 
-/* --- Variabler --- */
-:root {
-    --sec-bg-deep: #02030a;
-    --sec-bg-top: #080f24;
-    --sec-gold: #d6b15f;
-    --sec-gold-soft: #f0d58b;
-    --sec-text-main: #e3e4f2;
-    --sec-text-muted: #b4b7d8;
-}
+    :root {
+      --sec-bg-deep: #02030a;
+      --sec-bg-top: #080f24;
+      --sec-gold: #d6b15f;
+      --sec-gold-soft: #f0d58b;
+      --sec-text-main: #e3e4f2;
+      --sec-text-muted: #b4b7d8;
+    }
 
-/* --- Grundlayout --- */
-* {
-    box-sizing: border-box;
-}
+    * { box-sizing: border-box; }
 
-html, body {
-    margin: 0;
-    padding: 0;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
-    background: #000;
-    color: var(--sec-text-main);
-    min-height: 100vh;
-    overflow-x: hidden;
-    width: 100%;
-}
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+      background: #000;
+      color: var(--sec-text-main);
+      min-height: 100vh;
+    }
 
-/* --- Sida --- */
-body {
-    display: flex;
-    justify-content: center;
-}
+    body {
+      display: flex;
+      justify-content: center;
+    }
 
-#sec-page {
-    position: relative;
-    width: 100%;
-    max-width: 1200px;
-    padding: 20px 12px 80px;
-    z-index: 1;
-    animation: pageFade .6s ease-out;
-}
-
-@keyframes pageFade {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-/* --- Bakgrund & Rökeffekt --- */
-#sec-bg-layer {
-    position: fixed;
-    inset: 0;
-    overflow: hidden;
-    z-index: -2;
-    background:
+    /* Bakgrund + rökridå */
+    #sec-bg-layer {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      z-index: -2;
+      background:
         radial-gradient(circle at 0% 0%, rgba(214,177,95,0.17) 0, transparent 55%),
         radial-gradient(circle at 100% 0%, rgba(88,120,255,0.16) 0, transparent 55%),
         radial-gradient(circle at 50% 100%, #010314 0, #000 70%);
-}
+    }
 
-.smoke-layer {
-    position: absolute;
-    inset: -20%;
-    pointer-events: none;
-    background:
+    .smoke-layer {
+      position: absolute;
+      inset: -20%;
+      pointer-events: none;
+      background:
         radial-gradient(circle at 20% 20%, rgba(120,140,200,0.12) 0, transparent 45%),
         radial-gradient(circle at 80% 30%, rgba(120,140,200,0.10) 0, transparent 50%),
         radial-gradient(circle at 40% 80%, rgba(80,100,160,0.12) 0, transparent 45%);
-    opacity: 0;
-    animation: smokeFade 1.4s ease forwards 0.8s, smokeDrift 40s linear infinite;
-    mix-blend-mode: screen;
-}
+      opacity: 0;
+      animation: smokeFade 1.4s ease forwards 0.8s, smokeDrift 40s linear infinite;
+      mix-blend-mode: screen;
+    }
 
-.smoke-layer.smoke-back {
-    filter: blur(22px);
-    animation: smokeFade 1.8s ease forwards 1s, smokeDrift 55s linear infinite;
-}
+    .smoke-layer.smoke-back {
+      filter: blur(22px);
+      opacity: 0;
+      animation: smokeFade 1.8s ease forwards 1s, smokeDrift 55s linear infinite;
+    }
 
-@keyframes smokeFade {
-    from { opacity: 0; }
-    to   { opacity: 0.4; }
-}
-@keyframes smokeDrift {
-    0%   { transform: translate3d(0,0,0) scale(1); }
-    50%  { transform: translate3d(-4%, -2%, 1px) scale(1.05); }
-    100% { transform: translate3d(3%, 3%, 0) scale(1); }
-}
+    @keyframes smokeFade {
+      from { opacity: 0; }
+      to   { opacity: 0.4; }
+    }
 
-/* --- Header --- */
-.sfc-header {
-    margin-top: 12px;
-    border-radius: 22px;
-    padding: 26px 16px 22px;
-    background:
+    @keyframes smokeDrift {
+      0%   { transform: translate3d(0,0,0) scale(1); }
+      50%  { transform: translate3d(-4%, -2%, 1px) scale(1.05); }
+      100% { transform: translate3d(3%, 3%, 0) scale(1); }
+    }
+
+    #sec-page {
+      position: relative;
+      width: 100%;
+      max-width: 1200px;
+      padding: 20px 12px 80px;
+      z-index: 1;
+      animation: pageFade .6s ease-out;
+    }
+
+    @keyframes pageFade {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* HEADER */
+    .sfc-header {
+      margin-top: 12px;
+      border-radius: 22px;
+      padding: 26px 16px 22px;
+      background:
         linear-gradient(145deg, rgba(255,255,255,0.05), transparent 40%),
         radial-gradient(circle at top, #151b3f 0, #050614 55%, #02030a 100%);
-    border: 1px solid rgba(214,177,95,0.6);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.95);
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-}
+      border: 1px solid rgba(214,177,95,0.6);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.95);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
 
-.sfc-header::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
+    .sfc-header::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
         radial-gradient(circle at 50% 0%, rgba(214,177,95,0.24) 0, transparent 55%);
-    opacity: 0.4;
-    mix-blend-mode: screen;
-}
+      opacity: 0.4;
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
 
-.sfc-logo {
-    width: 165px;
-    filter: drop-shadow(0 0 20px rgba(214,177,95,0.7));
-    position: relative;
-    z-index: 1;
-}
+    .sfc-logo {
+      width: 165px;
+      filter: drop-shadow(0 0 20px rgba(214,177,95,0.7));
+      position: relative;
+      z-index: 1;
+    }
 
-.sfc-title {
-    position: relative;
-    z-index: 1;
-    font-weight: 800;
-    font-size: clamp(1.3rem, 2.6vw, 1.7rem);
-    letter-spacing: .18em;
-    text-transform: uppercase;
-    color: #fdfbff;
-    margin-top: 4px;
-}
+    .sfc-title {
+      position: relative;
+      z-index: 1;
+      font-weight: 800;
+      font-size: clamp(1.3rem, 2.6vw, 1.7rem);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: #fdfbff;
+      margin-top: 4px;
+    }
 
-.sfc-title strong {
-    color: var(--sec-gold-soft);
-}
+    .sfc-title strong {
+      color: var(--sec-gold-soft);
+    }
 
-.sfc-divider {
-    position: relative;
-    z-index: 1;
-    width: 180px;
-    height: 3px;
-    border-radius: 999px;
-    margin: 18px auto 0;
-    background: linear-gradient(90deg, transparent, var(--sec-gold-soft), transparent);
-    box-shadow: 0 0 15px rgba(214,177,95,0.8);
-}
+    .sfc-divider {
+      position: relative;
+      z-index: 1;
+      width: 180px;
+      height: 3px;
+      border-radius: 999px;
+      margin: 18px auto 0;
+      background: linear-gradient(90deg, transparent, var(--sec-gold-soft), transparent);
+      box-shadow: 0 0 15px rgba(214,177,95,0.8);
+    }
 
-/* --- Tabbar överst (GRUPP / TABELL / STATISTIK / SLUTSPEL) --- */
-.cup-tabs {
-    margin-top: 20px;
-    border-radius: 999px;
-    background: rgba(2,4,12,0.94);
-    backdrop-filter: blur(18px);
-    border: 1px solid rgba(214,177,95,0.35);
-    box-shadow: 0 14px 34px rgba(0,0,0,0.95);
-    padding: 7px 10px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 4px;
-}
+    .sfc-reflection {
+      position: absolute;
+      left: 50%;
+      bottom: -6px;
+      width: 60%;
+      height: 26px;
+      transform: translateX(-50%);
+      background: radial-gradient(ellipse at top, rgba(214,177,95,0.38) 0, transparent 60%);
+      opacity: 0.45;
+      filter: blur(6px);
+      pointer-events: none;
+    }
 
-.cup-tabs .tab {
-    border-radius: 999px;
-    background: transparent;
-    color: var(--sec-text-muted);
-    padding: 9px 16px;
-    font-size: .8rem;
-    text-transform: uppercase;
-    letter-spacing: .09em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.2s;
-}
+    /* TABS */
+    .cup-tabs {
+      margin-top: 20px;
+      border-radius: 999px;
+      background: rgba(2,4,12,0.94);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(214,177,95,0.35);
+      box-shadow: 0 14px 34px rgba(0,0,0,0.95);
+      padding: 7px 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 4px;
+    }
 
-.cup-tabs .tab:hover {
-    background: rgba(255,255,255,0.05);
-    transform: translateY(-1px);
-}
+    .cup-tabs .tab {
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      color: var(--sec-text-muted);
+      font-size: .8rem;
+      padding: 9px 16px;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s ease, color .2s ease, box-shadow .2s ease, transform .15s ease;
+    }
 
-.cup-tabs .tab.active {
-    background: linear-gradient(90deg, var(--sec-gold), var(--sec-gold-soft));
-    color: #181933;
-    box-shadow: 0 0 18px rgba(214,177,95,0.65);
-    transform: translateY(-1px);
-}
+    .cup-tabs .tab:hover {
+      background: rgba(255,255,255,0.05);
+      transform: translateY(-1px);
+    }
 
-/* --- Paneler (innehåll i varje flik) --- */
+    .cup-tabs .tab.active {
+      background: linear-gradient(90deg, var(--sec-gold), var(--sec-gold-soft));
+      color: #181933;
+      box-shadow: 0 0 18px rgba(214,177,95,0.65);
+      transform: translateY(-1px);
+    }
+
+    /* PANELER */
 .tab-panel {
-    margin-top: 26px;
-    border-radius: 22px;
-    background:
-        radial-gradient(circle at top, rgba(255,255,255,0.04) 0, transparent 55%),
-        radial-gradient(circle at 0% 100%, rgba(214,177,95,0.14) 0, transparent 55%),
-        linear-gradient(180deg, #060715, #02030a 60%, #000 100%);
-    border: 1px solid rgba(255,255,255,0.06);
-    padding: 24px 20px 26px;
-    box-shadow: 0 18px 42px rgba(0,0,0,0.95);
-    animation: panelFade .4s ease;
-    display: none;
+  margin-top: 26px;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top, rgba(255,255,255,0.04) 0, transparent 55%),
+    radial-gradient(circle at 0% 100%, rgba(214,177,95,0.14) 0, transparent 55%),
+    linear-gradient(180deg, #060715, #02030a 60%, #000 100%);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 24px 20px 26px;
+  box-shadow: 0 18px 42px rgba(0,0,0,0.95);
+  color: var(--sec-text-main);
+  animation: panelFade .4s ease;
+  display: none;           /* 👈 Göm alla paneler som standard */
 }
 
+/* Endast aktiv panel syns */
 .tab-panel.active {
-    display: block;
+  display: block;
 }
 
-/* --- Footer --- */
+/* FOOTER – Dark Arena Premium */
 #sec-footer-wrapper {
-    margin-top: 100px;
-    text-align: center;
-    position: relative;
-    max-width: 1100px;
-    margin-inline: auto;
-    padding: 60px 0 40px;
-    background: radial-gradient(circle at top center, rgba(255,215,100,0.04) 0%, transparent 80%);
-    border-top: 1px solid rgba(214,177,95,0.15);
-    border-radius: 12px 12px 0 0;
-    box-shadow: 0 -6px 18px rgba(0,0,0,0.45);
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 1.2s ease, transform 1.2s ease;
+  margin-top: 100px;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  max-width: 1100px;
+  margin-inline: auto;
+  padding: 60px 0 40px;
+  background: radial-gradient(circle at top center, rgba(255,215,100,0.04) 0%, transparent 80%);
+  border-top: 1px solid rgba(214,177,95,0.15);
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 -6px 18px rgba(0,0,0,0.45);
 }
 
-#sec-footer-wrapper.visible {
-    opacity: 1;
-    transform: translateY(0);
+.sec-footer-glow {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  width: 420px;
+  height: 140px;
+  transform: translateX(-50%);
+  background: radial-gradient(circle at center, rgba(214,177,95,0.2) 0%, transparent 75%);
+  filter: blur(32px);
+  pointer-events: none;
+  opacity: 0.8;
 }
 
 #sec-footer-line {
-    width: 320px;
-    height: 2px;
-    margin: 0 auto 14px;
-    background: linear-gradient(90deg, transparent, var(--sec-gold-soft), transparent);
-    box-shadow: 0 0 10px rgba(214,177,95,0.7);
+  width: 320px;
+  height: 2px;
+  margin: 0 auto 14px;
+  background: linear-gradient(90deg, transparent, var(--sec-gold-soft), transparent);
+  box-shadow: 0 0 10px rgba(214,177,95,0.7);
+  opacity: 0.9;
 }
 
 #sec-footer-text {
-    font-size: 0.88rem;
-    letter-spacing: 0.13em;
-    text-transform: uppercase;
-    color: rgba(230,230,240,0.9);
-    font-weight: 500;
+  font-size: 0.88rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(230,230,240,0.9);
+  font-weight: 500;
+  text-shadow: 0 0 4px rgba(255, 215, 100, 0.15);
 }
 
 #sec-footer-text span {
-    color: var(--sec-gold-soft);
-    font-weight: 600;
+  color: var(--sec-gold-soft);
+  font-weight: 600;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+#sec-footer-text span:hover {
+  color: #f6e8b0;
+  text-shadow: 0 0 10px rgba(255, 220, 130, 0.4);
+}
+/* FOOTER – Scroll Fade-in */
+#sec-footer-wrapper {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 1.2s ease, transform 1.2s ease;
+}
+
+#sec-footer-wrapper.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* === TEAM GRID === */
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 🔧 Ändra till 2 eller 4 för fler/färre per rad */
+  gap: 1.5rem;
+  margin-top: 2rem;
+  justify-items: center;
+}
+
+/* === TEAM CARD === */
+.team-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 215, 0, 0.06));
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 18px;
+  text-align: center;
+  padding: 18px;
+  width: 250px;
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.team-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.25);
+}
+
+/* === LOGO === */
+.team-logo img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 215, 0, 0.25);
+  margin-bottom: 10px;
+}
+
+/* === TEXT === */
+.team-card h3 {
+  color: #fff;
+  font-weight: 600;
+  margin: 8px 0;
+}
+
+.team-card p {
+  font-size: 0.9rem;
+  color: #ddd;
+  line-height: 1.4;
+}
+
+/* Responsiv layout (mobilvänlig) */
+@media (max-width: 900px) {
+  .team-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .team-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+  
+/* --- Flikar (lagvy) --- */
+.stat-tabs {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0 28px;
+  gap: 12px;
+}
+.stat-tabs .tab {
+  padding: 8px 16px;
+  border: 2px solid #0b1a49;
+  border-radius: 8px;
+  background: #fff;
+  color: #0b1a49;
+  font: 600 14px/1.2 Inter, system-ui, Arial;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.stat-tabs .tab:hover {
+  background: #f4f7ff;
+}
+.stat-tabs .tab.active {
+  background: #0b1a49;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,.1);
+}
+
+/* --- Lagstatistik – tabeller --- */
+.team-view table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font: 14px/1.3 Inter,system-ui,Arial,sans-serif;
+}
+.team-view thead th {
+  position: sticky;
+  top: 0;
+  background: #0b1a49;
+  color: #d6b15f;
+  padding: 10px 8px;
+  text-align: right;
+}
+.team-view thead th:nth-child(1),
+.team-view thead th:nth-child(2){text-align:left}
+.team-view tbody td{padding:10px 8px;border-bottom:1px solid #e9eef5;text-align:right}
+.team-view tbody td:nth-child(1),
+.team-view tbody td:nth-child(2){text-align:left}
+.team-view .wrap{background:#fff;border-radius:12px;overflow-x:auto;box-shadow:0 6px 18px rgba(0,0,0,.08)}
+.team-view h2{font:600 18px/1.2 Inter,system-ui,Arial;margin:18px 4px 8px}
+.team-view .sep{height:12px}
+
+/* --- Lagmatcher (per lag) --- */
+.match-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 30px;
+}
+.match-block {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+.match-date {
+  background: #0b1a49;
+  color: #fff;
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: 15px;
+}
+.match-round {
+  background: #666;
+  color: #fff;
+  padding: 8px 14px;
+  font-weight: 600;
+  font-size: 14px;
+}
+.match-table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 15px/1.4 Inter, system-ui, Arial;
+}
+.match-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #eaeef5;
+}
+.match-table tr:last-child td {
+  border-bottom: none;
+}
+.match-time {
+  color: #555;
+  font-weight: 500;
+  width: 15%;
+}
+.match-team {
+  width: 35%;
+  font-weight: 600;
+}
+.match-score {
+  text-align: center;
+  width: 20%;
+  font-weight: 600;
+  color: #0b1a49;
+  position: relative;
+}
+.match-score .ot {
+  display: block;
+  font-size: 12px;
+  color: #777;
+  font-weight: 500;
+  margin-top: 2px;
+  text-align: center;
+}
+.match-team.winner {
+  font-weight: 700;
+  color: #0b1a49;
+}
+/* 🔒 Förhindra sidleds-scroll på mobilen */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+}
+.bracket-wrapper {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px 16px;
+    box-sizing: border-box;
+}
+
+.bracket-box {
+    background: linear-gradient(180deg, #1a1a1a, #0f0f0f);
+    border: 2px solid rgba(255, 215, 0, 0.35);
+    border-radius: 18px;
+    padding: 25px 18px;
+    margin-bottom: 30px;
+    box-sizing: border-box;
+}
+
+.final-section {
+    margin-top: 40px;
+    text-align: center;
+}
+
+.final-match {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    font-size: 1.15rem;
+}
+
+.champion-box {
+    margin-top: 40px;
+    background: #0d0d1a;
+    border: 2px solid rgba(255, 215, 0, 0.35);
+    border-radius: 18px;
+    padding: 25px 18px;
+    text-align: center;
+}
+
+.champion-logo {
+    width: 160px;
+    height: auto;
+    margin: 0 auto 12px auto;
+}
+.bracket {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.final-and-champion {
+  background: rgba(255, 215, 0, 0.12);
+  border: 2px solid rgba(255, 215, 0, 0.35);
+  border-radius: 16px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.champion-box {
+  text-align: center;
+  margin-top: 25px;
+}
+
+.champion-box img {
+  width: 150px;
+  height: auto;
+  margin-bottom: 10px;
+}
+#statistik,
+#statistik .content-wrapper,
+#statistik .tab-panel,
+#statistik-container {
+    max-width: 1200px;   /* samma som tabell & slutspel */
+    width: 100%;
+    margin: auto;
 }
 
 </style>
-
 </head>
 
 <body>
@@ -2401,8 +2700,6 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
-
-
 
 
 
