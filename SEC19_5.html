@@ -1187,6 +1187,37 @@ host.appendChild(wrapper);
   from {opacity: 0; transform: translateY(10px);}
   to {opacity: 1; transform: translateY(0);}
 }
+  /* 📱 Gör gruppspelstabellen fullbredd på mobil */
+@media (max-width: 768px) {
+
+  /* Själva kortet runt tabellen */
+  .table-card, 
+  .group-table-container, 
+  #group-table, 
+  .tabell-container {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Tabellen i sig */
+  .group-table, 
+  .table-wrap, 
+  table {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Cellerna får lite mer spacing */
+  table th, table td {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+}
+
 </style>
 
 
@@ -2656,6 +2687,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
