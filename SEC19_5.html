@@ -2047,89 +2047,101 @@ function playoffCard(teamA, teamB, winsA, winsB) {
 
 <!-- 🔹 SCRIPT -->
 <script>
-/* ===========================
-   ▼ FASVÄLJARE
-=========================== */
+/* ============================
+   STATISTIK – NY RIKTIG VERSION
+   ============================ */
+
 const dropdown = document.getElementById("categoryDropdown");
 const sections = {
   group: document.getElementById("stat-group"),
   playoff: document.getElementById("stat-playoff")
 };
 
-const saved = localStorage.getItem("sec-last-category") || "group";
-dropdown.value = saved;
-toggleCategory(saved);
+dropdown.value = localStorage.getItem("sec-last-category") || "group";
+toggleCategory(dropdown.value);
 
-dropdown.addEventListener("change", e => {
+dropdown.addEventListener("change", (e) => {
   const val = e.target.value;
   localStorage.setItem("sec-last-category", val);
   toggleCategory(val);
 });
 
-function toggleCategory(key){
+function toggleCategory(key) {
   Object.keys(sections).forEach(k => {
     sections[k].classList.toggle("active", k === key);
   });
 }
 
-/* ===========================
-   ▼ UNDERFLIKAR
-=========================== */
+/* ============================
+   TAB-BYTE
+   ============================ */
+
 document.querySelectorAll('#statistik .stat-section').forEach(section => {
   const tabs = section.querySelectorAll('.stat-l2');
   const subs = section.querySelectorAll('.stat-subsection');
-
+  
   tabs.forEach(btn => {
     btn.addEventListener('click', () => {
-      const target = btn.dataset.target;
-
       tabs.forEach(t => t.classList.remove('is-active'));
       btn.classList.add('is-active');
-
+      
+      const target = btn.dataset.target;
       subs.forEach(s => s.classList.toggle('active', s.id === target));
     });
   });
 });
 
-/* ===========================
-   ▼ API + Hjälpfunktioner
-=========================== */
+/* ============================
+   API
+============================ */
+
 const API_BASE = "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec";
 
+/* ============================
+   LAGMAP & FLAGGOR
+============================ */
+
 const TEAM_MAP = {
-  'hmm':'Veterankraft','vNV':'vNexs Vipers','VNV':'vNexs Vipers','vNv':'vNexs Vipers',
-  'MOD':'Modo Hockey','SES':'Sunne IK Esport','SA':'SSK Academy','SS':'Surte Sisu HC'
+  hmm: "Veterankraft",
+  vNV: "vNexs Vipers",
+  VNV: "vNexs Vipers",
+  vNv: "vNexs Vipers",
+  MOD: "Modo Hockey",
+  SES: "Sunne IK Esport",
+  SA: "SSK Academy",
+  SS: "Surte Sisu HC"
 };
 
-const FLAG = {SE:'🇸🇪',FI:'🇫🇮',NO:'🇳🇴',DK:'🇩🇰',IS:'🇮🇸',GB:'🇬🇧',DE:'🇩🇪',PL:'🇵🇱',FR:'🇫🇷',US:'🇺🇸',CA:'🇨🇦'};
+const FLAG = {
+  SE:'🇸🇪', FI:'🇫🇮', NO:'🇳🇴', DK:'🇩🇰',
+  IS:'🇮🇸', GB:'🇬🇧', DE:'🇩🇪', FR:'🇫🇷',
+  US:'🇺🇸', CA:'🇨🇦'
+};
 
-function flagify(name){
-  if(!name) return {text:"", flag:""};
-
+function flagify(name) {
+  if (!name) return { text: "", flag: "" };
   let clean = String(name).trim();
   let match = /,\s*([A-Za-z]{2,3})$/i.exec(clean);
-  let code = match ? match[1].toUpperCase() : '';
-
-  const MAP = {SWE:'SE',FIN:'FI',NOR:'NO',DNK:'DK',ISL:'IS',GBR:'GB',DEU:'DE',USA:'US',CAN:'CA'};
+  let code = match ? match[1].toUpperCase() : "";
+  const MAP = { SWE:'SE', FIN:'FI', NOR:'NO', DNK:'DK', ISL:'IS', GBR:'GB', USA:'US', CAN:'CA' };
   if (MAP[code]) code = MAP[code];
-
   return {
-    text: clean.replace(/,\s*[A-Za-z]{2,3}$/,''),
-    flag: FLAG[code] || ''
+    text: clean.replace(/,\s*[A-Za-z]{2,3}$/, ""),
+    flag: FLAG[code] || ""
   };
 }
 
-function mapTeam(code){
-  const c = String(code||'').trim();
-  return TEAM_MAP[c] || c || '';
+function mapTeam(code) {
+  const c = String(code || "").trim();
+  return TEAM_MAP[c] || c || "";
 }
 
-/* ===========================
-   ▼ NY RENDER-FUNKTION
-   Hämtar från *utestatsall* och *målvaktsstatsall*
-   Filtrerar CUP = "SEC 19.5 G" / "SEC 19.5 S"
-=========================== */
-function renderTableFiltered(hostId, searchId, updatedId, sheetName, cupFilter, sortFunc){
+/* ============================
+   TABELLRENDERARE
+============================ */
+
+function renderTable(hostId, searchId, updatedId, sheetName, cupFilter, sortFunc) {
+
   const host = document.getElementById(hostId);
   const search = document.getElementById(searchId);
   const updated = document.getElementById(updatedId);
@@ -2140,14 +2152,20 @@ function renderTableFiltered(hostId, searchId, updatedId, sheetName, cupFilter, 
       <div>Laddar statistik...</div>
     </div>`;
 
-  fetch(API_BASE + '?sheet=' + encodeURIComponent(sheetName) + '&_t=' + Date.now())
+  fetch(`${API_BASE}?sheet=${encodeURIComponent(sheetName)}&_t=${Date.now()}`)
     .then(r => r.json())
     .then(rows => {
 
+      if (!rows || !rows.length) {
+        host.textContent = "Ingen data i sheetet.";
+        return;
+      }
+
+      // 🔥 FILTRERA PÅ CUP-KOLUMNEN
       rows = rows.filter(r => (r.CUP || "").trim() === cupFilter);
 
-      if (!rows.length){
-        host.innerHTML = "<p>Ingen statistik hittades.</p>";
+      if (!rows.length) {
+        host.textContent = "Ingen data för vald fas.";
         return;
       }
 
@@ -2157,89 +2175,114 @@ function renderTableFiltered(hostId, searchId, updatedId, sheetName, cupFilter, 
       const table = document.createElement("table");
 
       // HEADER
-      const thead = document.createElement("thead");
-      const hr = document.createElement("tr");
-      hr.innerHTML = `<th>#</th>` + headers.map(h => `<th>${h}</th>`).join('');
-      thead.appendChild(hr);
-      table.appendChild(thead);
+      table.innerHTML = `
+      <thead>
+        <tr>
+          <th>#</th>
+          ${headers.map(h => `<th>${h.toUpperCase()}</th>`).join("")}
+        </tr>
+      </thead>`;
 
       // BODY
       const tbody = document.createElement("tbody");
 
-      rows.forEach((r,i)=>{
+      rows.forEach((r, i) => {
         const tr = document.createElement("tr");
 
         tr.innerHTML =
-          `<td>${i+1}</td>` +
+          `<td>${i + 1}</td>` +
           headers.map(k => {
             let v = r[k] || "";
 
-            if (/player|goalie/i.test(k)){
+            // Spelarnamn + flagga
+            if (/players|goalies/i.test(k)) {
               const info = flagify(v);
               const raw = info.text;
-
-              v = `${info.flag ? info.flag+" " : ""}<a href="players/?player=${encodeURIComponent(raw)}"
-                      style="color:#ffd35c;font-weight:600;text-decoration:none;">${raw}</a>`;
+              v = `${info.flag ? info.flag + " " : ""}<a 
+                     href="players/?player=${encodeURIComponent(raw)}"
+                     style="color:#ffd35c; font-weight:600; text-decoration:none;">
+                     ${raw}</a>`;
             }
 
-            if (k.toLowerCase() === 'team'){
-              const t = mapTeam(v);
-              v = `<a href="lagkort.html?team=${encodeURIComponent(t)}&cup=19.5"
-                    style="color:#ffd35c;font-weight:600;text-decoration:none;">
-                    ${t}</a>`;
+            // Lag + länk
+            if (k.toLowerCase() === "team") {
+              const teamDisplay = mapTeam(v);
+              v = `<a href="lagkort.html?team=${encodeURIComponent(teamDisplay)}&cup=19.5"
+                     style="color:#ffd35c; font-weight:600; text-decoration:none;">
+                     ${teamDisplay}</a>`;
             }
 
-            return `<td>${v}</td>`;
-          }).join('');
+            return `<td data-label="${k.toUpperCase()}">${v}</td>`;
+          }).join("");
 
         tbody.appendChild(tr);
       });
 
       table.appendChild(tbody);
-
-      // OUTPUT
       host.innerHTML = "";
-      const wrap = document.createElement("div");
-      wrap.className = "wrap";
-      wrap.appendChild(table);
-      host.appendChild(wrap);
+      host.appendChild(table);
 
       updated.textContent = "Senast uppdaterad: " + new Date().toLocaleString("sv-SE");
 
-      // SÖK
+      // Sökfunktion
       search.addEventListener("input", () => {
-        [...tbody.rows].forEach(tr => {
-          const match = [...tr.cells].some(td =>
-            td.textContent.toLowerCase().includes(search.value.toLowerCase())
-          );
-          tr.style.display = match ? "" : "none";
+        const term = search.value.toLowerCase();
+        [...tbody.rows].forEach(row => {
+          row.style.display = [...row.cells].some(td =>
+            td.textContent.toLowerCase().includes(term)
+          ) ? "" : "none";
         });
       });
+
+    })
+    .catch(err => {
+      host.textContent = "Fel vid laddning: " + err.message;
+      console.error(err);
     });
 }
 
-/* ===========================
-   ▼ LADDA TABELLER
-=========================== */
+/* ============
+   HÄMTNINGAR
+   ============ */
 
-/* GRUPPSPEL — CUP = SEC 19.5 G */
-renderTableFiltered(
+/* Gruppspel */
+renderTable(
   "group-player-stats",
   "searchGroupSkaters",
   "updated-group-skaters",
   "utestatsall",
   "SEC 19.5 G",
-  (a,b) => (+b.PTS||0) - (+a.PTS||0)
+  (a, b) => (+b.PTS||0) - (+a.PTS||0)
 );
 
-renderTableFiltered(
+renderTable(
   "group-goalie-stats",
   "searchGroupGoalies",
   "updated-group-goalies",
   "målvaktsstatsall",
   "SEC 19.5 G",
-  (a,b) => parseFloat(b.SVP||0) - parseFloat(a.SVP||0)
+  (a, b) => (parseFloat(b.SVP)||0) - (parseFloat(a.SVP)||0)
 );
+
+/* Slutspel */
+renderTable(
+  "playoff-player-stats",
+  "searchPlayoffSkaters",
+  "updated-playoff-skaters",
+  "utestatsall",
+  "SEC 19.5 S",
+  (a, b) => (+b.PTS||0) - (+a.PTS||0)
+);
+
+renderTable(
+  "playoff-goalie-stats",
+  "searchPlayoffGoalies",
+  "updated-playoff-goalies",
+  "målvaktsstatsall",
+  "SEC 19.5 S",
+  (a, b) => (parseFloat(b.SVP)||0) - (parseFloat(a.SVP)||0)
+);
+
 
 /* SLUTSPEL — CUP = SEC 19.5 S */
 renderTableFiltered(
@@ -2756,6 +2799,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
