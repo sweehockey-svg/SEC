@@ -264,8 +264,8 @@
 (function(){
   const SHEET_ID = "1toag5J7vMW0CEmtsrqByPJMJn6e-U5hOzZaKWoXnpxY";
 
-  // Fallback-bild: lägg filen bredvid HTML-filen med detta namn
-  const DEFAULT_IMG = "default-player.png";
+  // Fallback-bild – din Drive-bild i uc-format
+  const DEFAULT_IMG = "https://drive.google.com/uc?export=view&id=1VAa79pJ-QbyeliY60autf914z6SBwmhp";
 
   function sheetCSV(sheetName) {
     return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
@@ -344,6 +344,21 @@
     return rows.filter(r => r.some(cell => cell !== ""));
   }
 
+  // Plocka ut Drive-ID oavsett länkformat
+  function extractDriveId(link) {
+    if (!link) return "";
+
+    // /file/d/ID/...
+    let m = link.match(/\/d\/([^\/]+)/);
+    if (m) return m[1];
+
+    // ...id=ID...
+    m = link.match(/id=([^&]+)/);
+    if (m) return m[1];
+
+    return "";
+  }
+
   function ensurePlayerImagesLoaded() {
     if (playerImgMap) return Promise.resolve(playerImgMap);
     if (playerImgPromise) return playerImgPromise;
@@ -356,22 +371,20 @@
 
         const map = {};
         rows.forEach(r => {
-          const key = normalizeName(r[0] || "");
-          const driveLink = (r[1] || "").trim();
-          const driveId = (r[2] || "").trim();
-          let url = "";
+          const key = normalizeName(r[0] || "");   // Spelarnamn
+          const driveLink = (r[1] || "").trim();   // Drive-länk
+          const driveIdRaw = (r[2] || "").trim();  // DriveID
+
+          let driveId = driveIdRaw || extractDriveId(driveLink);
+          let url = DEFAULT_IMG;
 
           if (driveId) {
-            url = `https://drive.usercontent.google.com/download?id=${driveId}&export=view`;
-          } else if (driveLink.includes("/d/")) {
-            const m = driveLink.match(/\/d\/(.*?)\//);
-            if (m && m[1]) {
-              url = `https://drive.usercontent.google.com/download?id=${m[1]}&export=view`;
-            }
+            url = `https://drive.google.com/uc?export=view&id=${driveId}`;
           }
 
-          if (!url) url = DEFAULT_IMG;
-          if (key) map[key] = url;
+          if (key) {
+            map[key] = url;
+          }
         });
 
         playerImgMap = map;
@@ -458,7 +471,10 @@
     host.innerHTML = top3.map((p, idx) => `
       <div class="player-card">
         <div class="player-img-wrap">
-          <img class="player-img" src="${p.img}" alt="${p.psn}" onerror="this.onerror=null;this.src='${DEFAULT_IMG}'">
+          <img class="player-img"
+               src="${p.img}"
+               alt="${p.psn}"
+               onerror="this.onerror=null;this.src='${DEFAULT_IMG}'">
         </div>
         <div class="player-card-header">
           <div>
