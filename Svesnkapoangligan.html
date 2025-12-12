@@ -52,7 +52,7 @@
       transition: border-color .2s, box-shadow .2s;
     }
 
-    /* Top 3 cards */
+    /* TOP 3 cards */
     .top3-container {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -100,7 +100,7 @@
       height: 100%; border-radius: 999px; background: #101b40;
     }
 
-    /* Table */
+    /* TABLE */
     .table-container {
       background: #fff; border-radius: 12px; overflow-x: auto;
       box-shadow: 0 6px 18px rgba(0,0,0,.08);
@@ -191,18 +191,12 @@
 <script>
 (function(){
 
-  /* ============================
-        KONFIGURATION
-  ============================= */
-
   const TABLE_SHEET_ID = "1toag5J7vMW0CEmtsrqByPJMJn6e-U5hOzZaKWoXnpxY";
 
   const CARD_CSV =
-"<!–– HÄR ÄR DIN EXAKTA CSV-LÄNK ––>" +
 "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZCNO-QbbfniaDOODJpcE_B8ab6RHunhkSRGuEjYeVlM2TVq6okNMG8JPHHZyWf50RsJFflI6bbAnB/pub?gid=2047009971&single=true&output=csv";
 
   const DEFAULT_IMG = "default-player.png";
-
 
   function tableSheet(name){
     return `https://docs.google.com/spreadsheets/d/${TABLE_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
@@ -217,29 +211,15 @@
     neo:   tableSheet("Neopoängliga")
   };
 
-  const CONFIG = {
-    elite:{name:"Elite",url:SHEETS.elite,search:"search-elite",top:"top3-elite",table:"table-elite",updated:"updated-elite"},
-    pro:{name:"Pro",url:SHEETS.pro,search:"search-pro",top:"top3-pro",table:"table-pro",updated:"updated-pro"},
-    lite:{name:"Lite",url:SHEETS.lite,search:"search-lite",top:"top3-lite",table:"table-lite",updated:"updated-lite"},
-    core:{name:"Core",url:SHEETS.core,search:"search-core",top:"top3-core",table:"table-core",updated:"updated-core"},
-    neo:{name:"Neo",url:SHEETS.neo,search:"search-neo",top:"top3-neo",table:"table-neo",updated:"updated-neo"}
-  };
-
-
-  /* ============================
-     CSV PARSER (RÄTT VERSION)
-  ============================= */
-
+  /* CSV parser */
   function parseCSV(txt){
     const lines = [];
     let row = [];
     let cur = "";
     let q = false;
-
     for (let i=0;i<txt.length;i++){
       const c = txt[i];
       const nxt = txt[i+1];
-
       if (c === '"' && nxt === '"'){ cur += '"'; i++; continue; }
       if (c === '"'){ q = !q; continue; }
       if (c === ',' && !q){ row.push(cur); cur=""; continue; }
@@ -250,14 +230,8 @@
       cur+=c;
     }
     if (cur.length || row.length){ row.push(cur); lines.push(row); }
-
-    return lines.filter(r => r.some(x => x.trim() !== ""));
+    return lines.filter(r=>r.some(x=>x.trim()!==""));
   }
-
-
-  /* ============================
-     NAMN-NORMALISERING
-  ============================= */
 
   function normalize(str){
     if (!str) return "";
@@ -269,11 +243,7 @@
       .toLowerCase();
   }
 
-
-  /* ============================
-     LADDA SPELARBILDER
-  ============================= */
-
+  /* Ladda ID -> DRIVE-bilder */
   let cardMap = null;
   let loadCardPromise = null;
 
@@ -287,18 +257,18 @@
         const rows = parseCSV(csv);
         rows.shift();
 
-        const map = {};
+        const map={};
 
         rows.forEach(r=>{
-          const name = normalize(r[0]||"");
-          const driveId = (r[1]||"").trim();
-          let url = "";
+          const name = normalize(r[0]||"");       // A = spelarnamn
+          const driveId = (r[1]||"").trim();      // B = DRIVE-ID (DIN BEKRÄFTADE KOLUMN)
+          let url = DEFAULT_IMG;
 
           if (driveId){
-            url = `https://drive.usercontent.google.com/download?id=${driveId}&export=view`;
+            url = `https://drive.google.com/thumbnail?id=${driveId}&sz=w1000`;
           }
 
-          map[name] = url || DEFAULT_IMG;
+          map[name] = url;
         });
 
         cardMap = map;
@@ -308,18 +278,20 @@
     return loadCardPromise;
   }
 
-
-  /* ============================
-     LADDA OCH VISA EN DIVISION
-  ============================= */
-
+  /* Ladda DIVISION */
   const loaded = {};
 
-  function loadDivision(divKey){
-    const cfg = CONFIG[divKey];
-    if (!cfg) return;
-    if (loaded[divKey]) return;
-    loaded[divKey] = true;
+  function loadDivision(div){
+    if (loaded[div]) return;
+    loaded[div]=true;
+
+    const cfg = {
+      elite:{url:SHEETS.elite,search:"search-elite",top:"top3-elite",table:"table-elite",updated:"updated-elite"},
+      pro:{url:SHEETS.pro,search:"search-pro",top:"top3-pro",table:"table-pro",updated:"updated-pro"},
+      lite:{url:SHEETS.lite,search:"search-lite",top:"top3-lite",table:"table-lite",updated:"updated-lite"},
+      core:{url:SHEETS.core,search:"search-core",top:"top3-core",table:"table-core",updated:"updated-core"},
+      neo:{url:SHEETS.neo,search:"search-neo",top:"top3-neo",table:"table-neo",updated:"updated-neo"}
+    }[div];
 
     const tbl = document.getElementById(cfg.table);
     const top = document.getElementById(cfg.top);
@@ -414,13 +386,11 @@
             "Senast uppdaterad: " +
             new Date().toLocaleString("sv-SE",{hour:"2-digit",minute:"2-digit",day:"numeric",month:"short"});
 
-          /* SÖK */
+          /* Sök */
           search.addEventListener("input",()=>{
             const q = search.value.toLowerCase();
-            const rows = tbl.querySelectorAll("tbody tr");
-            rows.forEach(tr=>{
-              const ok = tr.innerText.toLowerCase().includes(q);
-              tr.style.display = ok ? "" : "none";
+            tbl.querySelectorAll("tbody tr").forEach(tr=>{
+              tr.style.display = tr.innerText.toLowerCase().includes(q) ? "" : "none";
             });
           });
 
@@ -428,10 +398,7 @@
     });
   }
 
-  /* ======================
-        TABS
-  ====================== */
-
+  /* Tabs */
   document.querySelectorAll(".ecl-tab").forEach(btn=>{
     btn.addEventListener("click",()=>{
       document.querySelectorAll(".ecl-tab").forEach(x=>x.classList.remove("active"));
@@ -444,7 +411,7 @@
     });
   });
 
-  loadDivision("elite"); // auto-start
+  loadDivision("elite");
 
 })();
 </script>
