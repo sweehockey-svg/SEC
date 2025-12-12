@@ -1,127 +1,202 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-<meta charset="UTF-8">
-<title>Svenska Poängligan</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <title>ECL 26 Winter – Svenska poängligor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, Arial, sans-serif;
+      background: #ffffff;
+    }
 
-<style>
-/* --- TABS --- */
-.ecl-tabs {
-  display: flex;
-  gap: 6px;
-  margin: 10px 0 16px;
-  flex-wrap: wrap;
-}
-.ecl-tab {
-  border: none;
-  padding: 8px 14px;
-  border-radius: 999px;
-  font-family: Inter, system-ui, Arial, sans-serif;
-  font-size: 14px;
-  cursor: pointer;
-  background: #f1f3fa;
-  color: #202742;
-  font-weight: 600;
-}
-.ecl-tab.active {
-  background: #101b40;
-  color: #f7e0a2;
-}
+    /* TABS */
+    .ecl-tabs {
+      display: flex;
+      gap: 6px;
+      margin: 10px 0 16px;
+      flex-wrap: wrap;
+      padding: 0 8px;
+    }
+    .ecl-tab {
+      border: none;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      cursor: pointer;
+      background: #f1f3fa;
+      color: #202742;
+      font-weight: 600;
+    }
+    .ecl-tab.active {
+      background: #101b40;
+      color: #f7e0a2;
+    }
 
-.division { display: none; }
-.division.active { display: block; }
+    .division { display: none; padding: 0 8px 20px; }
+    .division.active { display: block; }
 
-/* HEADER */
-.header-box {
-  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
-  margin: 10px 0 20px; gap: 12px;
-}
-.header-box h2 {
-  font-family: Inter, system-ui, Arial, sans-serif;
-  font-size: 24px; font-weight: 800; color: #0b1a49;
-  margin: 0; text-shadow: 0 2px 6px rgba(0,0,0,.08);
-}
-.header-box input[type="text"] {
-  padding: 10px 14px; font-size: 15px; border: 1px solid #ccc;
-  border-radius: 10px; min-width: 240px; outline: none;
-  transition: border-color .2s, box-shadow .2s;
-}
-.header-box input[type="text"]:focus {
-  border-color: #0b1a49; box-shadow: 0 0 0 2px rgba(11,26,73,.15);
-}
+    .header-box {
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+      margin: 10px 0 20px; gap: 12px;
+    }
+    .header-box h2 {
+      font-size: 24px; font-weight: 800; color: #0b1a49;
+      margin: 0; text-shadow: 0 2px 6px rgba(0,0,0,.08);
+    }
+    .header-box input[type="text"] {
+      padding: 10px 14px; font-size: 15px; border: 1px solid #ccc;
+      border-radius: 10px; min-width: 240px; outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .header-box input[type="text"]:focus {
+      border-color: #0b1a49; box-shadow: 0 0 0 2px rgba(11,26,73,.15);
+    }
 
-/* TOP3 LAYOUT */
-.top3-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 16px;
-  margin-bottom: 18px;
-}
+    /* Top 3 cards */
+    .top3-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    .player-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 14px 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.06);
+    }
+    .player-img-wrap {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+    .player-img {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 3px 10px rgba(0,0,0,.15);
+    }
+    .player-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+    .player-name {
+      font-weight: 700;
+      font-size: 15px;
+      color: #0b1a49;
+    }
+    .player-team {
+      font-size: 12px;
+      color: #667;
+    }
+    .player-rank {
+      font-weight: 700;
+      font-size: 14px;
+      color: #b8860b;
+    }
+    .player-points {
+      font-size: 13px;
+      color: #222;
+      margin-bottom: 4px;
+    }
+    .player-ga {
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 8px;
+    }
+    .bar-row {
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+    .bar-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2px;
+    }
+    .bar-track {
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: #e3e7f3;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: #101b40;
+    }
 
-.player-card {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 14px 16px;
-  box-shadow: 0 4px 16px rgba(0,0,0,.06);
-  font-family: Inter, system-ui, Arial, sans-serif;
-}
+    /* Table */
+    .table-container {
+      background: #fff; border-radius: 12px; overflow-x: auto;
+      box-shadow: 0 6px 18px rgba(0,0,0,.08);
+    }
+    .table-container table {
+      width: 100%; border-collapse: separate; border-spacing: 0;
+      font: 15px/1.4 Inter, system-ui, Arial, sans-serif;
+    }
+    .table-container thead th {
+      position: sticky; top: 0; background: #101b40; color: #d6b15f;
+      padding: 12px 10px; border-bottom: 1px solid #1f2a44;
+      text-align: left; cursor: pointer; user-select: none;
+      font-weight: 700; letter-spacing: .3px;
+    }
+    .table-container tbody td {
+      padding: 12px 10px; border-bottom: 1px solid #e9eef5; text-align: left;
+    }
+    .table-container tbody tr:hover {
+      background: #f5f7ff; cursor: pointer; transition: background .2s;
+    }
 
-.player-img-wrap {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-bottom: 10px;
-}
+    .lastUpdated {
+      font-size: 13px; color: #666; margin-top: 8px; text-align: right;
+    }
 
-.player-img {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  object-fit: cover;
-  box-shadow: 0 3px 10px rgba(0,0,0,.15);
-}
+    @media (max-width: 700px) {
+      .header-box { flex-direction: column; align-items: flex-start; width: 100%; }
+      .header-box input[type="text"] { width: 100%; }
 
-.player-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 6px;
-}
-
-.player-name { font-weight: 700; font-size: 15px; color: #0b1a49; }
-.player-team { font-size: 12px; color: #667; }
-.player-rank { font-weight: 700; font-size: 14px; color: #b8860b; }
-
-/* TABLE */
-.table-container {
-  background: #fff; border-radius: 12px; overflow-x: auto;
-  box-shadow: 0 6px 18px rgba(0,0,0,.08);
-}
-.table-container table {
-  width: 100%; border-collapse: separate; border-spacing: 0;
-  font: 15px/1.4 Inter, system-ui, Arial, sans-serif;
-}
-.table-container thead th {
-  position: sticky; top: 0; background: #101b40; color: #d6b15f;
-  padding: 12px 10px; border-bottom: 1px solid #1f2a44;
-  text-align: left; cursor: pointer; user-select: none;
-  font-weight: 700; letter-spacing: .3px;
-}
-.table-container tbody td {
-  padding: 12px 10px; border-bottom: 1px solid #e9eef5; text-align: left;
-}
-.table-container tbody tr:hover {
-  background: #f5f7ff; cursor: pointer; transition: background .2s;
-}
-
-.lastUpdated { font-size: 13px; color: #666; margin-top: 8px; text-align: right; }
-
-</style>
+      .table-container thead { display: none; }
+      .table-container table,
+      .table-container tbody,
+      .table-container tr,
+      .table-container td {
+        display: block;
+        width: 100%;
+      }
+      .table-container tbody tr {
+        background: #fff;
+        border: 1px solid #e0e4ee;
+        border-radius: 12px;
+        margin-bottom: 14px;
+        padding: 10px 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.05);
+      }
+      .table-container tbody td {
+        padding: 6px 4px;
+        border: none;
+      }
+      .table-container tbody td:first-child {
+        font-size: 17px; font-weight: 700; color: #0b1a49;
+        margin-bottom: 6px;
+      }
+      .table-container tbody td::before {
+        content: attr(data-label);
+        font-weight: 600; color: #1f2a44;
+        display: block; font-size: 13px; margin-bottom: 2px;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<!-- TABS -->
+<!-- 🔹 TABS FÖR ALLA DIVISIONER -->
 <div class="ecl-tabs">
   <button class="ecl-tab active" data-division="elite">Elite</button>
   <button class="ecl-tab" data-division="pro">Pro</button>
@@ -130,7 +205,7 @@
   <button class="ecl-tab" data-division="neo">Neo</button>
 </div>
 
-<!-- DIVISIONS -->
+<!-- 🔹 ELITE -->
 <div id="division-elite" class="division active">
   <div class="header-box">
     <h2>🏆 ECL 26 Winter – Elite Poängliga (Svenska spelare)</h2>
@@ -141,6 +216,7 @@
   <p id="updated-elite" class="lastUpdated"></p>
 </div>
 
+<!-- 🔹 PRO -->
 <div id="division-pro" class="division">
   <div class="header-box">
     <h2>🏆 ECL 26 Winter – Pro Poängliga (Svenska spelare)</h2>
@@ -151,6 +227,7 @@
   <p id="updated-pro" class="lastUpdated"></p>
 </div>
 
+<!-- 🔹 LITE -->
 <div id="division-lite" class="division">
   <div class="header-box">
     <h2>🏆 ECL 26 Winter – Lite Poängliga (Svenska spelare)</h2>
@@ -161,6 +238,7 @@
   <p id="updated-lite" class="lastUpdated"></p>
 </div>
 
+<!-- 🔹 CORE -->
 <div id="division-core" class="division">
   <div class="header-box">
     <h2>🏆 ECL 26 Winter – Core Poängliga (Svenska spelare)</h2>
@@ -171,6 +249,7 @@
   <p id="updated-core" class="lastUpdated"></p>
 </div>
 
+<!-- 🔹 NEO -->
 <div id="division-neo" class="division">
   <div class="header-box">
     <h2>🏆 ECL 26 Winter – Neo Poängliga (Svenska spelare)</h2>
@@ -182,234 +261,320 @@
 </div>
 
 <script>
-/* ---------------- CONFIG ---------------- */
-const SHEET_ID = "1toag5J7vMW0CEmtsrqByPJMJn6e-U5hOzZaKWoXnpxY";
+(function(){
+  const SHEET_ID = "1toag5J7vMW0CEmtsrqByPJMJn6e-U5hOzZaKWoXnpxY";
 
-function sheetCSV(sheetName) {
-  return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
-}
+  // Fallback-bild: lägg filen bredvid HTML-filen med detta namn
+  const DEFAULT_IMG = "default-player.png";
 
-const SHEETS = {
-  cards: sheetCSV("Spelarkort"),
-  elite: sheetCSV("Elitepoängliga"),
-  pro:   sheetCSV("Propoängliga"),
-  lite:  sheetCSV("Litepoängliga"),
-  core:  sheetCSV("Corepoängliga"),
-  neo:   sheetCSV("Neopoängliga")
-};
+  function sheetCSV(sheetName) {
+    return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+  }
 
-const loaded = {};
-let playerImgMap = null;
-let playerImgPromise = null;
+  const SHEETS = {
+    cards: sheetCSV("Spelarkort"),
+    elite: sheetCSV("Elitepoängliga"),
+    pro:   sheetCSV("Propoängliga"),
+    lite:  sheetCSV("Litepoängliga"),
+    core:  sheetCSV("Corepoängliga"),
+    neo:   sheetCSV("Neopoängliga")
+  };
 
-/* ---------------- HELPERS ---------------- */
-function normalizeName(str) {
-  return str
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^\w\s]/g, "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
-}
+  const CONFIG = {
+    elite: { name: "Elite", url: SHEETS.elite, searchId: "search-elite", topId: "top3-elite", tableId: "table-elite", updatedId: "updated-elite" },
+    pro:   { name: "Pro",   url: SHEETS.pro,   searchId: "search-pro",   topId: "top3-pro",   tableId: "table-pro",   updatedId: "updated-pro" },
+    lite:  { name: "Lite",  url: SHEETS.lite,  searchId: "search-lite",  topId: "top3-lite",  tableId: "table-lite",  updatedId: "updated-lite" },
+    core:  { name: "Core",  url: SHEETS.core,  searchId: "search-core",  topId: "top3-core",  tableId: "table-core",  updatedId: "updated-core" },
+    neo:   { name: "Neo",   url: SHEETS.neo,   searchId: "search-neo",   topId: "top3-neo",   tableId: "table-neo",   updatedId: "updated-neo" }
+  };
 
-function parseCSV(csv) {
-  const rows = [];
-  let row = [];
-  let current = "";
-  let inside = false;
+  const loaded = {};
+  let playerImgMap = null;
+  let playerImgPromise = null;
 
-  for (let i = 0; i < csv.length; i++) {
-    const c = csv[i];
+  function normalizeName(str) {
+    if (!str) return "";
+    return str
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\w\s]/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase();
+  }
 
-    if (c === '"' && csv[i+1] === '"') {
-      current += '"';
-      i++;
-      continue;
-    }
-    if (c === '"') { inside = !inside; continue; }
-    if (c === ',' && !inside) {
-      row.push(current.trim());
-      current = "";
-      continue;
-    }
-    if ((c === '\n' || c === '\r') && !inside) {
-      if (current.length || row.length) {
-        row.push(current.trim());
-        rows.push(row);
-        row = [];
-        current = "";
+  function parseCSV(csv) {
+    const rows = [];
+    let row = [];
+    let current = "";
+    let insideQuotes = false;
+
+    for (let i = 0; i < csv.length; i++) {
+      const c = csv[i];
+
+      if (c === '"' && csv[i+1] === '"') {
+        current += '"';
+        i++;
+        continue;
       }
-      continue;
-    }
-    current += c;
-  }
-  if (current.length || row.length) {
-    row.push(current.trim());
-    rows.push(row);
-  }
-  return rows;
-}
-
-/* ---------------- LOAD PLAYER IMAGES ---------------- */
-function ensurePlayerImagesLoaded() {
-  if (playerImgMap) return Promise.resolve(playerImgMap);
-  if (playerImgPromise) return playerImgPromise;
-
-  playerImgPromise = fetch(SHEETS.cards)
-    .then(r => r.text())
-    .then(csv => {
-      const rows = parseCSV(csv);
-      rows.shift(); // header
-
-      const map = {};
-
-      rows.forEach(r => {
-        const key = normalizeName(r[0] || "");
-        const driveLink = (r[1] || "").trim();
-        const driveId = (r[2] || "").trim();
-        let url = "";
-
-        if (driveId) {
-          url = `https://drive.usercontent.google.com/download?id=${driveId}&export=view`;
-        } else if (driveLink.includes("/d/")) {
-          const m = driveLink.match(/\/d\/(.*?)\//);
-          if (m && m[1]) {
-            url = `https://drive.usercontent.google.com/download?id=${m[1]}&export=view`;
-          }
+      if (c === '"') {
+        insideQuotes = !insideQuotes;
+        continue;
+      }
+      if (c === ',' && !insideQuotes) {
+        row.push(current.trim());
+        current = "";
+        continue;
+      }
+      if ((c === '\n' || c === '\r') && !insideQuotes) {
+        if (current.length || row.length) {
+          row.push(current.trim());
+          rows.push(row);
+          row = [];
+          current = "";
         }
-        if (key && url) map[key] = url;
-      });
+        continue;
+      }
+      current += c;
+    }
+    if (current.length || row.length) {
+      row.push(current.trim());
+      rows.push(row);
+    }
+    return rows.filter(r => r.some(cell => cell !== ""));
+  }
 
-      playerImgMap = map;
-      return map;
-    })
-    .catch(err => {
-      console.error("Error loading images:", err);
-      playerImgMap = {};
-      return {};
-    });
+  function ensurePlayerImagesLoaded() {
+    if (playerImgMap) return Promise.resolve(playerImgMap);
+    if (playerImgPromise) return playerImgPromise;
 
-  return playerImgPromise;
-}
-
-/* ---------------- LOAD DIVISION ---------------- */
-function loadDivision(name) {
-  if (loaded[name]) return;
-  loaded[name] = true;
-
-  const cfg = {
-    elite: { sheet: SHEETS.elite, top: "top3-elite", table: "table-elite", updated: "updated-elite", search: "search-elite" },
-    pro:   { sheet: SHEETS.pro,   top: "top3-pro",   table: "table-pro",   updated: "updated-pro",   search: "search-pro" },
-    lite:  { sheet: SHEETS.lite,  top: "top3-lite",  table: "table-lite",  updated: "updated-lite",  search: "search-lite" },
-    core:  { sheet: SHEETS.core,  top: "top3-core",  table: "table-core",  updated: "updated-core",  search: "search-core" },
-    neo:   { sheet: SHEETS.neo,   top: "top3-neo",   table: "table-neo",   updated: "updated-neo",   search: "search-neo" }
-  }[name];
-
-  const tableHost = document.getElementById(cfg.table);
-  const topHost   = document.getElementById(cfg.top);
-  const updatedEl = document.getElementById(cfg.updated);
-  const searchEl  = document.getElementById(cfg.search);
-
-  tableHost.innerHTML = "<p style='padding:10px'>Laddar…</p>";
-
-  ensurePlayerImagesLoaded().then(imgMap => {
-    fetch(cfg.sheet)
+    playerImgPromise = fetch(SHEETS.cards)
       .then(r => r.text())
       .then(csv => {
         const rows = parseCSV(csv);
-        const header = rows.shift();
+        rows.shift(); // header
 
-        const data = rows.map(r => {
-          const psn = r[0];
-          return {
-            psn,
-            team: r[1],
-            games: Number(r[2]),
-            goals: Number(r[3]),
-            assists: Number(r[4]),
-            points: Number(r[5]),
-            img: imgMap[normalizeName(psn)] || "https://via.placeholder.com/120"
-          };
+        const map = {};
+        rows.forEach(r => {
+          const key = normalizeName(r[0] || "");
+          const driveLink = (r[1] || "").trim();
+          const driveId = (r[2] || "").trim();
+          let url = "";
+
+          if (driveId) {
+            url = `https://drive.usercontent.google.com/download?id=${driveId}&export=view`;
+          } else if (driveLink.includes("/d/")) {
+            const m = driveLink.match(/\/d\/(.*?)\//);
+            if (m && m[1]) {
+              url = `https://drive.usercontent.google.com/download?id=${m[1]}&export=view`;
+            }
+          }
+
+          if (!url) url = DEFAULT_IMG;
+          if (key) map[key] = url;
         });
 
-        data.sort((a,b) => b.points - a.points || b.goals - a.goals);
-
-        renderTop3(data, topHost);
-        renderTable(data, header, tableHost, searchEl);
-
-        updatedEl.textContent =
-          "Senast uppdaterad: " + new Date().toLocaleString("sv-SE");
+        playerImgMap = map;
+        return map;
+      })
+      .catch(err => {
+        console.error("Kunde inte ladda Spelarkort:", err);
+        playerImgMap = {};
+        return playerImgMap;
       });
-  });
-}
 
-/* ---------------- RENDER TOP3 ---------------- */
-function renderTop3(data, host) {
-  host.innerHTML = data.slice(0,3).map((p,i) => `
-    <div class="player-card">
-      <div class="player-img-wrap">
-        <img class="player-img" src="${p.img}" alt="${p.psn}">
-      </div>
-      <div class="player-card-header">
-        <div>
-          <div class="player-name">${p.psn}</div>
-          <div class="player-team">${p.team}</div>
-        </div>
-        <div class="player-rank">#${i+1}</div>
-      </div>
-      <div class="player-points">${p.points} poäng</div>
-      <div class="player-ga">G ${p.goals} • A ${p.assists} • GP ${p.games}</div>
-    </div>
-  `).join("");
-}
+    return playerImgPromise;
+  }
 
-/* ---------------- RENDER TABLE ---------------- */
-function renderTable(data, header, host, searchEl) {
-  host.innerHTML = `
-    <table>
-      <thead><tr>${header.map(h => `<th>${h}</th>`).join("")}</tr></thead>
-      <tbody>
-        ${data.map(p => `
-          <tr>
-            <td>${p.psn}</td>
-            <td>${p.team}</td>
-            <td>${p.games}</td>
-            <td>${p.goals}</td>
-            <td>${p.assists}</td>
-            <td>${p.points}</td>
-          </tr>
-        `).join("")}
-      </tbody>
-    </table>
-  `;
+  function loadDivision(key) {
+    const cfg = CONFIG[key];
+    if (!cfg) return;
+    if (loaded[key]) return;
+    loaded[key] = true;
 
-  if (searchEl) {
-    searchEl.addEventListener("input", () => {
-      const q = searchEl.value.toLowerCase();
-      [...host.querySelector("tbody").rows].forEach(tr => {
-        const show = [...tr.cells].some(td => td.textContent.toLowerCase().includes(q));
-        tr.style.display = show ? "" : "none";
-      });
+    const tableHost = document.getElementById(cfg.tableId);
+    const topHost   = document.getElementById(cfg.topId);
+    const updatedEl = document.getElementById(cfg.updatedId);
+    const searchEl  = document.getElementById(cfg.searchId);
+
+    tableHost.innerHTML = '<div class="table-container"><div style="padding:12px;font-family:system-ui,Arial">Laddar statistik …</div></div>';
+
+    ensurePlayerImagesLoaded().then(imgMap => {
+      fetch(cfg.url)
+        .then(r => r.text())
+        .then(csv => {
+          const rows = parseCSV(csv);
+          const header = rows.shift();
+
+          const data = rows.map(r => {
+            const psn = (r[0] || "").trim();
+            const key = normalizeName(psn);
+            const img = imgMap[key] || DEFAULT_IMG;
+            return {
+              psn,
+              team:    r[1] || "",
+              games:   Number(r[2] || 0),
+              goals:   Number(r[3] || 0),
+              assists: Number(r[4] || 0),
+              points:  Number(r[5] || 0),
+              img
+            };
+          });
+
+          let maxG = 0, maxA = 0, maxP = 0;
+          data.forEach(p => {
+            if (p.goals   > maxG) maxG = p.goals;
+            if (p.assists > maxA) maxA = p.assists;
+            if (p.points  > maxP) maxP = p.points;
+          });
+
+          data.sort((a,b) => {
+            if (b.points !== a.points) return b.points - a.points;
+            if (b.goals  !== a.goals)  return b.goals  - a.goals;
+            return a.psn.localeCompare(b.psn);
+          });
+
+          renderTop3(data, topHost, maxG, maxA, maxP);
+          renderTable(data, header, tableHost, searchEl);
+
+          if (updatedEl) {
+            updatedEl.textContent = "Senast uppdaterad: " + new Date().toLocaleString("sv-SE", {
+              day: "numeric", month: "short", year: "numeric",
+              hour: "2-digit", minute: "2-digit"
+            });
+          }
+        })
+        .catch(err => {
+          console.error("Fel vid laddning av " + cfg.name, err);
+          tableHost.innerHTML = '<div style="padding:12px;font-family:system-ui,Arial">Fel vid laddning: ' + err.message + '</div>';
+        });
     });
   }
-}
 
-/* ---------------- TABS ---------------- */
-document.querySelectorAll(".ecl-tab").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".ecl-tab").forEach(b => b.classList.remove("active"));
-    document.querySelectorAll(".division").forEach(d => d.classList.remove("active"));
+  function renderTop3(data, host, maxG, maxA, maxP) {
+    if (!host) return;
+    const top3 = data.slice(0, 3);
 
-    btn.classList.add("active");
-    document.getElementById("division-" + btn.dataset.division).classList.add("active");
+    host.innerHTML = top3.map((p, idx) => `
+      <div class="player-card">
+        <div class="player-img-wrap">
+          <img class="player-img" src="${p.img}" alt="${p.psn}" onerror="this.onerror=null;this.src='${DEFAULT_IMG}'">
+        </div>
+        <div class="player-card-header">
+          <div>
+            <div class="player-name">${p.psn}</div>
+            <div class="player-team">${p.team}</div>
+          </div>
+          <div class="player-rank">#${idx + 1}</div>
+        </div>
+        <div class="player-points">${p.points} poäng</div>
+        <div class="player-ga">G ${p.goals} • A ${p.assists} • GP ${p.games}</div>
 
-    loadDivision(btn.dataset.division);
+        <div class="bar-row">
+          <div class="bar-label"><span>Mål</span><span>${p.goals}</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${maxG ? (p.goals / maxG * 100) : 0}%"></div></div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label"><span>Assists</span><span>${p.assists}</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${maxA ? (p.assists / maxA * 100) : 0}%"></div></div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label"><span>Poäng</span><span>${p.points}</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${maxP ? (p.points / maxP * 100) : 0}%"></div></div>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function renderTable(data, header, host, searchEl) {
+    const tableHtml = `
+      <table>
+        <thead>
+          <tr>
+            ${header.map(h => `<th>${h}</th>`).join("")}
+          </tr>
+        </thead>
+        <tbody>
+          ${data.map(p => `
+            <tr>
+              <td data-label="${header[0]}">${p.psn}</td>
+              <td data-label="${header[1]}">${p.team}</td>
+              <td data-label="${header[2]}">${p.games}</td>
+              <td data-label="${header[3]}">${p.goals}</td>
+              <td data-label="${header[4]}">${p.assists}</td>
+              <td data-label="${header[5]}">${p.points}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    `;
+
+    host.innerHTML = tableHtml;
+
+    const table = host.querySelector("table");
+    const tbody = table.querySelector("tbody");
+    const thead = table.querySelector("thead");
+    let currentAsc = true;
+
+    thead.querySelectorAll("th").forEach((th, idx) => {
+      th.addEventListener("click", () => {
+        const sorted = [...data].sort((a,b) => {
+          const colsA = [pToArr(a)][0];
+          const colsB = [pToArr(b)][0];
+          const A = colsA[idx];
+          const B = colsB[idx];
+          const numA = Number(A), numB = Number(B);
+          let res;
+          if (!isNaN(numA) && !isNaN(numB)) res = numA - numB;
+          else res = String(A).localeCompare(String(B));
+          return currentAsc ? res : -res;
+        });
+        currentAsc = !currentAsc;
+        tbody.innerHTML = sorted.map(p => `
+          <tr>
+            <td data-label="${header[0]}">${p.psn}</td>
+            <td data-label="${header[1]}">${p.team}</td>
+            <td data-label="${header[2]}">${p.games}</td>
+            <td data-label="${header[3]}">${p.goals}</td>
+            <td data-label="${header[4]}">${p.assists}</td>
+            <td data-label="${header[5]}">${p.points}</td>
+          </tr>
+        `).join("");
+      });
+    });
+
+    function pToArr(p) {
+      return [p.psn, p.team, p.games, p.goals, p.assists, p.points];
+    }
+
+    if (searchEl) {
+      searchEl.addEventListener("input", function(){
+        const q = this.value.toLowerCase();
+        [...tbody.rows].forEach(tr => {
+          const match = [...tr.cells].some(td => td.textContent.toLowerCase().includes(q));
+          tr.style.display = match ? "" : "none";
+        });
+      });
+    }
+  }
+
+  document.querySelectorAll(".ecl-tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const key = btn.getAttribute("data-division");
+
+      document.querySelectorAll(".ecl-tab").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      document.querySelectorAll(".division").forEach(div => div.classList.remove("active"));
+      document.getElementById("division-" + key).classList.add("active");
+
+      loadDivision(key);
+    });
   });
-});
 
-/* Load Elite first */
-loadDivision("elite");
+  // ladda Elite direkt
+  loadDivision("elite");
+})();
 </script>
 
 </body>
