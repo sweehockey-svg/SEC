@@ -2,190 +2,363 @@
 <html lang="sv">
 <head>
   <meta charset="UTF-8" />
-  <title>ECL 26 Winter – Svenska poängligor</title>
+  <title>ECL 26 Winter – Svenska ligor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
+    :root {
+      --bg-dark: #04123a;
+      --bg-darker: #020718;
+      --accent-orange: #f9a64a;
+      --accent-yellow: #f7d35f;
+      --accent-blue: #102a68;
+      --text-main: #f5f6ff;
+      --text-muted: #c5c8de;
+      --card-bg: #07132f;
+    }
+
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: Inter, system-ui, Arial, sans-serif;
-      background: #ffffff;
+      background:
+        radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.05), transparent 60%),
+        radial-gradient(circle at 100% 0, rgba(255, 255, 255, 0.04), transparent 65%),
+        linear-gradient(180deg, #020719, #020414 60%, #000);
+      color: var(--text-main);
+      min-height: 100vh;
     }
 
-    /* TABS */
+    .page-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 14px 10px 40px;
+    }
+
+    /* -------------------------------------
+       TABS
+    --------------------------------------*/
     .ecl-tabs {
-      display: flex;
-      gap: 6px;
-      margin: 10px 0 16px;
-      flex-wrap: wrap;
-      padding: 0 8px;
+      display: inline-flex;
+      gap: 8px;
+      margin: 8px 0 16px;
+      padding: 6px 8px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.4);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.8);
     }
     .ecl-tab {
       border: none;
-      padding: 8px 14px;
+      padding: 7px 16px;
       border-radius: 999px;
-      font-size: 14px;
+      font-size: 13px;
       cursor: pointer;
-      background: #f1f3fa;
-      color: #202742;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-muted);
       font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      transition: 0.18s;
     }
     .ecl-tab.active {
-      background: #101b40;
-      color: #f7e0a2;
+      background: linear-gradient(135deg, var(--accent-orange), var(--accent-yellow));
+      color: #141320;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.4), 0 10px 26px rgba(0,0,0,0.8);
+      transform: translateY(-1px);
     }
 
-    .division { display: none; padding: 0 8px 20px; }
-    .division.active { display: block; }
+    /* -------------------------------------
+       TITEL
+    --------------------------------------*/
+    .page-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0 18px;
+      color: var(--text-main);
+      text-shadow: 0 3px 18px rgba(0,0,0,0.9);
+    }
+    .page-title-icon { font-size: 26px; }
+    .page-title-text {
+      font-size: 20px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    .page-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .16em;
+    }
 
+    /* -------------------------------------
+       HEADER / SÖK
+    --------------------------------------*/
     .header-box {
-      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
-      margin: 10px 0 20px; gap: 12px;
+      display: flex; flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
     }
     .header-box h2 {
-      font-size: 24px; font-weight: 800; color: #0b1a49;
-      margin: 0; text-shadow: 0 2px 6px rgba(0,0,0,.08);
+      font-size: 18px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--text-main);
+      margin: 0;
     }
-    .header-box input[type="text"] {
-      padding: 10px 14px; font-size: 15px; border: 1px solid #ccc;
-      border-radius: 10px; min-width: 240px; outline: none;
-      transition: border-color .2s, box-shadow .2s;
+    .header-box input {
+      padding: 8px 12px;
+      background: #07132f;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      outline: none;
+      min-width: 230px;
     }
 
-    /* TOP 3 cards */
+    /* -------------------------------------
+       TOP 3 KORT
+    --------------------------------------*/
     .top3-container {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 16px;
+      gap: 14px;
       margin-bottom: 18px;
     }
+
     .player-card {
-      background: #ffffff;
-      border-radius: 16px;
-      padding: 14px 16px;
-      box-shadow: 0 4px 16px rgba(0,0,0,.06);
+      position: relative;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent 30%),
+                  linear-gradient(180deg, #0a1740, #020716);
+      border-radius: 18px;
+      padding: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      overflow: hidden;
+    }
+
+    .team-logo-card {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 46px;
+      height: 46px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.75));
+      pointer-events: none;
+      opacity: 0.95;
+    }
+
+    .player-ribbon {
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: rgba(0,0,0,0.5);
+      padding: 4px 10px;
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: .16em;
+    }
+    .player-rank-badge {
+      position: absolute;
+      bottom: 6px;
+      left: 10px;
+      font-size: 40px;
+      font-weight: 900;
+      color: rgba(255,255,255,0.05);
+    }
+
+    .player-top-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
     }
     .player-img-wrap {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      margin-bottom: 10px;
+      flex: 0 0 90px;
+      height: 120px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid rgba(255,255,255,0.8);
+      background: #000;
     }
     .player-img {
-      width: 90px;
-      height: 90px;
-      border-radius: 50%;
+      width: 100%; height: 100%;
       object-fit: cover;
-      box-shadow: 0 3px 10px rgba(0,0,0,.15);
+      display: block;
     }
-    .player-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 6px;
-    }
-    .player-name { font-weight: 700; font-size: 15px; color: #0b1a49; }
-    .player-team { font-size: 12px; color: #667; }
-    .player-rank { font-weight: 700; font-size: 14px; color: #b8860b; }
-    .player-points { font-size: 13px; color: #222; margin-bottom: 4px; }
-    .player-ga { font-size: 12px; color: #555; margin-bottom: 8px; }
 
-    .bar-row { font-size: 11px; margin-bottom: 4px; }
-    .bar-label { display: flex; justify-content: space-between; margin-bottom: 2px; }
+    .player-name {
+      font-size: 16px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .player-team {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .player-points {
+      margin-top: 4px;
+      font-size: 13px;
+    }
+    .player-ga {
+      font-size: 12px;
+      color: #ddd;
+    }
+
+    .stat-bars { margin-top: 8px; }
+    .bar-row { margin-bottom: 3px; font-size: 11px; }
+    .bar-label { display: flex; justify-content: space-between; }
     .bar-track {
-      width: 100%; height: 6px; border-radius: 999px;
-      background: #e3e7f3; overflow: hidden;
+      background: rgba(255,255,255,0.1);
+      height: 6px;
+      border-radius: 999px;
     }
     .bar-fill {
-      height: 100%; border-radius: 999px; background: #101b40;
+      height: 6px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #f7d35f, #f9a64a);
     }
 
-    /* TABLE */
-    .table-container {
-      background: #fff; border-radius: 12px; overflow-x: auto;
-      box-shadow: 0 6px 18px rgba(0,0,0,.08);
+    /* -------------------------------------
+       TABELL
+    --------------------------------------*/
+    .table-shell {
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: #030a1d;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     }
+
+    .table-header-strip {
+      background: linear-gradient(90deg, #f6983f, #f3c34a);
+      color: #111;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .16em;
+    }
+
+    .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
     .table-container table {
-      width: 100%; border-collapse: separate; border-spacing: 0;
-      font: 15px/1.4 Inter, system-ui, Arial, sans-serif;
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      min-width: 700px;
     }
-    .table-container thead th {
-      position: sticky; top: 0; background: #101b40; color: #d6b15f;
-      padding: 12px 10px; border-bottom: 1px solid #1f2a44;
-      cursor: pointer; user-select: none;
+    thead { background: #091540; }
+    thead th {
+      padding: 8px 10px;
+      color: #f7d35f;
+      text-transform: uppercase;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
     }
-    .table-container tbody td {
-      padding: 12px 10px; border-bottom: 1px solid #e9eef5;
+    tbody td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #0d1430;
+      text-align: center;
     }
-    .table-container tbody tr:hover {
-      background: #f5f7ff; cursor: pointer;
-    }
+    tbody tr:nth-child(even) { background: rgba(255,255,255,0.03); }
+    tbody tr:hover { background: rgba(255, 200, 100, 0.12); }
+
+    thead th:nth-child(1),
+    thead th:nth-child(2),
+    thead th:nth-child(3),
+    tbody td:nth-child(1),
+    tbody td:nth-child(2),
+    tbody td:nth-child(3) { text-align: left; }
 
     .lastUpdated {
-      font-size: 13px; color: #666; margin-top: 8px; text-align: right;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: right;
+      margin-top: 5px;
     }
+
+    @media (max-width: 768px) {
+      .ecl-tabs { gap: 6px; padding: 4px 6px; }
+      .ecl-tab { padding: 6px 10px; font-size: 11px; letter-spacing: .05em; }
+      .team-logo-card { width: 32px; height: 32px; top: 8px; right: 8px; }
+    }
+
+    .team-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .team-logo {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+#sectionDesc {
+  font-size: 11px;
+  line-height: 1.45;
+  color: rgba(245, 246, 255, 0.75);
+  margin-top: 4px;
+  max-width: 900px;
+}
+@media (max-width: 768px) {
+  #sectionDesc {
+    font-size: 10px;
+    line-height: 1.4;
+  }
+}
+
   </style>
 </head>
 <body>
+<div class="page-wrap">
 
-<!-- Tabs -->
-<div class="ecl-tabs">
-  <button class="ecl-tab active" data-division="elite">Elite</button>
-  <button class="ecl-tab" data-division="pro">Pro</button>
-  <button class="ecl-tab" data-division="lite">Lite</button>
-  <button class="ecl-tab" data-division="core">Core</button>
-  <button class="ecl-tab" data-division="neo">Neo</button>
-</div>
-
-<!-- Division containers -->
-<div id="division-elite" class="division active">
-  <div class="header-box">
-    <h2>🏆 ECL 26 Winter – Elite Poängliga (Svenska spelare)</h2>
-    <input id="search-elite" type="text" placeholder="🔍 Sök spelare eller lag...">
+  <!-- League tabs -->
+  <div class="ecl-tabs">
+    <button class="ecl-tab active" data-league="skaters">Spelare</button>
+    <button class="ecl-tab" data-league="defenders">Backar</button>
+    <button class="ecl-tab" data-league="goalies">Målvakter</button>
   </div>
-  <div id="top3-elite" class="top3-container"></div>
-  <div id="table-elite" class="table-container"></div>
-  <p id="updated-elite" class="lastUpdated"></p>
-</div>
 
-<div id="division-pro" class="division">
-  <div class="header-box">
-    <h2>🏆 ECL 26 Winter – Pro Poängliga (Svenska spelare)</h2>
-    <input id="search-pro" type="text" placeholder="🔍 Sök spelare eller lag...">
+  <!-- Division tabs -->
+  <div class="ecl-tabs">
+    <button class="ecl-tab active" data-division="elite">Elite</button>
+    <button class="ecl-tab" data-division="pro">Pro</button>
+    <button class="ecl-tab" data-division="lite">Lite</button>
+    <button class="ecl-tab" data-division="core">Core</button>
+    <button class="ecl-tab" data-division="neo">Neo</button>
   </div>
-  <div id="top3-pro" class="top3-container"></div>
-  <div id="table-pro" class="table-container"></div>
-  <p id="updated-pro" class="lastUpdated"></p>
-</div>
 
-<div id="division-lite" class="division">
-  <div class="header-box">
-    <h2>🏆 ECL 26 Winter – Lite Poängliga (Svenska spelare)</h2>
-    <input id="search-lite" type="text" placeholder="🔍 Sök spelare eller lag...">
+  <div class="page-title">
+    <div class="page-title-icon" id="titleIcon">🏆</div>
+    <div>
+      <div class="page-title-text" id="titleText">ECL 26 Winter – Svenska poängligor</div>
+      <div class="page-sub" id="titleSub"></div>
+    </div>
   </div>
-  <div id="top3-lite" class="top3-container"></div>
-  <div id="table-lite" class="table-container"></div>
-  <p id="updated-lite" class="lastUpdated"></p>
-</div>
 
-<div id="division-core" class="division">
   <div class="header-box">
-    <h2>🏆 ECL 26 Winter – Core Poängliga (Svenska spelare)</h2>
-    <input id="search-core" type="text" placeholder="🔍 Sök spelare eller lag...">
+    <h2 id="sectionTitle">Elite Poängliga</h2>
+<div id="sectionDesc" class="page-sub"></div>
+    <input id="searchBox" placeholder="Sök spelare/målvakt eller lag…" />
   </div>
-  <div id="top3-core" class="top3-container"></div>
-  <div id="table-core" class="table-container"></div>
-  <p id="updated-core" class="lastUpdated"></p>
-</div>
 
-<div id="division-neo" class="division">
-  <div class="header-box">
-    <h2>🏆 ECL 26 Winter – Neo Poängliga (Svenska spelare)</h2>
-    <input id="search-neo" type="text" placeholder="🔍 Sök spelare eller lag...">
+  <div id="top3" class="top3-container"></div>
+
+  <div class="table-shell">
+    <div class="table-header-strip" id="tableStrip">Topplista</div>
+    <div id="tableHost" class="table-container"></div>
   </div>
-  <div id="top3-neo" class="top3-container"></div>
-  <div id="table-neo" class="table-container"></div>
-  <p id="updated-neo" class="lastUpdated"></p>
+  <p id="updated" class="lastUpdated"></p>
+
 </div>
 
 <script>
@@ -194,225 +367,182 @@
   const TABLE_SHEET_ID = "1toag5J7vMW0CEmtsrqByPJMJn6e-U5hOzZaKWoXnpxY";
 
   const CARD_CSV =
-"https://docs.google.com/spreadsheets/d/e/2PACX-1vSZCNO-QbbfniaDOODJpcE_B8ab6RHunhkSRGuEjYeVlM2TVq6okNMG8JPHHZyWf50RsJFflI6bbAnB/pub?gid=2047009971&single=true&output=csv";
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZCNO-QbbfniaDOODJpcE_B8ab6RHunhkSRGuEjYeVlM2TVq6okNMG8JPHHZyWf50RsJFflI6bbAnB/pub?gid=2047009971&single=true&output=csv";
 
-  const DEFAULT_IMG = "https://drive.google.com/thumbnail?id=1VAa79pJ-QbyeliY60autf914z6SBwmhp&sz=w1000";
+  const DEFAULT_IMG =
+    "https://drive.google.com/thumbnail?id=1VAa79pJ-QbyeliY60autf914z6SBwmhp&sz=w1000";
 
-
-  function tableSheet(name){
-    return `https://docs.google.com/spreadsheets/d/${TABLE_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
+  function sheetUrl(sheetName){
+    return `https://docs.google.com/spreadsheets/d/${TABLE_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
   }
 
-  const SHEETS = {
-    cards: CARD_CSV,
-    elite: tableSheet("Elitepoängliga"),
-    pro:   tableSheet("Propoängliga"),
-    lite:  tableSheet("Litepoängliga"),
-    core:  tableSheet("Corepoängliga"),
-    neo:   tableSheet("Neopoängliga")
+  const DATA_SHEETS = {
+    skaters: sheetUrl("Utespelare"),
+    defenders: sheetUrl("Backar"),
+    goalies: sheetUrl("Målvakter")
   };
 
-  /* CSV parser */
+  const LOGO_SHEET = sheetUrl("Loggor");
+
+  let activeLeague = "skaters";
+  let activeDiv = "elite";
+
+  let currentSort = { idx: null, key: null };
+
+  const divLabels = {
+    elite: "Elite",
+    pro: "Pro",
+    lite: "Lite",
+    core: "Core",
+    neo: "Neo"
+  };
+
+  const sortTitles = {
+    p: "Poängliga",
+    m: "Skytteligan",
+    a: "Assistligan",
+    u: "Busligan",
+    ma: "Flest spelade matcher",
+    dim: "Defensiv Impact-ligan",
+    svp: "Räddningsligan",
+    gaa: "GAA-ligan",
+    so: "Nolligan"
+  };
+
   function parseCSV(txt){
-    const lines = [];
-    let row = [];
-    let cur = "";
-    let q = false;
-    for (let i=0;i<txt.length;i++){
-      const c = txt[i];
-      const nxt = txt[i+1];
-      if (c === '"' && nxt === '"'){ cur += '"'; i++; continue; }
-      if (c === '"'){ q = !q; continue; }
-      if (c === ',' && !q){ row.push(cur); cur=""; continue; }
-      if ((c === '\n' || c === '\r') && !q){
-        if (cur.length || row.length){ row.push(cur); lines.push(row); row=[]; cur=""; }
-        continue;
+    const out=[]; let row=[], cur="", q=false;
+    for(let i=0;i<txt.length;i++){
+      const c=txt[i], n=txt[i+1];
+      if(c=='"'&&n=='"'){cur+='"';i++;continue;}
+      if(c=='"'){q=!q;continue;}
+      if(c==","&&!q){row.push(cur);cur="";continue;}
+      if((c=="\n"||c=="\r")&&!q){
+        if(cur||row.length){row.push(cur);out.push(row);}
+        row=[];cur="";continue;
       }
       cur+=c;
     }
-    if (cur.length || row.length){ row.push(cur); lines.push(row); }
-    return lines.filter(r=>r.some(x=>x.trim()!==""));
+    if(cur||row.length){row.push(cur);out.push(row);}
+    return out;
   }
 
-  function normalize(str){
-    if (!str) return "";
-    return str.normalize("NFKD")
-      .replace(/[\u0300-\u036f]/g,"")
-      .replace(/[^\w\s]/g,"")
-      .replace(/\s+/g," ")
-      .trim()
-      .toLowerCase();
-  }
+  const normalize = s =>
+    String(s||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^\w\s]/g,"").toLowerCase().trim();
 
-  /* Ladda ID -> DRIVE-bilder */
-  let cardMap = null;
-  let loadCardPromise = null;
+  const toNum = x => parseFloat(String(x||"").replace(",",".").replace("%","")) || 0;
+
+  const parseSVP = v => {
+    let n=toNum(v);
+    return n>1?n/100:n;
+  };
+
+  const formatSVP = v => (parseSVP(v)*100).toFixed(1)+"%";
+  const formatGAA = v => toNum(v).toFixed(2);
+
+  let cardMap=null, logoMap=null;
 
   function loadCardImages(){
-    if (cardMap) return Promise.resolve(cardMap);
-    if (loadCardPromise) return loadCardPromise;
+    if(cardMap) return Promise.resolve(cardMap);
+    return fetch(CARD_CSV).then(r=>r.text()).then(t=>{
+      const m={}; parseCSV(t).slice(1).forEach(r=>{
+        m[normalize(r[0])] = r[1]
+          ? `https://drive.google.com/thumbnail?id=${r[1]}&sz=w1000`
+          : DEFAULT_IMG;
+      });
+      cardMap=m; return m;
+    });
+  }
 
-    loadCardPromise = fetch(SHEETS.cards)
-      .then(r=>r.text())
-      .then(csv=>{
-        const rows = parseCSV(csv);
-        rows.shift();
+  function loadTeamLogos(){
+    if(logoMap) return Promise.resolve(logoMap);
+    return fetch(LOGO_SHEET).then(r=>r.text()).then(t=>{
+      const m={}; parseCSV(t).slice(1).forEach(r=>{
+        if(r[0]&&r[1]) m[normalize(r[0])] = r[1];
+      });
+      logoMap=m; return m;
+    });
+  }
 
-        const map={};
+  function renderTop3(players, host){
+    host.innerHTML = players.slice(0,3).map((p,i)=>`
+      <div class="player-card">
+        <div class="player-rank-badge">${i+1}</div>
+        <div class="player-name">${p.name}</div>
+        <div class="player-team">${p.team}</div>
+      </div>
+    `).join("");
+  }
 
-        rows.forEach(r=>{
-          const name = normalize(r[0]||"");       // A = spelarnamn
-          const driveId = (r[1]||"").trim();      // B = DRIVE-ID (DIN BEKRÄFTADE KOLUMN)
-          let url = DEFAULT_IMG;
+  function renderTable(header, rows, host, search, objs, top3){
+    let data = rows.map((r,i)=>({r,i}));
 
-          if (driveId){
-            url = `https://drive.google.com/thumbnail?id=${driveId}&sz=w1000`;
-          }
+    host.innerHTML = `
+      <table>
+        <thead><tr>${["#",...header].map((h,i)=>`<th data-i="${i}">${h}</th>`).join("")}</tr></thead>
+        <tbody></tbody>
+      </table>
+    `;
 
-          map[name] = url;
-        });
+    const tbody = host.querySelector("tbody");
+    const ths = host.querySelectorAll("th");
+    let sortState={i:null,asc:false};
 
-        cardMap = map;
-        return map;
+    function redraw(){
+      tbody.innerHTML = data.map((d,i)=>`
+        <tr><td>${i+1}</td>${d.r.map(c=>`<td>${c}</td>`).join("")}</tr>
+      `).join("");
+
+      let visible = data.map(d=>{
+        const o = objs[d.i];
+        if(sortState.i){
+          o.__v = toNum(d.r[sortState.i-1]);
+        }
+        return o;
       });
 
-    return loadCardPromise;
-  }
+      // 🔒 KRITISK FIX – Top-3 följer EXAKT tabellens sort
+      if(sortState.i){
+        const dir = sortState.asc ? 1 : -1;
+        visible.sort((a,b)=> (a.__v-b.__v)*dir);
+      }
 
-  /* Ladda DIVISION */
-  const loaded = {};
+      renderTop3(visible, top3);
+    }
 
-  function loadDivision(div){
-    if (loaded[div]) return;
-    loaded[div]=true;
+    ths.forEach(th=>{
+      th.onclick=()=>{
+        const i=+th.dataset.i;
+        if(!i) return;
+        sortState.asc = sortState.i===i ? !sortState.asc : false;
+        sortState.i=i;
 
-    const cfg = {
-      elite:{url:SHEETS.elite,search:"search-elite",top:"top3-elite",table:"table-elite",updated:"updated-elite"},
-      pro:{url:SHEETS.pro,search:"search-pro",top:"top3-pro",table:"table-pro",updated:"updated-pro"},
-      lite:{url:SHEETS.lite,search:"search-lite",top:"top3-lite",table:"table-lite",updated:"updated-lite"},
-      core:{url:SHEETS.core,search:"search-core",top:"top3-core",table:"table-core",updated:"updated-core"},
-      neo:{url:SHEETS.neo,search:"search-neo",top:"top3-neo",table:"table-neo",updated:"updated-neo"}
-    }[div];
-
-    const tbl = document.getElementById(cfg.table);
-    const top = document.getElementById(cfg.top);
-    const upd = document.getElementById(cfg.updated);
-    const search = document.getElementById(cfg.search);
-
-    tbl.innerHTML = "<div style='padding:12px'>Laddar...</div>";
-
-    loadCardImages().then(map=>{
-      fetch(cfg.url)
-        .then(r=>r.text())
-        .then(csv=>{
-          const rows = parseCSV(csv);
-          const header = rows.shift();
-
-          let data = rows.map(r=>{
-            const psn = (r[0]||"").trim();
-            const key = normalize(psn);
-            const img = map[key] || DEFAULT_IMG;
-
-            return {
-              psn,
-              team:(r[1]||""),
-              games:Number(r[2]||0),
-              goals:Number(r[3]||0),
-              assists:Number(r[4]||0),
-              points:Number(r[5]||0),
-              img
-            };
-          });
-
-          const maxG = Math.max(...data.map(x=>x.goals));
-          const maxA = Math.max(...data.map(x=>x.assists));
-          const maxP = Math.max(...data.map(x=>x.points));
-
-          data.sort((a,b)=>{
-            if (b.points !== a.points) return b.points-a.points;
-            if (b.goals !== a.goals) return b.goals-a.goals;
-            return a.psn.localeCompare(b.psn);
-          });
-
-          /* TOP 3 */
-          top.innerHTML = data.slice(0,3).map((p,i)=>`
-            <div class="player-card">
-              <div class="player-img-wrap">
-                <img class="player-img" src="${p.img}" onerror="this.onerror=null;this.src='${DEFAULT_IMG}'">
-              </div>
-              <div class="player-card-header">
-                <div>
-                  <div class="player-name">${p.psn}</div>
-                  <div class="player-team">${p.team}</div>
-                </div>
-                <div class="player-rank">#${i+1}</div>
-              </div>
-              <div class="player-points">${p.points} poäng</div>
-              <div class="player-ga">G ${p.goals} • A ${p.assists} • GP ${p.games}</div>
-
-              <div class="bar-row">
-                <div class="bar-label"><span>Mål</span><span>${p.goals}</span></div>
-                <div class="bar-track"><div class="bar-fill" style="width:${(p.goals/maxG*100)||0}%"></div></div>
-              </div>
-              <div class="bar-row">
-                <div class="bar-label"><span>Assists</span><span>${p.assists}</span></div>
-                <div class="bar-track"><div class="bar-fill" style="width:${(p.assists/maxA*100)||0}%"></div></div>
-              </div>
-              <div class="bar-row">
-                <div class="bar-label"><span>Poäng</span><span>${p.points}</span></div>
-                <div class="bar-track"><div class="bar-fill" style="width:${(p.points/maxP*100)||0}%"></div></div>
-              </div>
-            </div>
-          `).join("");
-
-          /* TABELL */
-          tbl.innerHTML = `
-            <table>
-              <thead><tr>${header.map(h=>`<th>${h}</th>`).join("")}</tr></thead>
-              <tbody>
-                ${data.map(p=>`
-                <tr>
-                  <td>${p.psn}</td>
-                  <td>${p.team}</td>
-                  <td>${p.games}</td>
-                  <td>${p.goals}</td>
-                  <td>${p.assists}</td>
-                  <td>${p.points}</td>
-                </tr>`).join("")}
-              </tbody>
-            </table>
-          `;
-
-          upd.textContent =
-            "Senast uppdaterad: " +
-            new Date().toLocaleString("sv-SE",{hour:"2-digit",minute:"2-digit",day:"numeric",month:"short"});
-
-          /* Sök */
-          search.addEventListener("input",()=>{
-            const q = search.value.toLowerCase();
-            tbl.querySelectorAll("tbody tr").forEach(tr=>{
-              tr.style.display = tr.innerText.toLowerCase().includes(q) ? "" : "none";
-            });
-          });
-
+        data.sort((a,b)=>{
+          const av=toNum(a.r[i-1]), bv=toNum(b.r[i-1]);
+          return (av-bv)*(sortState.asc?1:-1);
         });
+
+        redraw();
+      };
+    });
+
+    redraw();
+  }
+
+  function load(){
+    Promise.all([loadCardImages(),loadTeamLogos()]).then(()=>{
+      fetch(DATA_SHEETS[activeLeague]).then(r=>r.text()).then(t=>{
+        const rows=parseCSV(t); const h=rows.shift();
+        renderTable(h,rows,tableHost,searchBox,[],top3);
+      });
     });
   }
 
-  /* Tabs */
-  document.querySelectorAll(".ecl-tab").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      document.querySelectorAll(".ecl-tab").forEach(x=>x.classList.remove("active"));
-      btn.classList.add("active");
+  const tableHost=document.getElementById("tableHost");
+  const top3=document.getElementById("top3");
+  const searchBox=document.getElementById("searchBox");
 
-      document.querySelectorAll(".division").forEach(x=>x.classList.remove("active"));
-      document.getElementById("division-"+btn.dataset.division).classList.add("active");
-
-      loadDivision(btn.dataset.division);
-    });
-  });
-
-  loadDivision("elite");
+  load();
 
 })();
 </script>
