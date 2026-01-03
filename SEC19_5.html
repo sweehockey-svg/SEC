@@ -1175,6 +1175,16 @@ html, body {
 
   const CUP_NAME = "SEC 19.5";
 
+  /* =====================
+     SLUTSPELS-KONFIG
+     ===================== */
+  const PLAYOFF_CONFIG = {
+    "ÅTTONDELSFINAL": { bestOf: 3, title: "Åttondelsfinaler" },
+    "KVARTSFINAL":   { bestOf: 5, title: "Kvartsfinaler" },
+    "SEMIFINAL":     { bestOf: 5, title: "Semifinaler" },
+    "FINAL":         { bestOf: 5, title: "Final" }
+  };
+
   const API_BASE =
     "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec";
 
@@ -1188,12 +1198,13 @@ html, body {
   .then(([matches, logos]) => {
 
     /* =====================
-       LOGOMAP (oförändrad)
+       LOGOMAP
        ===================== */
     const logoMap = {};
     logos.forEach(r => {
-      const name = (r.laglogga || r.Laglogga || "").toLowerCase().trim();
-      const id   = (r.driveid || r.DriveID || "").trim();
+      const name = (r.laglogga || r.Laglogga || "")
+        .toString().trim().toLowerCase();
+      const id = (r.driveid || r.DriveID || "").toString().trim();
       if (name && id) {
         logoMap[name] =
           `https://drive.google.com/thumbnail?id=${id}&sz=w200`;
@@ -1210,7 +1221,7 @@ html, body {
     const playoffMatches = matches
       .filter(m =>
         norm(m.cup || m.Cup) === CUP_NAME &&
-        ["SEMIFINAL", "FINAL"].includes(norm(m.stage || m.Stage))
+        PLAYOFF_CONFIG[norm(m.stage || m.Stage)]
       )
       .map(m => ({
         stage: norm(m.stage || m.Stage),
@@ -1230,64 +1241,55 @@ html, body {
     }
 
     /* =====================
-       GRUPPERA PER STAGE + SERIE
+       GRUPPERA PER RONDER
        ===================== */
-    function buildSeries(stage) {
-      const series = {};
-      playoffMatches
-        .filter(m => m.stage === stage)
-        .forEach(m => {
-          const key = [m.home, m.away].sort().join("|");
-          (series[key] = series[key] || []).push(m);
-        });
-
-      return Object.values(series);
-    }
-
-    const semifinals = buildSeries("SEMIFINAL");
-    const finals     = buildSeries("FINAL");
+    const rounds = {};
+    playoffMatches.forEach(m => {
+      (rounds[m.stage] = rounds[m.stage] || []).push(m);
+    });
 
     /* =====================
-       RENDER (layout oförändrad)
+       RENDER ALLA RONDER
        ===================== */
-    const semiHTML = semifinals.map(renderSeries).join("");
-
-    let finalHTML = "";
+    let html = `<div class="slutspel-wrapper">`;
     let champion = "";
 
-    if (finals.length) {
-      finalHTML = renderSeries(finals[0]);
+    Object.keys(PLAYOFF_CONFIG).forEach(stage => {
+      if (!rounds[stage]) return;
 
-      // räkna mästare korrekt från matcher
-      const wins = {};
-      finals[0].forEach(m => {
-        wins[m.home] = wins[m.home] || 0;
-        wins[m.away] = wins[m.away] || 0;
-        if (m.hs > m.as) wins[m.home]++;
-        else wins[m.away]++;
+      const seriesGroups = {};
+      rounds[stage].forEach(m => {
+        const key = [m.home, m.away].sort().join("|");
+        (seriesGroups[key] = seriesGroups[key] || []).push(m);
       });
-      champion = Object.keys(wins).sort((a,b)=>wins[b]-wins[a])[0];
-    }
 
-    container.innerHTML = `
-      <div class="slutspel-wrapper">
-
-        <h3 class="section-title">🏒 Semifinaler</h3>
-        <div class="semi-grid">${semiHTML}</div>
-
+      html += `
+        <h3 class="section-title">🏒 ${PLAYOFF_CONFIG[stage].title}</h3>
+        <div class="${stage.toLowerCase()}-grid">
+          ${Object.values(seriesGroups)
+            .map(series => renderSeries(series, stage))
+            .join("")}
+        </div>
         <div class="gold-divider"></div>
+      `;
 
-        <h3 class="section-title">🥇 Final</h3>
-        <div class="final-box">${finalHTML}</div>
+      // mästare från sista rundan
+      if (stage === "FINAL") {
+        const finalSeries = Object.values(seriesGroups)[0];
+        champion = getSeriesWinner(finalSeries);
+      }
+    });
 
-        ${champion ? `
-        <div class="champion-clean">
-          <img src="${logo(champion)}" alt="${champion}">
-          🏆 <strong>${champion}</strong>
-        </div>` : ""}
-
+    html += `
+      ${champion ? `
+      <div class="champion-clean">
+        <img src="${logo(champion)}" alt="${champion}">
+        🏆 <strong>${champion}</strong>
+      </div>` : ""}
       </div>
     `;
+
+    container.innerHTML = html;
   })
   .catch(err => {
     console.error("Slutspel fel:", err);
@@ -1296,76 +1298,72 @@ html, body {
   });
 
   /* =====================
-     SERIEKORT – NU MATCHLISTA
+     SERIEKORT
      ===================== */
-function renderSeries(matches) {
-  const cup = "19.5";
+  function renderSeries(matches, stage) {
+    const cup = "19.5";
+    const bestOf = PLAYOFF_CONFIG[stage].bestOf;
 
-  // Best-of per stage
-  const stage = matches[0]?.stage;
-  const bestOf =
-    stage === "FINAL" ? 5 :
-    stage === "SEMIFINAL" ? 5 :
-    "";
+    matches.sort((a,b)=>
+      new Date(a.date+" "+a.time) - new Date(b.date+" "+b.time)
+    );
 
-  // sortera matcher kronologiskt
-  matches.sort((a,b)=>
-    new Date(a.date + " " + a.time) - new Date(b.date + " " + b.time)
-  );
+    const wins = {};
+    matches.forEach(m => {
+      wins[m.home] = wins[m.home] || 0;
+      wins[m.away] = wins[m.away] || 0;
+      if (m.hs > m.as) wins[m.home]++;
+      else wins[m.away]++;
+    });
 
-  // räkna vinster
-  const wins = {};
-  matches.forEach(m => {
-    wins[m.home] = wins[m.home] || 0;
-    wins[m.away] = wins[m.away] || 0;
-    if (m.hs > m.as) wins[m.home]++;
-    else wins[m.away]++;
-  });
+    const teams = Object.keys(wins);
+    const a = teams[0];
+    const b = teams[1];
+    const wa = wins[a];
+    const wb = wins[b];
+    const leader =
+      wa > wb ? a :
+      wb > wa ? b : "";
 
-  const teams = Object.keys(wins);
-  const teamA = teams[0];
-  const teamB = teams[1];
-  const winsA = wins[teamA];
-  const winsB = wins[teamB];
+    const maxWins = Math.ceil(bestOf / 2);
+    const decided = wa === maxWins || wb === maxWins;
 
-  const leader =
-    winsA > winsB ? teamA :
-    winsB > winsA ? teamB :
-    "";
+    const status = leader
+      ? decided
+        ? `${leader} vann ${Math.max(wa,wb)}–${Math.min(wa,wb)}`
+        : `${leader} leder ${Math.max(wa,wb)}–${Math.min(wa,wb)}`
+      : "";
 
-  const maxWins = Math.ceil(bestOf / 2);
-  const decided = winsA === maxWins || winsB === maxWins;
-
-  const statusText = leader
-    ? decided
-      ? `${leader} vann ${Math.max(winsA, winsB)}–${Math.min(winsA, winsB)}`
-      : `${leader} leder ${Math.max(winsA, winsB)}–${Math.min(winsA, winsB)}`
-    : "";
-
-  return `
-    <div class="series-card">
-      ${matches.map(m => `
-        <div class="team-line">
-          <a href="lagkort.html?team=${encodeURIComponent(m.home)}&cup=${cup}">
-            ${m.home}
-          </a>
-          <span>
-            ${m.hs} – ${m.as}${m.ot ? " (OT)" : ""}
-          </span>
-          <a href="lagkort.html?team=${encodeURIComponent(m.away)}&cup=${cup}">
-            ${m.away}
-          </a>
+    return `
+      <div class="series-card">
+        ${matches.map(m => `
+          <div class="team-line">
+            <a href="lagkort.html?team=${encodeURIComponent(m.home)}&cup=${cup}">
+              ${m.home}
+            </a>
+            <span>${m.hs} – ${m.as}${m.ot ? " (OT)" : ""}</span>
+            <a href="lagkort.html?team=${encodeURIComponent(m.away)}&cup=${cup}">
+              ${m.away}
+            </a>
+          </div>
+        `).join("")}
+        <div class="best-of">
+          Bäst av ${bestOf}${status ? ` – ${status}` : ""}
         </div>
-      `).join("")}
-
-      <div class="best-of">
-        Bäst av ${bestOf}${statusText ? ` – ${statusText}` : ""}
       </div>
-    </div>
-  `;
-}
+    `;
+  }
 
-
+  function getSeriesWinner(matches) {
+    const wins = {};
+    matches.forEach(m => {
+      wins[m.home] = wins[m.home] || 0;
+      wins[m.away] = wins[m.away] || 0;
+      if (m.hs > m.as) wins[m.home]++;
+      else wins[m.away]++;
+    });
+    return Object.keys(wins).sort((a,b)=>wins[b]-wins[a])[0];
+  }
 })();
 </script>
 
@@ -2668,6 +2666,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
