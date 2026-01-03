@@ -2216,8 +2216,6 @@ html, body {
   }
 }
 
-</style>
-
 <script>
 /* ============================
    STATISTIK – DATA & LOGIK
@@ -2226,10 +2224,10 @@ html, body {
 const API_BASE =
   "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec";
 
-const CUP_BASE = "SEC 19.5";
+const CUP_PREFIX = "SEC 19.5";
 
 /* ============================
-   FASVÄXEL (GRUPP / SLUTSPEL)
+   FASVÄXEL
    ============================ */
 const dropdown = document.getElementById("categoryDropdown");
 const sections = {
@@ -2287,7 +2285,7 @@ const FLAG = {
   IS:"🇮🇸", GB:"🇬🇧", DE:"🇩🇪", US:"🇺🇸", CA:"🇨🇦"
 };
 
-function norm(v){ return (v ?? "").toString().trim(); }
+const norm = v => (v ?? "").toString().trim();
 
 function mapTeam(v){
   return TEAM_MAP[norm(v)] || norm(v);
@@ -2313,8 +2311,7 @@ function renderTable({
   searchId,
   updatedId,
   sheet,
-  cupColumn,     // "P" eller "S"
-  phaseLetter,   // "G" eller "S"
+  phase, // "G" eller "S"
   sortFn
 }) {
   const host = document.getElementById(hostId);
@@ -2333,16 +2330,16 @@ function renderTable({
     .then(rows => {
 
       if (!Array.isArray(rows) || !rows.length) {
-        host.textContent = "Ingen statistik hittades.";
+        host.textContent = "Ingen data från API.";
         return;
       }
 
-      /* 🔥 ENDA FILTERLOGIKEN */
-      const wantedCup = `${CUP_BASE} ${phaseLetter}`;
-      const data = rows.filter(r => norm(r[cupColumn]) === wantedCup);
+      /* ✅ ENDA KORREKTA FILTRERINGEN */
+      const wanted = `${CUP_PREFIX} ${phase}`;
+      const data = rows.filter(r => norm(r.CUP) === wanted);
 
       if (!data.length) {
-        host.textContent = "Ingen statistik för vald fas.";
+        host.textContent = "Ingen statistik hittades.";
         return;
       }
 
@@ -2351,7 +2348,6 @@ function renderTable({
       const headers = Object.keys(data[0]);
       const table = document.createElement("table");
 
-      /* HEADER */
       table.innerHTML = `
         <thead>
           <tr>
@@ -2360,14 +2356,13 @@ function renderTable({
           </tr>
         </thead>`;
 
-      /* BODY */
       const tbody = document.createElement("tbody");
 
-      data.forEach((row, i) => {
+      data.forEach((row,i)=>{
         const tr = document.createElement("tr");
         tr.innerHTML =
-          `<td>${i + 1}</td>` +
-          headers.map(k => {
+          `<td>${i+1}</td>` +
+          headers.map(k=>{
             let v = row[k] ?? "";
 
             if (/players|goalies/i.test(k)) {
@@ -2402,7 +2397,6 @@ function renderTable({
           "Senast uppdaterad: " + new Date().toLocaleString("sv-SE");
       }
 
-      /* SÖK */
       if (search) {
         search.addEventListener("input", () => {
           const q = search.value.toLowerCase();
@@ -2429,8 +2423,7 @@ renderTable({
   searchId: "searchGroupSkaters",
   updatedId: "updated-group-skaters",
   sheet: "utestatsall",
-  cupColumn: "P",
-  phaseLetter: "G",
+  phase: "G",
   sortFn: (a,b)=>(+b.PTS||0)-(+a.PTS||0)||(+b.G||0)-(+a.G||0)
 });
 
@@ -2439,8 +2432,7 @@ renderTable({
   searchId: "searchGroupGoalies",
   updatedId: "updated-group-goalies",
   sheet: "målvaktsstatsall",
-  cupColumn: "S",
-  phaseLetter: "G",
+  phase: "G",
   sortFn: (a,b)=>(parseFloat(b.SVP)||0)-(parseFloat(a.SVP)||0)
 });
 
@@ -2452,8 +2444,7 @@ renderTable({
   searchId: "searchPlayoffSkaters",
   updatedId: "updated-playoff-skaters",
   sheet: "utestatsall",
-  cupColumn: "P",
-  phaseLetter: "S",
+  phase: "S",
   sortFn: (a,b)=>(+b.PTS||0)-(+a.PTS||0)||(+b.G||0)-(+a.G||0)
 });
 
@@ -2462,11 +2453,11 @@ renderTable({
   searchId: "searchPlayoffGoalies",
   updatedId: "updated-playoff-goalies",
   sheet: "målvaktsstatsall",
-  cupColumn: "S",
-  phaseLetter: "S",
+  phase: "S",
   sortFn: (a,b)=>(parseFloat(b.SVP)||0)-(parseFloat(a.SVP)||0)
 });
 </script>
+
 
 
 <!-- 🔹 REGLER FLIK 7 -->
@@ -2963,6 +2954,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
