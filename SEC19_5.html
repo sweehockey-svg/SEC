@@ -692,87 +692,78 @@ html, body {
 </style>
 
 <script>
-/* =====================
-   LAG – AUTO + LOGGOR
-   ===================== */
 (function () {
   const grid = document.getElementById("team-grid");
   if (!grid) return;
 
   const CUP_NAME = "SEC 19.5";
 
-  const API_BASE =
-    "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec";
+  const API =
+    "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec" +
+    "?sheet=matcherSEC";
 
-  const MATCHER_API = API_BASE + "?sheet=matcherSEC";
-  const LOGO_API    = API_BASE + "?sheet=lagloggor";
+  fetch(API)
+    .then(res => res.json())
+    .then(rows => {
+      if (!Array.isArray(rows) || rows.length === 0) {
+        grid.innerHTML = "<p>Inga matcher hittades.</p>";
+        return;
+      }
 
-  Promise.all([
-    fetch(MATCHER_API).then(r => r.json()),
-    fetch(LOGO_API).then(r => r.json())
-  ])
-  .then(([matcher, logos]) => {
+      // 🔍 DEBUG – visa exakt struktur
+      console.log("EXEMPEL RAD:", rows[0]);
 
-    /* ---- bygg logg-mapp ---- */
-    const logoMap = {};
-    logos.forEach(r => {
-      if (!r.Laglogga || !r.DriveID) return;
-      logoMap[r.Laglogga.trim()] =
-        `https://drive.google.com/thumbnail?id=${r.DriveID}&sz=w300`;
-    });
+      const teams = new Set();
 
-    /* ---- samla lag från matcher ---- */
-    const teams = new Set();
+      rows.forEach(r => {
+        const cup =
+          (r.cup || r.Cup || r.CUP || "").toString().trim();
 
-    matcher.forEach(r => {
-      const cup = (r.Cup || "").trim();
-      if (cup !== CUP_NAME) return;
+        if (cup !== CUP_NAME) return;
 
-      const home = (r["Home team"] || "").trim();
-      const away = (r["Away team"] || "").trim();
+        const home =
+          r.home_team ||
+          r["Home team"] ||
+          r.HomeTeam ||
+          "";
 
-      if (home) teams.add(home);
-      if (away) teams.add(away);
-    });
+        const away =
+          r.away_team ||
+          r["Away team"] ||
+          r.AwayTeam ||
+          "";
 
-    if (teams.size === 0) {
-      grid.innerHTML = "<p>Inga lag hittades för denna cup.</p>";
-      return;
-    }
-
-    grid.innerHTML = "";
-
-    [...teams].sort().forEach(team => {
-      const logo =
-        logoMap[team] ||
-        "https://dummyimage.com/200x200/0b0e1a/ffffff&text=SEC";
-
-      const card = document.createElement("div");
-      card.className = "team-card";
-
-      card.innerHTML = `
-        <div class="team-logo">
-          <img src="${logo}" alt="${team}">
-        </div>
-        <h3>${team}</h3>
-      `;
-
-      card.addEventListener("click", () => {
-        location.href =
-          "lagkort.html?team=" +
-          encodeURIComponent(team) +
-          "&cup=19.5";
+        if (home) teams.add(home.trim());
+        if (away) teams.add(away.trim());
       });
 
-      grid.appendChild(card);
+      if (teams.size === 0) {
+        grid.innerHTML = "<p>Inga lag hittades för denna cup.</p>";
+        return;
+      }
+
+      grid.innerHTML = "";
+
+      [...teams].sort().forEach(team => {
+        const card = document.createElement("div");
+        card.className = "team-card";
+        card.innerHTML = `<h3>${team}</h3>`;
+        card.onclick = () => {
+          location.href =
+            "lagkort.html?team=" +
+            encodeURIComponent(team) +
+            "&cup=19.5";
+        };
+        grid.appendChild(card);
+      });
+    })
+    .catch(err => {
+      console.error("Lag-flik fel:", err);
+      grid.innerHTML = "<p>Fel vid hämtning av lag.</p>";
     });
-  })
-  .catch(err => {
-    console.error("Lag-flik fel:", err);
-    grid.innerHTML = "<p>Fel vid laddning av lag.</p>";
-  });
 })();
 </script>
+
 
 
 
@@ -2512,6 +2503,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
