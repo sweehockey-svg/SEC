@@ -2272,12 +2272,9 @@ document.querySelectorAll('#statistik .stat-section').forEach(section => {
    HJÄLPFUNKTIONER
    ============================ */
 const TEAM_MAP = {
-  vNV: "vNexs Vipers",
-  VNV: "vNexs Vipers",
-  MOD: "Modo Hockey",
-  SES: "Sunne IK Esport",
-  SA: "SSK Academy",
-  SS: "Surte Sisu HC"
+  vNV:"vNexs Vipers", VNV:"vNexs Vipers",
+  MOD:"Modo Hockey", SES:"Sunne IK Esport",
+  SA:"SSK Academy", SS:"Surte Sisu HC"
 };
 
 const FLAG = {
@@ -2303,6 +2300,11 @@ function flagify(name){
   };
 }
 
+/* 🔑 HÄMTA CUP OAVSETT CASE */
+function getCup(row){
+  return norm(row.CUP ?? row.Cup ?? row.cup ?? "");
+}
+
 /* ============================
    GENERISK TABELLRENDER
    ============================ */
@@ -2311,7 +2313,7 @@ function renderTable({
   searchId,
   updatedId,
   sheet,
-  phase, // "G" eller "S"
+  phase,   // "G" eller "S"
   sortFn
 }) {
   const host = document.getElementById(hostId);
@@ -2334,9 +2336,10 @@ function renderTable({
         return;
       }
 
-      /* ✅ ENDA KORREKTA FILTRERINGEN */
       const wanted = `${CUP_PREFIX} ${phase}`;
-      const data = rows.filter(r => norm(r.CUP) === wanted);
+
+      /* ✅ ROBUST FILTRERING */
+      const data = rows.filter(r => getCup(r) === wanted);
 
       if (!data.length) {
         host.textContent = "Ingen statistik hittades.";
@@ -2419,45 +2422,44 @@ function renderTable({
    GRUPPSPEL
    ============================ */
 renderTable({
-  hostId: "group-player-stats",
-  searchId: "searchGroupSkaters",
-  updatedId: "updated-group-skaters",
-  sheet: "utestatsall",
-  phase: "G",
-  sortFn: (a,b)=>(+b.PTS||0)-(+a.PTS||0)||(+b.G||0)-(+a.G||0)
+  hostId:"group-player-stats",
+  searchId:"searchGroupSkaters",
+  updatedId:"updated-group-skaters",
+  sheet:"utestatsall",
+  phase:"G",
+  sortFn:(a,b)=>(+b.PTS||0)-(+a.PTS||0)||(+b.G||0)-(+a.G||0)
 });
 
 renderTable({
-  hostId: "group-goalie-stats",
-  searchId: "searchGroupGoalies",
-  updatedId: "updated-group-goalies",
-  sheet: "målvaktsstatsall",
-  phase: "G",
-  sortFn: (a,b)=>(parseFloat(b.SVP)||0)-(parseFloat(a.SVP)||0)
+  hostId:"group-goalie-stats",
+  searchId:"searchGroupGoalies",
+  updatedId:"updated-group-goalies",
+  sheet:"målvaktsstatsall",
+  phase:"G",
+  sortFn:(a,b)=>(parseFloat(b.SVP)||0)-(parseFloat(a.SVP)||0)
 });
 
 /* ============================
    SLUTSPEL
    ============================ */
 renderTable({
-  hostId: "playoff-player-stats",
-  searchId: "searchPlayoffSkaters",
-  updatedId: "updated-playoff-skaters",
-  sheet: "utestatsall",
-  phase: "S",
-  sortFn: (a,b)=>(+b.PTS||0)-(+a.PTS||0)||(+b.G||0)-(+a.G||0)
+  hostId:"playoff-player-stats",
+  searchId:"searchPlayoffSkaters",
+  updatedId:"updated-playoff-skaters",
+  sheet:"utestatsall",
+  phase:"S",
+  sortFn:(a,b)=>(+b.PTS||0)-(+a.PTS||0)||(+b.G||0)-(+a.G||0)
 });
 
 renderTable({
-  hostId: "playoff-goalie-stats",
-  searchId: "searchPlayoffGoalies",
-  updatedId: "updated-playoff-goalies",
-  sheet: "målvaktsstatsall",
-  phase: "S",
-  sortFn: (a,b)=>(parseFloat(b.SVP)||0)-(parseFloat(a.SVP)||0)
+  hostId:"playoff-goalie-stats",
+  searchId:"searchPlayoffGoalies",
+  updatedId:"updated-playoff-goalies",
+  sheet:"målvaktsstatsall",
+  phase:"S",
+  sortFn:(a,b)=>(parseFloat(b.SVP)||0)-(parseFloat(a.SVP)||0)
 });
 </script>
-
 
 
 <!-- 🔹 REGLER FLIK 7 -->
@@ -2954,6 +2956,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
