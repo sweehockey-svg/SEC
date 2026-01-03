@@ -1527,21 +1527,20 @@ html, body {
     return `<a href="${url}" style="color:inherit; text-decoration:none;">${escapeHtml(name)}</a>`;
   }
 
-  function matchCardHTML(m, isPlayoff) {
-    const ot = m.ot ? ` <span class="ot">OT</span>` : "";
-    const cls = isPlayoff ? "match-card playoff" : "match-card";
+ function matchCardHTML(m, isPlayoff) {
+  const ot = m.ot ? ` <span class="ot">OT</span>` : "";
+  const cls = isPlayoff ? "match-card playoff" : "match-card";
 
-    return `
-      <div class="${cls}">
-        <div class="time">${escapeHtml(m.time)}</div>
-        <div class="teams">
-          <div class="team">${teamHtml(m.away)}</div>
-          <div class="score">${m.as} – ${m.hs}${ot}</div>
-          <div class="team">${teamHtml(m.home)}</div>
-        </div>
-      </div>
-    `;
-  }
+  return `
+    <div class="${cls}">
+      <div class="time">${escapeHtml(m.time)}</div>
+      <div class="team">${teamHtml(m.away)}</div>
+      <div class="score">${m.as} – ${m.hs}${ot}</div>
+      <div class="team">${teamHtml(m.home)}</div>
+    </div>
+  `;
+}
+
 
   function renderMatchdays(host, groupedByDate, isPlayoff) {
     const dates = Object.keys(groupedByDate);
@@ -2620,6 +2619,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
