@@ -1170,7 +1170,8 @@ html, body {
 <script>
 (function () {
   const container = document.getElementById("playoff-container");
-  container.innerHTML = "<div style='color:#ccc;padding:12px;'>Laddar slutspel…</div>";
+  container.innerHTML =
+    "<div style='color:#ccc;padding:12px;'>Laddar slutspel…</div>";
 
   const CUP_NAME = "SEC 19.5";
 
@@ -1187,39 +1188,40 @@ html, body {
   .then(([matches, logos]) => {
 
     /* =====================
-       LOGOMAP
+       LOGO MAP
        ===================== */
     const logoMap = {};
     logos.forEach(r => {
-      const name = (r.laglogga || r.Laglogga || "").trim().toLowerCase();
-      const id   = (r.driveid || r.DriveID || "").trim();
+      const name = (r.laglogga || r.Laglogga || "")
+        .toString().trim().toLowerCase();
+      const id = (r.driveid || r.DriveID || "").toString().trim();
       if (name && id) {
         logoMap[name] =
           `https://drive.google.com/thumbnail?id=${id}&sz=w200`;
       }
     });
 
+    const logo = team =>
+      logoMap[team.toLowerCase()] || "";
+
     /* =====================
        HJÄLPFUNKTIONER
        ===================== */
-    function norm(s) {
-      return (s || "").toString().trim();
+    function norm(v) {
+      return (v || "").toString().trim();
     }
 
-    function logo(team) {
-      return logoMap[team.toLowerCase()] || "";
-    }
-
-    function seriesResult(matches) {
+    function seriesResult(series) {
       const wins = {};
-      matches.forEach(m => {
+      series.forEach(m => {
         const h = m.home_team;
         const a = m.away_team;
-        if (!wins[h]) wins[h] = 0;
-        if (!wins[a]) wins[a] = 0;
+        wins[h] = wins[h] || 0;
+        wins[a] = wins[a] || 0;
         if (m.home_score > m.away_score) wins[h]++;
         else wins[a]++;
       });
+
       const teams = Object.keys(wins);
       return {
         teamA: teams[0],
@@ -1231,15 +1233,15 @@ html, body {
     }
 
     /* =====================
-       FILTRERA SLUTSPELSMATCHER
+       FILTRERA SLUTSPEL
        ===================== */
     const playoffMatches = matches
       .filter(m =>
         norm(m.cup || m.Cup) === CUP_NAME &&
-        /semi|final/i.test(norm(m.stage || m.Stage || m.round))
+        ["SEMIFINAL", "FINAL"].includes(norm(m.stage || m.Stage))
       )
       .map(m => ({
-        stage: norm(m.stage || m.Stage || m.round),
+        stage: norm(m.stage || m.Stage),
         home_team: norm(m.home_team || m["Home team"]),
         away_team: norm(m.away_team || m["Away team"]),
         home_score: Number(m.home_score ?? m["Home score"] ?? 0),
@@ -1253,28 +1255,23 @@ html, body {
     }
 
     /* =====================
-       GRUPPERA PER RONDER
+       GRUPPERA PER STAGE
        ===================== */
-    const rounds = {};
-    playoffMatches.forEach(m => {
-      const key = /final/i.test(m.stage) ? "FINAL" : "SEMIFINAL";
-      if (!rounds[key]) rounds[key] = [];
-      rounds[key].push(m);
-    });
+    const rounds = { SEMIFINAL: [], FINAL: [] };
+    playoffMatches.forEach(m => rounds[m.stage].push(m));
 
     /* =====================
        SEMIFINALER
        ===================== */
     const semiSeries = {};
-    (rounds.SEMIFINAL || []).forEach(m => {
+    rounds.SEMIFINAL.forEach(m => {
       const key = [m.home_team, m.away_team].sort().join("_");
       (semiSeries[key] = semiSeries[key] || []).push(m);
     });
 
-    const semiHTML = Object.values(semiSeries).map(series => {
-      const s = seriesResult(series);
-      return seriesCard(s);
-    }).join("");
+    const semiHTML = Object.values(semiSeries)
+      .map(series => seriesCard(seriesResult(series)))
+      .join("");
 
     /* =====================
        FINAL
@@ -1283,7 +1280,7 @@ html, body {
     let champion = "";
 
     const finalSeries = {};
-    (rounds.FINAL || []).forEach(m => {
+    rounds.FINAL.forEach(m => {
       const key = [m.home_team, m.away_team].sort().join("_");
       (finalSeries[key] = finalSeries[key] || []).push(m);
     });
@@ -1308,10 +1305,11 @@ html, body {
         <h3 class="section-title">🥇 Final</h3>
         <div class="final-box">${finalHTML}</div>
 
+        ${champion ? `
         <div class="champion-clean">
           <img src="${logo(champion)}" alt="${champion}">
           🏆 <strong>${champion}</strong>
-        </div>
+        </div>` : ""}
 
       </div>
     `;
@@ -1323,11 +1321,11 @@ html, body {
   });
 
   /* =====================
-     KORT
+     SERIEKORT
      ===================== */
   function seriesCard(s) {
-    const bestOf = Math.max(s.winsA, s.winsB) * 2 - 1;
     const cup = "19.5";
+    const bestOf = Math.max(s.winsA, s.winsB) * 2 - 1;
 
     return `
       <div class="series-card">
@@ -1353,6 +1351,7 @@ html, body {
   }
 })();
 </script>
+
 
 <style>
 .slutspel-wrapper {
@@ -2650,6 +2649,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
