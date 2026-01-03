@@ -808,6 +808,9 @@ html, body {
 
   const CUP_NAME = "SEC 19.5";
 
+  // 🔹 Godkända värden för gruppspel
+  const GROUP_STAGES = ["grupp", "gruppspel", "group", "group stage"];
+
   const API_BASE =
     "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec";
 
@@ -825,8 +828,9 @@ html, body {
        ===================== */
     const logoMap = {};
     logos.forEach(r => {
-      const name = (r.laglogga || r.Laglogga || "").toString().trim().toLowerCase();
-      const id   = (r.driveid || r.DriveID || "").toString().trim();
+      const name = (r.laglogga || r.Laglogga || "")
+        .toString().trim().toLowerCase();
+      const id = (r.driveid || r.DriveID || "").toString().trim();
       if (name && id) {
         logoMap[name] =
           `https://drive.google.com/thumbnail?id=${id}&sz=w200`;
@@ -834,7 +838,7 @@ html, body {
     });
 
     /* =====================
-       TABELL & H2H STRUKTUR
+       TABELL + H2H STRUKTUR
        ===================== */
     const table = {};
     const h2h = {}; // h2h[A][B] = poäng A tog mot B
@@ -873,6 +877,10 @@ html, body {
     matches.forEach(m => {
       const cup = (m.cup || m.Cup || "").toString().trim();
       if (cup !== CUP_NAME) return;
+
+      // 🔹 FILTRERA BORT SLUTSPEL
+      const stage = (m.stage || m.Stage || "").toString().trim().toLowerCase();
+      if (!GROUP_STAGES.includes(stage)) return;
 
       const home = (m.home_team || m["Home team"] || "").toString().trim();
       const away = (m.away_team || m["Away team"] || "").toString().trim();
@@ -997,6 +1005,7 @@ html, body {
     wrap.className = "table-wrapper";
     wrap.appendChild(tableEl);
     host.appendChild(wrap);
+
   })
   .catch(err => {
     console.error("Tabellfel:", err);
@@ -2641,6 +2650,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
