@@ -1301,17 +1301,46 @@ html, body {
 function renderSeries(matches) {
   const cup = "19.5";
 
-  // avgör best-of baserat på stage
+  // Best-of per stage
   const stage = matches[0]?.stage;
   const bestOf =
     stage === "FINAL" ? 7 :
     stage === "SEMIFINAL" ? 5 :
     "";
 
-  // sortera matcher i rätt ordning
+  // sortera matcher kronologiskt
   matches.sort((a,b)=>
-    new Date(a.date+" "+a.time) - new Date(b.date+" "+b.time)
+    new Date(a.date + " " + a.time) - new Date(b.date + " " + b.time)
   );
+
+  // räkna vinster
+  const wins = {};
+  matches.forEach(m => {
+    wins[m.home] = wins[m.home] || 0;
+    wins[m.away] = wins[m.away] || 0;
+    if (m.hs > m.as) wins[m.home]++;
+    else wins[m.away]++;
+  });
+
+  const teams = Object.keys(wins);
+  const teamA = teams[0];
+  const teamB = teams[1];
+  const winsA = wins[teamA];
+  const winsB = wins[teamB];
+
+  const leader =
+    winsA > winsB ? teamA :
+    winsB > winsA ? teamB :
+    "";
+
+  const maxWins = Math.ceil(bestOf / 2);
+  const decided = winsA === maxWins || winsB === maxWins;
+
+  const statusText = leader
+    ? decided
+      ? `${leader} vann ${Math.max(winsA, winsB)}–${Math.min(winsA, winsB)}`
+      : `${leader} leder ${Math.max(winsA, winsB)}–${Math.min(winsA, winsB)}`
+    : "";
 
   return `
     <div class="series-card">
@@ -1328,10 +1357,14 @@ function renderSeries(matches) {
           </a>
         </div>
       `).join("")}
-      ${bestOf ? `<div class="best-of">Bäst av ${bestOf}</div>` : ""}
+
+      <div class="best-of">
+        Bäst av ${bestOf}${statusText ? ` – ${statusText}` : ""}
+      </div>
     </div>
   `;
 }
+
 
 })();
 </script>
@@ -2635,6 +2668,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
