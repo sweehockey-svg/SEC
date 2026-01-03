@@ -1,1 +1,413 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Svenska eHockey Cupen 19</title>
+
+  <style>
+.player-link {
+    color: #fff !important;
+    text-decoration: none !important;
+}
+.player-link:hover { opacity: 0.7; }
+
+:root {
+  --sec-bg-deep: #02030a;
+  --sec-bg-top: #080f24;
+  --sec-gold: #d6b15f;
+  --sec-gold-soft: #f0d58b;
+  --sec-text-main: #e3e4f2;
+  --sec-text-muted: #b4b7d8;
+}
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  background: #000;
+  color: var(--sec-text-main);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+}
+
+/* Bakgrund */
+#sec-bg-layer {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: -2;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(214,177,95,0.17) 0, transparent 55%),
+    radial-gradient(circle at 100% 0%, rgba(88,120,255,0.16) 0, transparent 55%),
+    radial-gradient(circle at 50% 100%, #010314 0, #000 70%);
+}
+
+.smoke-layer {
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(120,140,200,0.12) 0, transparent 45%),
+    radial-gradient(circle at 80% 30%, rgba(120,140,200,0.10) 0, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(80,100,160,0.12) 0, transparent 45%);
+  opacity: 0;
+  animation: smokeFade 1.4s ease forwards 0.8s, smokeDrift 40s linear infinite;
+  mix-blend-mode: screen;
+}
+.smoke-layer.smoke-back {
+  filter: blur(22px);
+  animation: smokeFade 1.8s ease forwards 1s, smokeDrift 55s linear infinite;
+}
+
+@keyframes smokeFade {
+  from { opacity: 0; }
+  to { opacity: 0.4; }
+}
+@keyframes smokeDrift {
+  0% { transform: translate3d(0,0,0); }
+  50% { transform: translate3d(-4%, -2%, 1px); }
+  100% { transform: translate3d(3%, 3%, 0); }
+}
+
+#sec-page {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  padding: 20px 12px 80px;
+  z-index: 1;
+}
+
+/* HEADER */
+.sfc-header {
+  margin-top: 12px;
+  border-radius: 22px;
+  padding: 26px 16px 22px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,0.05), transparent 40%),
+    radial-gradient(circle at top, #151b3f 0, #050614 55%, #02030a 100%);
+  border: 1px solid rgba(214,177,95,0.6);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.95);
+  text-align: center;
+  position: relative;
+}
+
+.sfc-logo {
+  width: 165px;
+  filter: drop-shadow(0 0 20px rgba(214,177,95,0.7));
+}
+
+.sfc-title {
+  font-weight: 800;
+  font-size: clamp(1.3rem, 2.6vw, 1.7rem);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: #fdfbff;
+  margin-top: 4px;
+}
+.sfc-title strong { color: var(--sec-gold-soft); }
+
+.sfc-divider {
+  width: 180px;
+  height: 3px;
+  margin: 18px auto 0;
+  background: linear-gradient(90deg, transparent, var(--sec-gold-soft), transparent);
+}
+
+/* TABS */
+.cup-tabs {
+  margin-top: 20px;
+  border-radius: 999px;
+  background: rgba(2,4,12,0.94);
+  border: 1px solid rgba(214,177,95,0.35);
+  padding: 7px 10px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+}
+.cup-tabs .tab {
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--sec-text-muted);
+  font-size: .8rem;
+  padding: 9px 16px;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cup-tabs .tab.active {
+  background: linear-gradient(90deg, var(--sec-gold), var(--sec-gold-soft));
+  color: #181933;
+}
+  </style>
+</head>
+
+<body>
+  <div id="sec-bg-layer">
+    <div class="smoke-layer smoke-back"></div>
+    <div class="smoke-layer"></div>
+  </div>
+
+  <div id="sec-page">
+    <a href="index.html" style="text-decoration:none; color:inherit;">
+      <div class="sfc-header">
+        <img class="sfc-logo" src="https://drive.google.com/thumbnail?id=1QybW_Uw8HO0OXo8vwQFD-zrrr-ifFrC9&sz=w1000" alt="SEC Logo">
+        <div class="sfc-title">
+          🏆 Svenska eHockey <strong>Cupen</strong> 19 🏒
+        </div>
+        <div class="sfc-divider"></div>
+      </div>
+    </a>
+
+    <nav class="cup-tabs">
+      <button class="tab active" data-target="info">Info</button>
+      <button class="tab" data-target="lag">Lag</button>
+      <button class="tab" data-target="tabell">Tabell</button>
+      <button class="tab" data-target="slutspel">Slutspel</button>
+      <button class="tab" data-target="matcher">Matcher</button>
+      <button class="tab" data-target="statistik">Statistik</button>
+      <button class="tab" data-target="regler">Regler</button>
+    </nav>
+<!-- INFO -->
+<div id="info" class="tab-panel active">
+  <div class="info-card" style="padding:20px;">
+    <h2>ℹ️ Om Svenska eHockey Cupen 19</h2>
+    <p>
+      <strong>Svenska eHockey Cupen 19 (SEC 19)</strong> var en försäsongsturnering som spelades i oktober 2026 –
+      en uppvärmning inför vinterns kommande eHockeyturneringar.
+    </p>
+    <p>
+      Här hittar du <strong>lag, tabeller, matcher, statistik och slutspel</strong> – allt samlat på ett ställe.
+    </p>
+  </div>
+</div>
+
+<!-- LAG -->
+<div id="lag" class="tab-panel">
+  <h2>🏒 Deltagande lag</h2>
+  <p>Klicka på ett lag för statistik och matcher i <strong>Svenska eHockey Cupen 19</strong>.</p>
+
+  <div class="team-grid">
+    <div class="team-card" data-team="modo"><h3>Modo Hockey</h3></div>
+    <div class="team-card" data-team="ssk"><h3>SSK Academy</h3></div>
+    <div class="team-card" data-team="sunne"><h3>Sunne IK Esport</h3></div>
+    <div class="team-card" data-team="surte"><h3>Surte Sisu HC</h3></div>
+    <div class="team-card" data-team="veteran"><h3>Veterankraft</h3></div>
+    <div class="team-card" data-team="vnexs"><h3>vNexs Vipers</h3></div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll(".team-card").forEach(card=>{
+  card.addEventListener("click",()=>{
+    const MAP={
+      modo:"Modo Hockey",
+      ssk:"SSK Academy",
+      sunne:"Sunne IK Esport",
+      surte:"Surte Sisu HC",
+      veteran:"Veterankraft",
+      vnexs:"vNexs Vipers"
+    };
+    const name=MAP[card.dataset.team];
+    if(name) location.href=`lagkort.html?team=${encodeURIComponent(name)}&cup=19`;
+  });
+});
+</script>
+
+<!-- TABELL -->
+<div id="tabell" class="tab-panel">
+  <h2>📊 Gruppspelstabell</h2>
+  <p>Aktuell tabell för <strong>Svenska eHockey Cupen 19</strong> – topp fyra går till slutspel.</p>
+  <div id="sec-standings" style="max-width:950px;margin:auto;"></div>
+</div>
+
+<script>
+(function(){
+  const host=document.getElementById('sec-standings');
+  host.innerHTML='Laddar…';
+  const API="https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec?sheet=Standings";
+  fetch(API).then(r=>r.json()).then(rows=>{
+    let html='<table class="sec-table"><thead><tr><th>#</th><th>Lag</th><th>P</th></tr></thead><tbody>';
+    rows.forEach((r,i)=>{
+      html+=`<tr><td>${i+1}</td><td><a href="lagkort.html?team=${encodeURIComponent(r.team_name)}&cup=19">${r.team_name}</a></td><td>${r.p}</td></tr>`;
+    });
+    html+='</tbody></table>';
+    host.innerHTML=html;
+  });
+})();
+</script>
+
+<!-- SLUTSPEL -->
+<div id="slutspel" class="tab-panel">
+  <h2>🏆 Slutspel</h2>
+  <p>Semifinaler och final i Svenska eHockey Cupen 19.</p>
+  <div id="playoff-container" style="max-width:900px;margin:auto;"></div>
+</div>
+
+<script>
+(function(){
+  const API="https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec?sheet=matcherSEC19_5";
+  const host=document.getElementById("playoff-container");
+  fetch(API).then(r=>r.json()).then(data=>{
+    host.innerHTML='<p>Slutspelsdata laddad.</p>';
+  });
+})();
+</script>
+
+<!-- MATCHER -->
+<div id="matcher" class="tab-panel">
+  <h2>📅 Matcher</h2>
+  <p>Alla matcher i <strong>Svenska eHockey Cupen 19</strong>.</p>
+
+  <div class="matchday">
+    <h3>📅 Onsdag 8 oktober 2025</h3>
+    <div class="match-card">
+      <div class="time">20:00</div>
+      <div class="teams">
+        <div class="team"><a href="lagkort.html?team=Sunne%20IK%20Esport&cup=19">Sunne IK Esport</a></div>
+        <div class="score">2 – 4</div>
+        <div class="team"><a href="lagkort.html?team=Veterankraft&cup=19">Veterankraft</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ===================== -->
+<!-- STATISTIK -->
+<!-- ===================== -->
+<div id="statistik" class="tab-panel">
+  <h2>📈 Statistik</h2>
+  <p>Individuell statistik för utespelare och målvakter i Svenska eHockey Cupen 19.</p>
+
+  <div class="category-select">
+    <label for="categoryDropdown">🎯 Välj fas:</label>
+    <select id="categoryDropdown">
+      <option value="group" selected>Gruppspel</option>
+      <option value="playoff">Slutspel</option>
+    </select>
+  </div>
+
+  <!-- Gruppspel -->
+  <div id="stat-group" class="stat-section active">
+    <nav class="tabs">
+      <button class="tab stat-l2 is-active" data-target="group-skaters">UTESPELARE</button>
+      <button class="tab stat-l2" data-target="group-goalies">MÅLVAKTER</button>
+    </nav>
+
+    <div id="group-skaters" class="stat-subsection active">
+      <input type="text" id="searchGroupSkaters" placeholder="🔍 Sök spelare eller lag">
+      <div id="group-player-stats"></div>
+    </div>
+
+    <div id="group-goalies" class="stat-subsection">
+      <input type="text" id="searchGroupGoalies" placeholder="🔍 Sök målvakt eller lag">
+      <div id="group-goalie-stats"></div>
+    </div>
+  </div>
+
+  <!-- Slutspel -->
+  <div id="stat-playoff" class="stat-section">
+    <nav class="tabs">
+      <button class="tab stat-l2 is-active" data-target="playoff-skaters">UTESPELARE</button>
+      <button class="tab stat-l2" data-target="playoff-goalies">MÅLVAKTER</button>
+    </nav>
+
+    <div id="playoff-skaters" class="stat-subsection active">
+      <input type="text" id="searchPlayoffSkaters" placeholder="🔍 Sök spelare eller lag">
+      <div id="playoff-player-stats"></div>
+    </div>
+
+    <div id="playoff-goalies" class="stat-subsection">
+      <input type="text" id="searchPlayoffGoalies" placeholder="🔍 Sök målvakt eller lag">
+      <div id="playoff-goalie-stats"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== -->
+<!-- REGLER -->
+<!-- ===================== -->
+<div id="regler" class="tab-panel">
+  <h2>📜 Regler – Svenska eHockey Cupen 19</h2>
+  <p>Officiella regler och riktlinjer för turneringen.</p>
+
+  <div class="info-card" style="padding:20px;">
+    <ul>
+      <li>6 mot 6 – Privat match</li>
+      <li>Periodlängd: 4 minuter</li>
+      <li>Poängsystem: 3–2–1–0</li>
+      <li>Top 4 till slutspel (Best of 5)</li>
+      <li>Transfer-deadline: 10 oktober</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===================== -->
+<!-- GLOBAL SÖK -->
+<!-- ===================== -->
+<div class="player-search-centered">
+  <div class="search-title">Sök lag & spelare</div>
+  <div class="search-wrapper">
+    <input id="globalSearch" placeholder="Sök lag eller spelare">
+    <div id="globalResults"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const input=document.getElementById("globalSearch");
+  const box=document.getElementById("globalResults");
+  if(!input||!box)return;
+
+  const items=[
+    {type:"team",label:"Modo Hockey"},
+    {type:"team",label:"SSK Academy"},
+    {type:"team",label:"Sunne IK Esport"},
+    {type:"team",label:"Surte Sisu HC"},
+    {type:"team",label:"Veterankraft"},
+    {type:"team",label:"vNexs Vipers"}
+  ];
+
+  input.addEventListener("input",()=>{
+    const q=input.value.toLowerCase();
+    box.innerHTML="";
+    if(!q){box.style.display="none";return;}
+    items.filter(i=>i.label.toLowerCase().includes(q)).forEach(i=>{
+      const d=document.createElement("div");
+      d.className="search-item";
+      d.textContent=i.label;
+      d.onclick=()=>location.href=`lagkort.html?team=${encodeURIComponent(i.label)}&cup=19`;
+      box.appendChild(d);
+    });
+    box.style.display="block";
+  });
+})();
+</script>
+
+<!-- ===================== -->
+<!-- TAB-NAVIGERING -->
+<!-- ===================== -->
+<script>
+document.querySelectorAll(".cup-tabs .tab").forEach(tab=>{
+  tab.addEventListener("click",()=>{
+    document.querySelectorAll(".cup-tabs .tab").forEach(t=>t.classList.remove("active"));
+    tab.classList.add("active");
+    document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+    const target=document.getElementById(tab.dataset.target);
+    if(target) target.classList.add("active");
+  });
+});
+</script>
+
+</div>
+</body>
+</html>
 
