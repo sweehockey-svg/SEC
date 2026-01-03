@@ -675,14 +675,11 @@ html, body {
 </style>
 
 <script>
-/* =====================
-   LAG – AUTO FRÅN matcherSEC
-   ===================== */
 (function () {
   const grid = document.getElementById("team-grid");
   if (!grid) return;
 
-  const CUP_NAME = "SEC 19.5"; // 👈 ändra vid ny cup
+  const CUP_NAME = "SEC 19.5"; // exakt som i Sheet
 
   const API =
     "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec" +
@@ -699,10 +696,18 @@ html, body {
       const teams = new Set();
 
       rows.forEach(r => {
-        if (r.Cup !== CUP_NAME) return;
+        const cupValue =
+          (r.Cup || r.cup || "").toString().trim();
 
-        if (r["Home team"]) teams.add(r["Home team"]);
-        if (r["Away team"]) teams.add(r["Away team"]);
+        if (cupValue !== CUP_NAME) return;
+
+        const home =
+          r["Home team"] || r.home_team || r.HomeTeam || "";
+        const away =
+          r["Away team"] || r.away_team || r.AwayTeam || "";
+
+        if (home) teams.add(home.trim());
+        if (away) teams.add(away.trim());
       });
 
       if (teams.size === 0) {
@@ -726,11 +731,12 @@ html, body {
       });
     })
     .catch(err => {
-      console.error(err);
+      console.error("Lag-flik fel:", err);
       grid.innerHTML = "<p>Fel vid hämtning av lag.</p>";
     });
 })();
 </script>
+
 
 
     
@@ -2468,6 +2474,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
