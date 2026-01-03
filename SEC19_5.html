@@ -1298,33 +1298,41 @@ html, body {
   /* =====================
      SERIEKORT – NU MATCHLISTA
      ===================== */
-  function renderSeries(matches) {
-    const cup = "19.5";
+function renderSeries(matches) {
+  const cup = "19.5";
 
-    // sortera matcher i serien kronologiskt
-    matches.sort((a,b)=>
-      new Date(a.date+" "+a.time) - new Date(b.date+" "+b.time)
-    );
+  // avgör best-of baserat på stage
+  const stage = matches[0]?.stage;
+  const bestOf =
+    stage === "FINAL" ? 7 :
+    stage === "SEMIFINAL" ? 5 :
+    "";
 
-    return `
-      <div class="series-card">
-        ${matches.map(m => `
-          <div class="team-line">
-            <a href="lagkort.html?team=${encodeURIComponent(m.home)}&cup=${cup}">
-              ${m.home}
-            </a>
-            <span>
-              ${m.hs} – ${m.as}${m.ot ? " (OT)" : ""}
-            </span>
-            <a href="lagkort.html?team=${encodeURIComponent(m.away)}&cup=${cup}">
-              ${m.away}
-            </a>
-          </div>
-        `).join("")}
-        <div class="best-of">Bäst av ${matches.length * 2 - 1}</div>
-      </div>
-    `;
-  }
+  // sortera matcher i rätt ordning
+  matches.sort((a,b)=>
+    new Date(a.date+" "+a.time) - new Date(b.date+" "+b.time)
+  );
+
+  return `
+    <div class="series-card">
+      ${matches.map(m => `
+        <div class="team-line">
+          <a href="lagkort.html?team=${encodeURIComponent(m.home)}&cup=${cup}">
+            ${m.home}
+          </a>
+          <span>
+            ${m.hs} – ${m.as}${m.ot ? " (OT)" : ""}
+          </span>
+          <a href="lagkort.html?team=${encodeURIComponent(m.away)}&cup=${cup}">
+            ${m.away}
+          </a>
+        </div>
+      `).join("")}
+      ${bestOf ? `<div class="best-of">Bäst av ${bestOf}</div>` : ""}
+    </div>
+  `;
+}
+
 })();
 </script>
 
@@ -2627,6 +2635,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
