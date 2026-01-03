@@ -1448,15 +1448,17 @@ html, body {
 </style>
 </div> <!-- 👈 Stänger bara slutspelssektionen här -->
 
-<!-- MATCHER FLIK 5 -->
+<!-- ========================= -->
+<!-- MATCHER – FLIK 5 -->
+<!-- ========================= -->
 <div id="matcher" class="tab-panel">
   <h2>📅 Matcher</h2>
   <p>Alla matcher i Svenska eHockey Cupen 19.5 – gruppspel och slutspel</p>
 
-  <!-- här renderas gruppspel -->
+  <!-- Gruppspel -->
   <div id="matches-group"></div>
 
-  <!-- här renderas slutspel -->
+  <!-- Slutspel -->
   <div class="playoff-section" id="matches-playoff-wrap" style="display:none;">
     <h2>🏆 Slutspel</h2>
     <p>Semifinaler och final i Svenska eHockey Cupen 19.5</p>
@@ -1464,10 +1466,138 @@ html, body {
   </div>
 </div>
 
+<!-- ========================= -->
+<!-- STYLE – MATCHER -->
+<!-- ========================= -->
+<style>
+#matcher {
+  background: linear-gradient(180deg, #0b0f1f, #070a14);
+  color: #e8e8e8;
+  padding: 28px 24px;
+  border-radius: 22px;
+  border: 1px solid rgba(214,177,95,0.25);
+  box-shadow: 0 18px 50px rgba(0,0,0,0.85);
+}
+
+#matcher h2 {
+  color: #f6d66b;
+  font-weight: 800;
+  font-size: 26px;
+  text-align: center;
+  margin-bottom: 6px;
+  text-shadow: 0 0 14px rgba(214,177,95,0.45);
+}
+
+#matcher p {
+  color: #b9bdd6;
+  text-align: center;
+  margin-bottom: 26px;
+  font-size: 15px;
+}
+
+/* Matchdag */
+.matchday {
+  margin-top: 36px;
+}
+
+.matchday h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(12,18,40,0.95);
+  color: #f6d66b;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  border: 1px solid rgba(214,177,95,0.2);
+  box-shadow: 0 0 18px rgba(214,177,95,0.25);
+}
+
+/* Matchkort */
+.match-card {
+  margin-top: 14px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: radial-gradient(circle at top, #0e1326 0%, #070a14 100%);
+  border: 1px solid rgba(255,215,0,0.12);
+  box-shadow: 0 0 10px rgba(0,0,0,0.6);
+  transition: all 0.25s ease;
+
+  display: grid;
+  grid-template-columns: 70px 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.match-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 22px rgba(214,177,95,0.25);
+  border-color: rgba(214,177,95,0.45);
+}
+
+.match-card .time {
+  color: #f6d66b;
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.match-card .team {
+  font-weight: 600;
+  color: #eaeaf0;
+}
+
+.match-card .team a:hover {
+  text-decoration: underline;
+}
+
+.match-card .score {
+  min-width: 80px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 18px;
+  color: #ffffff;
+}
+
+.ot {
+  margin-left: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #d6b15f;
+}
+
+/* Slutspel */
+.playoff-section {
+  margin-top: 60px;
+  padding-top: 26px;
+  border-top: 2px solid rgba(214,177,95,0.3);
+}
+
+.match-card.playoff {
+  background: linear-gradient(180deg, #121735, #090d1b);
+  border-left: 4px solid #f6d66b;
+}
+
+/* Mobil */
+@media (max-width: 700px) {
+  .match-card {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 6px;
+  }
+  .match-card .score {
+    font-size: 16px;
+  }
+}
+</style>
+
+<!-- ========================= -->
+<!-- SCRIPT – MATCHER -->
+<!-- ========================= -->
 <script>
 (function () {
   const CUP_NAME = "SEC 19.5";
-
   const API_BASE =
     "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec";
   const MATCHER_API = API_BASE + "?sheet=matcherSEC";
@@ -1480,175 +1610,83 @@ html, body {
 
   groupHost.innerHTML = "<div style='color:#ccc;padding:12px;'>Laddar matcher…</div>";
 
-  // --- helpers ---
   const norm = v => (v ?? "").toString().trim();
   const normLower = v => norm(v).toLowerCase();
 
   function getField(row, keys) {
-    for (const k of keys) {
-      if (row[k] !== undefined && row[k] !== null && String(row[k]).trim() !== "") return row[k];
-    }
+    for (const k of keys) if (row[k]) return row[k];
     return "";
   }
 
   function parseScore(v) {
-    const n = Number(String(v ?? "").replace(/[^\d-]/g, ""));
+    const n = Number(String(v ?? "").replace(/[^\d]/g, ""));
     return Number.isFinite(n) ? n : 0;
   }
 
-  // datum i Sheet är ofta typ "Sunday October 19, 2025"
-  // vi använder det som gruppnyckel och rubrik rakt av (ingen locale-omvandling som kan bli fel)
-  function dateKey(d) {
-    return norm(d);
-  }
-
   function stageKey(s) {
-    const t = normLower(s);
-    if (!t) return "";
-    if (t.includes("grupp")) return "GRUPPSPEL";
-    // allt annat räknas som slutspel, men vi behåller original-text för underrubriker om du vill
-    return "PLAYOFF";
+    return normLower(s).includes("grupp") ? "GRUPPSPEL" : "PLAYOFF";
   }
 
-  function escapeHtml(str) {
-    return String(str ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
-  function teamHtml(teamName) {
-    // Behåll plain text om du inte vill länka.
-    // Vill du ha länkar: byt retur till <a ...> men behåll klassen "team" på wrappern.
-    const name = norm(teamName);
+  function teamHtml(name) {
     const url = `lagkort.html?team=${encodeURIComponent(name)}&cup=19.5`;
-    return `<a href="${url}" style="color:inherit; text-decoration:none;">${escapeHtml(name)}</a>`;
+    return `<a href="${url}" style="color:inherit;text-decoration:none;">${name}</a>`;
   }
 
- function matchCardHTML(m, isPlayoff) {
-  const ot = m.ot ? ` <span class="ot">OT</span>` : "";
-  const cls = isPlayoff ? "match-card playoff" : "match-card";
-
-  return `
-    <div class="${cls}">
-      <div class="time">${escapeHtml(m.time)}</div>
-      <div class="team">${teamHtml(m.away)}</div>
-      <div class="score">${m.as} – ${m.hs}${ot}</div>
-      <div class="team">${teamHtml(m.home)}</div>
-    </div>
-  `;
-}
-
-
-  function renderMatchdays(host, groupedByDate, isPlayoff) {
-    const dates = Object.keys(groupedByDate);
-    if (!dates.length) return;
-
-    // sortera datum kronologiskt så gott det går (fallback: text)
-    dates.sort((a, b) => {
-      const ta = Date.parse(a);
-      const tb = Date.parse(b);
-      if (Number.isFinite(ta) && Number.isFinite(tb)) return ta - tb;
-      return a.localeCompare(b);
-    });
-
-    host.innerHTML += dates.map(date => {
-      const matches = groupedByDate[date];
-
-      // sortera på tid om möjligt (fallback: text)
-      matches.sort((x, y) => {
-        // tider kan vara "8:30 PM" eller "20:30"
-        const tx = norm(x.time);
-        const ty = norm(y.time);
-        const px = Date.parse("1970-01-01 " + tx);
-        const py = Date.parse("1970-01-01 " + ty);
-        if (Number.isFinite(px) && Number.isFinite(py)) return px - py;
-        return tx.localeCompare(ty);
-      });
-
-      const cards = matches.map(m => matchCardHTML(m, isPlayoff)).join("");
-
-      return `
-        <div class="matchday">
-          <h3>📅 ${escapeHtml(date)}</h3>
-          ${cards}
-        </div>
-      `;
-    }).join("");
+  function matchCardHTML(m, playoff) {
+    return `
+      <div class="match-card ${playoff ? "playoff" : ""}">
+        <div class="time">${m.time}</div>
+        <div class="team">${teamHtml(m.away)}</div>
+        <div class="score">${m.as} – ${m.hs}${m.ot ? ' <span class="ot">OT</span>' : ''}</div>
+        <div class="team">${teamHtml(m.home)}</div>
+      </div>
+    `;
   }
 
-  fetch(MATCHER_API + (MATCHER_API.includes("?") ? "&" : "?") + "_t=" + Date.now())
+  fetch(MATCHER_API + "&_t=" + Date.now())
     .then(r => r.json())
     .then(rows => {
-      const all = (rows || []).map(r => {
-        const cup = norm(getField(r, ["cup", "Cup"]));
-        const stage = norm(getField(r, ["stage", "Stage"]));
-        const date = norm(getField(r, ["date", "Date"]));
-        const time = norm(getField(r, ["time", "Time"]));
+      const group = {}, playoff = {};
 
-        const away = norm(getField(r, ["away_team", "Away team", "Away team "])); // extra safe
-        const home = norm(getField(r, ["home_team", "Home team", "Home team "])); // extra safe
+      rows.forEach(r => {
+        if (norm(r.cup) !== CUP_NAME) return;
 
-        const as = parseScore(getField(r, ["away_score", "Away score"]));
-        const hs = parseScore(getField(r, ["home_score", "Home score"]));
+        const m = {
+          date: norm(r.date),
+          time: norm(r.time),
+          away: norm(r.away_team),
+          home: norm(r.home_team),
+          as: parseScore(r.away_score),
+          hs: parseScore(r.home_score),
+          ot: normLower(r.ot) === "ot"
+        };
 
-        const otRaw = normLower(getField(r, ["ot", "OT"]));
-        const ot = otRaw === "ot";
-
-        return { cup, stage, date, time, away, home, as, hs, ot };
-      })
-      .filter(m =>
-        norm(m.cup) === CUP_NAME &&
-        m.date && m.time && m.away && m.home
-      );
-
-      if (!all.length) {
-        groupHost.innerHTML = "<div style='color:#ccc;padding:12px;'>Inga matcher hittades för denna cup.</div>";
-        playoffWrap.style.display = "none";
-        return;
-      }
-
-      // dela upp gruppspel vs slutspel
-      const groupedGroup = {};
-      const groupedPlayoff = {};
-
-      all.forEach(m => {
-        const bucket = stageKey(m.stage);
-        const dk = dateKey(m.date);
-        if (bucket === "GRUPPSPEL") {
-          (groupedGroup[dk] = groupedGroup[dk] || []).push(m);
-        } else {
-          (groupedPlayoff[dk] = groupedPlayoff[dk] || []).push(m);
-        }
+        const bucket = stageKey(r.stage);
+        const target = bucket === "GRUPPSPEL" ? group : playoff;
+        (target[m.date] ||= []).push(m);
       });
 
-      // render
-      groupHost.innerHTML = "";
-      if (Object.keys(groupedGroup).length) {
-        renderMatchdays(groupHost, groupedGroup, false);
-      } else {
-        groupHost.innerHTML = "<div style='color:#ccc;padding:12px;'>Inga gruppspelsmatcher hittades.</div>";
+      function render(host, data, playoffFlag) {
+        host.innerHTML = Object.keys(data).map(d => `
+          <div class="matchday">
+            <h3>📅 ${d}</h3>
+            ${data[d].map(m => matchCardHTML(m, playoffFlag)).join("")}
+          </div>
+        `).join("");
       }
 
-      if (Object.keys(groupedPlayoff).length) {
+      render(groupHost, group, false);
+
+      if (Object.keys(playoff).length) {
         playoffWrap.style.display = "";
-        playoffHost.innerHTML = "";
-        renderMatchdays(playoffHost, groupedPlayoff, true);
-      } else {
-        playoffWrap.style.display = "none";
+        render(playoffHost, playoff, true);
       }
     })
-    .catch(err => {
-      console.error("Matcher-flik fel:", err);
-      groupHost.innerHTML = "<div style='color:#f66;padding:12px;'>Fel vid laddning av matcher.</div>";
-      playoffWrap.style.display = "none";
+    .catch(() => {
+      groupHost.innerHTML = "<div style='color:#f66;padding:12px;'>Fel vid laddning.</div>";
     });
 })();
 </script>
-
-
 
 
 <!-- STATISTIK FLIK 6 -->
@@ -2619,6 +2657,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
