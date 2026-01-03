@@ -280,36 +280,59 @@ document.querySelectorAll(".team-card").forEach(card=>{
 </div>
 
 <script>
-(function(){
-  const host=document.getElementById('sec-standings');
-  host.innerHTML='Laddar…';
-  const API="https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec?sheet=Standings";
-  fetch(API).then(r=>r.json()).then(rows=>{
-  const filtered = rows.filter(r =>
-    String(r.cup || r.CUP || "").trim() === "19"
-  );
+(function () {
+  const host = document.getElementById("sec-standings");
+  host.textContent = "Laddar tabell...";
 
-  let html='<table class="sec-table"><thead><tr><th>#</th><th>Lag</th><th>P</th></tr></thead><tbody>';
+  const API =
+    "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec" +
+    "?sheet=Standings%2019";
 
-  filtered.forEach((r,i)=>{
-    html+=`
-      <tr>
-        <td>${i+1}</td>
-        <td>
-          <a href="lagkort.html?team=${encodeURIComponent(r.team_name)}&cup=19">
-            ${r.team_name}
-          </a>
-        </td>
-        <td>${r.p}</td>
-      </tr>`;
-  });
+  fetch(API)
+    .then(res => res.json())
+    .then(rows => {
+      if (!rows || !rows.length) {
+        host.textContent = "Ingen tabelldata hittades.";
+        return;
+      }
 
-  html+='</tbody></table>';
-  host.innerHTML=html;
-});
+      let html = `
+        <table class="sec-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Lag</th>
+              <th>P</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
 
+      rows.forEach((r, i) => {
+        html += `
+          <tr>
+            <td>${i + 1}</td>
+            <td>
+              <a class="player-link"
+                 href="lagkort.html?team=${encodeURIComponent(r.team_name)}&cup=19">
+                ${r.team_name}
+              </a>
+            </td>
+            <td>${r.p}</td>
+          </tr>
+        `;
+      });
+
+      html += "</tbody></table>";
+      host.innerHTML = html;
+    })
+    .catch(err => {
+      console.error(err);
+      host.textContent = "Fel vid hämtning av tabell.";
+    });
 })();
 </script>
+
 
 <!-- SLUTSPEL -->
 <div id="slutspel" class="tab-panel">
