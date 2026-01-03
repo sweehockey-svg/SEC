@@ -711,15 +711,18 @@ html, body {
   .then(([matcher, logos]) => {
 
     /* =====================
-       BYGG LOGO-MAP (ROBUST)
+       BYGG LOGO-MAP (NORMALISERAD)
        ===================== */
     const logoMap = {};
 
     logos.forEach(r => {
-      const name =
-        (r.laglogga || r.Laglogga || r.LAGLOGGA || "").toString().trim();
-      const id =
-        (r.driveid || r.DriveID || r.driveId || "").toString().trim();
+      const rawName =
+        (r.laglogga || r.Laglogga || "").toString();
+      const rawId =
+        (r.driveid || r.DriveID || "").toString();
+
+      const name = rawName.trim().toLowerCase();
+      const id   = rawId.trim();
 
       if (!name || !id) return;
 
@@ -727,7 +730,7 @@ html, body {
         `https://drive.google.com/thumbnail?id=${id}&sz=w300`;
     });
 
-    console.log("LOGOMAP:", logoMap); // 🔍 debug
+    console.log("LOGOMAP:", logoMap);
 
     /* =====================
        SAMLA LAG FRÅN MATCHER
@@ -735,14 +738,11 @@ html, body {
     const teams = new Set();
 
     matcher.forEach(r => {
-      const cup =
-        (r.cup || r.Cup || "").toString().trim();
+      const cup = (r.cup || r.Cup || "").toString().trim();
       if (cup !== CUP_NAME) return;
 
-      const home =
-        (r.home_team || r["Home team"] || "").toString().trim();
-      const away =
-        (r.away_team || r["Away team"] || "").toString().trim();
+      const home = (r.home_team || r["Home team"] || "").toString().trim();
+      const away = (r.away_team || r["Away team"] || "").toString().trim();
 
       if (home) teams.add(home);
       if (away) teams.add(away);
@@ -759,8 +759,10 @@ html, body {
     grid.innerHTML = "";
 
     [...teams].sort().forEach(team => {
+      const key = team.trim().toLowerCase();
+
       const logo =
-        logoMap[team] ||
+        logoMap[key] ||
         "https://dummyimage.com/200x200/0b0e1a/ffffff&text=SEC";
 
       const card = document.createElement("div");
@@ -788,7 +790,6 @@ html, body {
   });
 })();
 </script>
-
 
 
 
@@ -2527,6 +2528,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
