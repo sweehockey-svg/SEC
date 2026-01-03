@@ -6,150 +6,198 @@
   <title>Svenska eHockey Cupen 19</title>
 
   <style>
-.player-link {
-    color: #fff !important;
-    text-decoration: none !important;
-}
-.player-link:hover { opacity: 0.7; }
+  /* =====================
+     GRUNDINSTÄLLNINGAR
+     ===================== */
+  :root {
+    --sec-bg-deep: #02030a;
+    --sec-bg-top: #080f24;
+    --sec-gold: #d6b15f;
+    --sec-gold-soft: #f0d58b;
+    --sec-text-main: #e3e4f2;
+    --sec-text-muted: #b4b7d8;
+  }
 
-:root {
-  --sec-bg-deep: #02030a;
-  --sec-bg-top: #080f24;
-  --sec-gold: #d6b15f;
-  --sec-gold-soft: #f0d58b;
-  --sec-text-main: #e3e4f2;
-  --sec-text-muted: #b4b7d8;
-}
-* { box-sizing: border-box; }
+  * {
+    box-sizing: border-box;
+  }
 
-html, body {
-  margin: 0;
-  padding: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
-  background: #000;
-  color: var(--sec-text-main);
-  min-height: 100vh;
-  overflow-x: hidden;
-}
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+    background: #000;
+    color: var(--sec-text-main);
+    overflow-x: hidden;
+  }
 
-body {
-  display: flex;
-  justify-content: center;
-}
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
 
-/* Bakgrund */
-#sec-bg-layer {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  z-index: -2;
-  background:
-    radial-gradient(circle at 0% 0%, rgba(214,177,95,0.17) 0, transparent 55%),
-    radial-gradient(circle at 100% 0%, rgba(88,120,255,0.16) 0, transparent 55%),
-    radial-gradient(circle at 50% 100%, #010314 0, #000 70%);
-}
+  /* =====================
+     BAKGRUND
+     ===================== */
+  #sec-bg-layer {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background:
+      radial-gradient(circle at 0% 0%, rgba(214,177,95,0.17) 0%, transparent 55%),
+      radial-gradient(circle at 100% 0%, rgba(88,120,255,0.16) 0%, transparent 55%),
+      radial-gradient(circle at 50% 100%, #010314 0%, #000 70%);
+  }
 
-.smoke-layer {
-  position: absolute;
-  inset: -20%;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(120,140,200,0.12) 0, transparent 45%),
-    radial-gradient(circle at 80% 30%, rgba(120,140,200,0.10) 0, transparent 50%),
-    radial-gradient(circle at 40% 80%, rgba(80,100,160,0.12) 0, transparent 45%);
-  opacity: 0;
-  animation: smokeFade 1.4s ease forwards 0.8s, smokeDrift 40s linear infinite;
-  mix-blend-mode: screen;
-}
-.smoke-layer.smoke-back {
-  filter: blur(22px);
-  animation: smokeFade 1.8s ease forwards 1s, smokeDrift 55s linear infinite;
-}
+  .smoke-layer {
+    position: absolute;
+    inset: -20%;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(120,140,200,0.12) 0%, transparent 45%),
+      radial-gradient(circle at 80% 30%, rgba(120,140,200,0.10) 0%, transparent 50%),
+      radial-gradient(circle at 40% 80%, rgba(80,100,160,0.12) 0%, transparent 45%);
+    opacity: 0;
+    animation: smokeFade 1.5s ease forwards 0.8s, smokeDrift 40s linear infinite;
+    mix-blend-mode: screen;
+  }
 
-@keyframes smokeFade {
-  from { opacity: 0; }
-  to { opacity: 0.4; }
-}
-@keyframes smokeDrift {
-  0% { transform: translate3d(0,0,0); }
-  50% { transform: translate3d(-4%, -2%, 1px); }
-  100% { transform: translate3d(3%, 3%, 0); }
-}
+  .smoke-layer.smoke-back {
+    filter: blur(22px);
+    animation-duration: 55s;
+  }
 
-#sec-page {
-  position: relative;
-  width: 100%;
-  max-width: 1200px;
-  padding: 20px 12px 80px;
-  z-index: 1;
-}
+  @keyframes smokeFade {
+    to { opacity: 0.4; }
+  }
 
-/* HEADER */
-.sfc-header {
-  margin-top: 12px;
-  border-radius: 22px;
-  padding: 26px 16px 22px;
-  background:
-    linear-gradient(145deg, rgba(255,255,255,0.05), transparent 40%),
-    radial-gradient(circle at top, #151b3f 0, #050614 55%, #02030a 100%);
-  border: 1px solid rgba(214,177,95,0.6);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.95);
-  text-align: center;
-  position: relative;
-}
+  @keyframes smokeDrift {
+    0%   { transform: translate3d(0,0,0); }
+    50%  { transform: translate3d(-4%, -2%, 0); }
+    100% { transform: translate3d(3%, 3%, 0); }
+  }
 
-.sfc-logo {
-  width: 165px;
-  filter: drop-shadow(0 0 20px rgba(214,177,95,0.7));
-}
+  /* =====================
+     SIDWRAPPER
+     ===================== */
+  #sec-page {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    padding: 20px 12px 80px;
+    z-index: 1;
+  }
 
-.sfc-title {
-  font-weight: 800;
-  font-size: clamp(1.3rem, 2.6vw, 1.7rem);
-  letter-spacing: .18em;
-  text-transform: uppercase;
-  color: #fdfbff;
-  margin-top: 4px;
-}
-.sfc-title strong { color: var(--sec-gold-soft); }
+  /* =====================
+     HEADER
+     ===================== */
+  .sfc-header {
+    margin-top: 12px;
+    padding: 26px 16px 22px;
+    border-radius: 22px;
+    text-align: center;
+    background:
+      linear-gradient(145deg, rgba(255,255,255,0.05), transparent 40%),
+      radial-gradient(circle at top, #151b3f 0%, #050614 55%, #02030a 100%);
+    border: 1px solid rgba(214,177,95,0.6);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.95);
+  }
 
-.sfc-divider {
-  width: 180px;
-  height: 3px;
-  margin: 18px auto 0;
-  background: linear-gradient(90deg, transparent, var(--sec-gold-soft), transparent);
-}
+  .sfc-logo {
+    width: 165px;
+    filter: drop-shadow(0 0 20px rgba(214,177,95,0.7));
+  }
 
-/* TABS */
-.cup-tabs {
-  margin-top: 20px;
-  border-radius: 999px;
-  background: rgba(2,4,12,0.94);
-  border: 1px solid rgba(214,177,95,0.35);
-  padding: 7px 10px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 4px;
-}
-.cup-tabs .tab {
-  border-radius: 999px;
-  border: none;
-  background: transparent;
-  color: var(--sec-text-muted);
-  font-size: .8rem;
-  padding: 9px 16px;
-  text-transform: uppercase;
-  letter-spacing: .09em;
-  font-weight: 600;
-  cursor: pointer;
-}
-.cup-tabs .tab.active {
-  background: linear-gradient(90deg, var(--sec-gold), var(--sec-gold-soft));
-  color: #181933;
-}
+  .sfc-title {
+    margin-top: 6px;
+    font-size: clamp(1.3rem, 2.6vw, 1.7rem);
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #fff;
+  }
+
+  .sfc-title strong {
+    color: var(--sec-gold-soft);
+  }
+
+  .sfc-divider {
+    width: 180px;
+    height: 3px;
+    margin: 18px auto 0;
+    border-radius: 999px;
+    background: linear-gradient(90deg, transparent, var(--sec-gold-soft), transparent);
+  }
+
+  /* =====================
+     NAV / TABS
+     ===================== */
+  .cup-tabs {
+    margin-top: 20px;
+    padding: 7px 10px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    border-radius: 999px;
+    background: rgba(2,4,12,0.94);
+    border: 1px solid rgba(214,177,95,0.35);
+  }
+
+  .cup-tabs .tab {
+    padding: 9px 16px;
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    color: var(--sec-text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .cup-tabs .tab.active {
+    background: linear-gradient(90deg, var(--sec-gold), var(--sec-gold-soft));
+    color: #181933;
+  }
+
+  /* =====================
+     PANELER (KRITISK)
+     ===================== */
+  .tab-panel {
+    display: none;
+    margin-top: 26px;
+    padding: 24px 20px 26px;
+    border-radius: 22px;
+    background:
+      radial-gradient(circle at top, rgba(255,255,255,0.04) 0%, transparent 55%),
+      radial-gradient(circle at 0% 100%, rgba(214,177,95,0.14) 0%, transparent 55%),
+      linear-gradient(180deg, #060715, #02030a 60%, #000 100%);
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 18px 42px rgba(0,0,0,0.95);
+  }
+
+  .tab-panel.active {
+    display: block;
+  }
+
+  /* =====================
+     LÄNKAR
+     ===================== */
+  .player-link {
+    color: #fff;
+    text-decoration: none;
+  }
+
+  .player-link:hover {
+    opacity: 0.7;
+  }
   </style>
 </head>
+
 
 <body>
   <div id="sec-bg-layer">
@@ -177,27 +225,7 @@ body {
       <button class="tab" data-target="statistik">Statistik</button>
       <button class="tab" data-target="regler">Regler</button>
     </nav>
-    /* =======================
-   PANELER (KRITISK FIX)
-   ======================= */
-.tab-panel {
-  margin-top: 26px;
-  border-radius: 22px;
-  background:
-    radial-gradient(circle at top, rgba(255,255,255,0.04) 0, transparent 55%),
-    radial-gradient(circle at 0% 100%, rgba(214,177,95,0.14) 0, transparent 55%),
-    linear-gradient(180deg, #060715, #02030a 60%, #000 100%);
-  border: 1px solid rgba(255,255,255,0.06);
-  padding: 24px 20px 26px;
-  box-shadow: 0 18px 42px rgba(0,0,0,0.95);
-  color: var(--sec-text-main);
-  display: none;
-}
-
-.tab-panel.active {
-  display: block;
-}
-
+ 
 <!-- INFO -->
 <div id="info" class="tab-panel active">
   <div class="info-card" style="padding:20px;">
