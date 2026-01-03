@@ -821,12 +821,12 @@ html, body {
   .then(([matches, logos]) => {
 
     /* =====================
-       LOGOMAP
+       LOGO MAP
        ===================== */
     const logoMap = {};
     logos.forEach(r => {
-      const name = (r.laglogga || r.Laglogga || "").trim().toLowerCase();
-      const id   = (r.driveid || r.DriveID || "").trim();
+      const name = (r.laglogga || r.Laglogga || "").toString().trim().toLowerCase();
+      const id   = (r.driveid || r.DriveID || "").toString().trim();
       if (name && id) {
         logoMap[name] =
           `https://drive.google.com/thumbnail?id=${id}&sz=w200`;
@@ -834,9 +834,10 @@ html, body {
     });
 
     /* =====================
-       TABELLSTRUKTUR
+       TABELL & H2H STRUKTUR
        ===================== */
     const table = {};
+    const h2h = {}; // h2h[A][B] = poäng A tog mot B
 
     function ensureTeam(name) {
       if (!table[name]) {
@@ -851,21 +852,30 @@ html, body {
           ga: 0,
           gd: 0,
           p: 0,
+          ppg: 0,
+          wins: 0,
           logo_url: logoMap[name.toLowerCase()] || ""
         };
       }
       return table[name];
     }
 
+    function addH2H(a, b, pa, pb) {
+      if (!h2h[a]) h2h[a] = {};
+      if (!h2h[b]) h2h[b] = {};
+      h2h[a][b] = (h2h[a][b] || 0) + pa;
+      h2h[b][a] = (h2h[b][a] || 0) + pb;
+    }
+
     /* =====================
        PROCESSA MATCHER
        ===================== */
     matches.forEach(m => {
-      const cup = (m.cup || m.Cup || "").trim();
+      const cup = (m.cup || m.Cup || "").toString().trim();
       if (cup !== CUP_NAME) return;
 
-      const home = (m.home_team || m["Home team"] || "").trim();
-      const away = (m.away_team || m["Away team"] || "").trim();
+      const home = (m.home_team || m["Home team"] || "").toString().trim();
+      const away = (m.away_team || m["Away team"] || "").toString().trim();
       if (!home || !away) return;
 
       const hs = Number(m.home_score ?? m["Home score"] ?? 0);
@@ -883,43 +893,67 @@ html, body {
         if (isOT) {
           H.otw++; H.p += 2;
           A.otl++; A.p += 1;
+          addH2H(home, away, 2, 1);
         } else {
           H.w++; H.p += 3;
           A.l++;
+          addH2H(home, away, 3, 0);
         }
       } else {
         if (isOT) {
           A.otw++; A.p += 2;
           H.otl++; H.p += 1;
+          addH2H(away, home, 2, 1);
         } else {
           A.w++; A.p += 3;
           H.l++;
+          addH2H(away, home, 3, 0);
         }
       }
     });
 
     /* =====================
-       SLUTBEARBETNING
+       SLUTBERÄKNING
        ===================== */
     const rows = Object.values(table).map(t => {
       t.gd = t.gf - t.ga;
+      t.ppg = t.gp > 0 ? t.p / t.gp : 0;
+      t.wins = t.w + t.otw;
       return t;
     });
 
-    rows.sort((a,b) =>
-      b.p - a.p ||
-      b.gd - a.gd ||
-      b.gf - a.gf ||
-      a.team_name.localeCompare(b.team_name)
-    );
+    /* =====================
+       SORTERING – TIEBREAKERS
+       ===================== */
+    rows.sort((a, b) => {
+
+      // 1️⃣ PPG
+      if (b.ppg !== a.ppg) return b.ppg - a.ppg;
+
+      // 2️⃣ Segrar
+      if (b.wins !== a.wins) return b.wins - a.wins;
+
+      // 3️⃣ Inbördes möten
+      const h2hAB = h2h[a.team_name]?.[b.team_name] || 0;
+      const h2hBA = h2h[b.team_name]?.[a.team_name] || 0;
+      if (h2hAB !== h2hBA) return h2hBA - h2hAB;
+
+      // 4️⃣ Målskillnad
+      if (b.gd !== a.gd) return b.gd - a.gd;
+
+      // 5️⃣ Gjorda mål
+      if (b.gf !== a.gf) return b.gf - a.gf;
+
+      return a.team_name.localeCompare(b.team_name);
+    });
 
     /* =====================
        RENDER TABELL
        ===================== */
-    const tbl = document.createElement("table");
-    tbl.className = "sec-table";
+    const tableEl = document.createElement("table");
+    tableEl.className = "sec-table";
 
-    tbl.innerHTML = `
+    tableEl.innerHTML = `
       <thead>
         <tr>
           <th>#</th>
@@ -939,7 +973,6 @@ html, body {
             <td>${i+1}</td>
             <td>
               <a href="lagkort.html?team=${encodeURIComponent(r.team_name)}&cup=19.5"
-                 class="team-cell-link"
                  style="color:inherit;text-decoration:none;">
                 <div class="team-cell">
                   <img src="${r.logo_url}" alt="${r.team_name}">
@@ -962,9 +995,8 @@ html, body {
     host.innerHTML = "";
     const wrap = document.createElement("div");
     wrap.className = "table-wrapper";
-    wrap.appendChild(tbl);
+    wrap.appendChild(tableEl);
     host.appendChild(wrap);
-
   })
   .catch(err => {
     console.error("Tabellfel:", err);
@@ -973,6 +1005,7 @@ html, body {
   });
 })();
 </script>
+
 
 
 </div>
@@ -2581,6 +2614,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
