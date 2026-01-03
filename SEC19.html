@@ -285,13 +285,29 @@ document.querySelectorAll(".team-card").forEach(card=>{
   host.innerHTML='Laddar…';
   const API="https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec?sheet=Standings";
   fetch(API).then(r=>r.json()).then(rows=>{
-    let html='<table class="sec-table"><thead><tr><th>#</th><th>Lag</th><th>P</th></tr></thead><tbody>';
-    rows.forEach((r,i)=>{
-      html+=`<tr><td>${i+1}</td><td><a href="lagkort.html?team=${encodeURIComponent(r.team_name)}&cup=19">${r.team_name}</a></td><td>${r.p}</td></tr>`;
-    });
-    html+='</tbody></table>';
-    host.innerHTML=html;
+  const filtered = rows.filter(r =>
+    String(r.cup || r.CUP || "").trim() === "19"
+  );
+
+  let html='<table class="sec-table"><thead><tr><th>#</th><th>Lag</th><th>P</th></tr></thead><tbody>';
+
+  filtered.forEach((r,i)=>{
+    html+=`
+      <tr>
+        <td>${i+1}</td>
+        <td>
+          <a href="lagkort.html?team=${encodeURIComponent(r.team_name)}&cup=19">
+            ${r.team_name}
+          </a>
+        </td>
+        <td>${r.p}</td>
+      </tr>`;
   });
+
+  html+='</tbody></table>';
+  host.innerHTML=html;
+});
+
 })();
 </script>
 
