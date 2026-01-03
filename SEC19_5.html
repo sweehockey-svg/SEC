@@ -698,72 +698,96 @@ html, body {
 
   const CUP_NAME = "SEC 19.5";
 
-  const API =
-    "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec" +
-    "?sheet=matcherSEC";
+  const API_BASE =
+    "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec";
 
-  fetch(API)
-    .then(res => res.json())
-    .then(rows => {
-      if (!Array.isArray(rows) || rows.length === 0) {
-        grid.innerHTML = "<p>Inga matcher hittades.</p>";
-        return;
-      }
+  const MATCHER_API = API_BASE + "?sheet=matcherSEC";
+  const LOGO_API    = API_BASE + "?sheet=lagloggor";
 
-      // 🔍 DEBUG – visa exakt struktur
-      console.log("EXEMPEL RAD:", rows[0]);
+  Promise.all([
+    fetch(MATCHER_API).then(r => r.json()),
+    fetch(LOGO_API).then(r => r.json())
+  ])
+  .then(([matcher, logos]) => {
 
-      const teams = new Set();
+    /* =====================
+       BYGG LOGO-MAP (ROBUST)
+       ===================== */
+    const logoMap = {};
 
-      rows.forEach(r => {
-        const cup =
-          (r.cup || r.Cup || r.CUP || "").toString().trim();
+    logos.forEach(r => {
+      const name =
+        (r.laglogga || r.Laglogga || r.LAGLOGGA || "").toString().trim();
+      const id =
+        (r.driveid || r.DriveID || r.driveId || "").toString().trim();
 
-        if (cup !== CUP_NAME) return;
+      if (!name || !id) return;
 
-        const home =
-          r.home_team ||
-          r["Home team"] ||
-          r.HomeTeam ||
-          "";
-
-        const away =
-          r.away_team ||
-          r["Away team"] ||
-          r.AwayTeam ||
-          "";
-
-        if (home) teams.add(home.trim());
-        if (away) teams.add(away.trim());
-      });
-
-      if (teams.size === 0) {
-        grid.innerHTML = "<p>Inga lag hittades för denna cup.</p>";
-        return;
-      }
-
-      grid.innerHTML = "";
-
-      [...teams].sort().forEach(team => {
-        const card = document.createElement("div");
-        card.className = "team-card";
-        card.innerHTML = `<h3>${team}</h3>`;
-        card.onclick = () => {
-          location.href =
-            "lagkort.html?team=" +
-            encodeURIComponent(team) +
-            "&cup=19.5";
-        };
-        grid.appendChild(card);
-      });
-    })
-    .catch(err => {
-      console.error("Lag-flik fel:", err);
-      grid.innerHTML = "<p>Fel vid hämtning av lag.</p>";
+      logoMap[name] =
+        `https://drive.google.com/thumbnail?id=${id}&sz=w300`;
     });
+
+    console.log("LOGOMAP:", logoMap); // 🔍 debug
+
+    /* =====================
+       SAMLA LAG FRÅN MATCHER
+       ===================== */
+    const teams = new Set();
+
+    matcher.forEach(r => {
+      const cup =
+        (r.cup || r.Cup || "").toString().trim();
+      if (cup !== CUP_NAME) return;
+
+      const home =
+        (r.home_team || r["Home team"] || "").toString().trim();
+      const away =
+        (r.away_team || r["Away team"] || "").toString().trim();
+
+      if (home) teams.add(home);
+      if (away) teams.add(away);
+    });
+
+    if (teams.size === 0) {
+      grid.innerHTML = "<p>Inga lag hittades för denna cup.</p>";
+      return;
+    }
+
+    /* =====================
+       RENDERA KORT
+       ===================== */
+    grid.innerHTML = "";
+
+    [...teams].sort().forEach(team => {
+      const logo =
+        logoMap[team] ||
+        "https://dummyimage.com/200x200/0b0e1a/ffffff&text=SEC";
+
+      const card = document.createElement("div");
+      card.className = "team-card";
+      card.innerHTML = `
+        <div class="team-logo">
+          <img src="${logo}" alt="${team}">
+        </div>
+        <h3>${team}</h3>
+      `;
+
+      card.onclick = () => {
+        location.href =
+          "lagkort.html?team=" +
+          encodeURIComponent(team) +
+          "&cup=19.5";
+      };
+
+      grid.appendChild(card);
+    });
+  })
+  .catch(err => {
+    console.error("Lag-flik fel:", err);
+    grid.innerHTML = "<p>Fel vid laddning av lag.</p>";
+  });
 })();
 </script>
-
 
 
 
@@ -2503,6 +2527,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
