@@ -2218,7 +2218,6 @@ html, body {
 
 </style>
 
-<!-- 🔹 SCRIPT -->
 <script>
 /* ============================
    STATISTIK – DATA & LOGIK
@@ -2275,8 +2274,9 @@ document.querySelectorAll('#statistik .stat-section').forEach(section => {
    HJÄLPFUNKTIONER
    ============================ */
 const TEAM_MAP = {
-  'vNV':'vNexs Vipers','VNV':'vNexs Vipers','MOD':'Modo Hockey',
-  'SES':'Sunne IK Esport','SA':'SSK Academy','SS':'Surte Sisu HC'
+  'vNV':'vNexs Vipers','VNV':'vNexs Vipers',
+  'MOD':'Modo Hockey','SES':'Sunne IK Esport',
+  'SA':'SSK Academy','SS':'Surte Sisu HC'
 };
 
 const FLAG = {
@@ -2297,10 +2297,9 @@ function flagify(name){
   let code = m ? m[1].toUpperCase() : "";
   const MAP = {SWE:'SE',FIN:'FI',NOR:'NO',DNK:'DK',ISL:'IS',USA:'US',CAN:'CA'};
   if(MAP[code]) code = MAP[code];
-  const flag = FLAG[code] || "";
   return {
     text: txt.replace(/,\s*[A-Za-z]{2,3}$/,''),
-    flag
+    flag: FLAG[code] || ""
   };
 }
 
@@ -2312,12 +2311,13 @@ function renderTable({
   searchId,
   updatedId,
   sheet,
-  stage,
   sortFn
 }) {
   const host = document.getElementById(hostId);
   const search = document.getElementById(searchId);
   const updated = document.getElementById(updatedId);
+
+  if(!host) return;
 
   host.innerHTML = `
     <div class="loader">
@@ -2329,13 +2329,16 @@ function renderTable({
     .then(r => r.json())
     .then(rows => {
 
-      const data = rows.filter(r =>
-        norm(r.CUP) === CUP_NAME &&
-        norm(r.STAGE).toLowerCase().includes(stage)
-      );
+      if(!Array.isArray(rows) || !rows.length){
+        host.textContent = "Ingen statistik hittades.";
+        return;
+      }
+
+      /* 🔥 ENDA FILTRERINGEN */
+      const data = rows.filter(r => norm(r.CUP) === CUP_NAME);
 
       if(!data.length){
-        host.textContent = "Ingen statistik hittades.";
+        host.textContent = "Ingen statistik för denna cup.";
         return;
       }
 
@@ -2349,7 +2352,7 @@ function renderTable({
         <thead>
           <tr>
             <th>#</th>
-            ${headers.map(h=>`<th>${h}</th>`).join("")}
+            ${headers.map(h=>`<th>${h.toUpperCase()}</th>`).join("")}
           </tr>
         </thead>`;
 
@@ -2358,25 +2361,28 @@ function renderTable({
 
       data.forEach((row,i)=>{
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${i+1}</td>` + headers.map(k=>{
-          let v = row[k] ?? "";
 
-          if(/players|goalies/i.test(k)){
-            const f = flagify(v);
-            v = `${f.flag} <a href="players/?player=${encodeURIComponent(f.text)}"
+        tr.innerHTML =
+          `<td>${i+1}</td>` +
+          headers.map(k=>{
+            let v = row[k] ?? "";
+
+            if(/players|goalies/i.test(k)){
+              const f = flagify(v);
+              v = `${f.flag} <a href="players/?player=${encodeURIComponent(f.text)}"
                    style="color:#ffd35c;font-weight:600;text-decoration:none;">
                    ${f.text}</a>`;
-          }
+            }
 
-          if(k.toLowerCase()==="team"){
-            const team = mapTeam(v);
-            v = `<a href="lagkort.html?team=${encodeURIComponent(team)}&cup=19.5"
+            if(k.toLowerCase()==="team"){
+              const team = mapTeam(v);
+              v = `<a href="lagkort.html?team=${encodeURIComponent(team)}&cup=19.5"
                    style="color:#ffd35c;font-weight:600;text-decoration:none;">
                    ${team}</a>`;
-          }
+            }
 
-          return `<td data-label="${k}">${v}</td>`;
-        }).join("");
+            return `<td data-label="${k.toUpperCase()}">${v}</td>`;
+          }).join("");
 
         tbody.appendChild(tr);
       });
@@ -2388,22 +2394,26 @@ function renderTable({
       wrap.appendChild(table);
       host.appendChild(wrap);
 
-      updated.textContent =
-        "Senast uppdaterad: " + new Date().toLocaleString("sv-SE");
+      if(updated){
+        updated.textContent =
+          "Senast uppdaterad: " + new Date().toLocaleString("sv-SE");
+      }
 
       /* SÖK */
-      search.addEventListener("input",()=>{
-        const q = search.value.toLowerCase();
-        [...tbody.rows].forEach(r=>{
-          r.style.display = [...r.cells]
-            .some(c=>c.textContent.toLowerCase().includes(q))
-            ? "" : "none";
+      if(search){
+        search.addEventListener("input",()=>{
+          const q = search.value.toLowerCase();
+          [...tbody.rows].forEach(r=>{
+            r.style.display = [...r.cells]
+              .some(c=>c.textContent.toLowerCase().includes(q))
+              ? "" : "none";
+          });
         });
-      });
+      }
     })
     .catch(err=>{
-      host.textContent="Fel vid laddning.";
       console.error(err);
+      host.textContent="Fel vid laddning.";
     });
 }
 
@@ -2415,7 +2425,6 @@ renderTable({
   searchId: "searchGroupSkaters",
   updatedId: "updated-group-skaters",
   sheet: "utestatsall",
-  stage: "grupp",
   sortFn: (a,b)=>(+b.PTS||0)-(+a.PTS||0)||(+b.G||0)-(+a.G||0)
 });
 
@@ -2424,7 +2433,6 @@ renderTable({
   searchId: "searchGroupGoalies",
   updatedId: "updated-group-goalies",
   sheet: "malvaktsstatsall",
-  stage: "grupp",
   sortFn: (a,b)=>(parseFloat(b.SVP)||0)-(parseFloat(a.SVP)||0)
 });
 
@@ -2436,7 +2444,6 @@ renderTable({
   searchId: "searchPlayoffSkaters",
   updatedId: "updated-playoff-skaters",
   sheet: "utestatsall",
-  stage: "slut",
   sortFn: (a,b)=>(+b.PTS||0)-(+a.PTS||0)||(+b.G||0)-(+a.G||0)
 });
 
@@ -2445,10 +2452,10 @@ renderTable({
   searchId: "searchPlayoffGoalies",
   updatedId: "updated-playoff-goalies",
   sheet: "malvaktsstatsall",
-  stage: "slut",
   sortFn: (a,b)=>(parseFloat(b.SVP)||0)-(parseFloat(a.SVP)||0)
 });
 </script>
+
 
 
 <!-- 🔹 REGLER FLIK 7 -->
@@ -2945,6 +2952,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
