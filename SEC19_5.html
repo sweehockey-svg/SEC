@@ -623,346 +623,114 @@ html, body {
 
     
 <!-- 🔹 LAG FLIK 2-->
+<!-- ===================== -->
+<!-- 🏒 LAG -->
+<!-- ===================== -->
 <div id="lag" class="tab-panel">
   <h2>🏒 Deltagande lag</h2>
-  <p>Här är de sex deltagande lagen i <strong>Svenska eHockey Cupen 19.5</strong>. Klicka på ett lag för att se dess statistik, matcher och slutspelsresultat.</p>
+  <p>
+    Klicka på ett lag för att se matcher och statistik i
+    <strong>Svenska eHockey Cupen 19.5</strong>.
+  </p>
 
-  <div class="team-grid">
-
-    <!-- 🏒 LAG 1 – Modo Hockey -->
-    <div class="team-card" data-team="modo">
-      <div class="team-logo">
-        <img src="https://drive.google.com/thumbnail?id=1Pbr3B5ZSRjbluKEpNXvz6e4xnj0oB0Pw&sz=w1000" alt="Modo Hockey">
-      </div>
-      <h3>Modo Hockey</h3>
-      <p><strong>C:</strong> MrXbox79<br><strong>A:</strong> RookieLIAMOVIC, Disctrasan-</p>
-    </div>
-
-    <!-- 🏒 LAG 2 – SSK Academy -->
-    <div class="team-card" data-team="ssk">
-      <div class="team-logo">
-        <img src="https://drive.google.com/thumbnail?id=1kdxwWivlii1hCK3doJY8I44dIQ_hQzYo&sz=w1000" alt="SSK Academy">
-      </div>
-      <h3>SSK Academy</h3>
-      <p><strong>C:</strong> foxflyers<br><strong>A:</strong> m4Dow_86, Toivo4936</p>
-    </div>
-
-    <!-- 🏒 LAG 3 – Sunne IK Esport -->
-    <div class="team-card" data-team="sunne">
-      <div class="team-logo">
-        <img src="https://drive.google.com/thumbnail?id=15oE3SXfRAA3VK0nciLqYZ2FL6D8GUBtG&sz=w1000" alt="Sunne IK Esport">
-      </div>
-      <h3>Sunne IK Esport</h3>
-      <p><strong>C:</strong> O3_DAFA<br><strong>A:</strong> –</p>
-    </div>
-
-    <!-- 🏒 LAG 4 – Surte Sisu HC -->
-    <div class="team-card" data-team="surte">
-      <div class="team-logo">
-        <img src="https://drive.google.com/thumbnail?id=1qRkJLEFmS-npNei6bs09fsy0QLmmrvpB&sz=w1000" alt="Surte Sisu HC">
-      </div>
-      <h3>Surte Sisu HC</h3>
-      <p><strong>C:</strong> FezH___<br><strong>A:</strong> fakespear, –</p>
-    </div>
-
-    <!-- 🏒 LAG 5 – Veterankraft -->
-    <div class="team-card" data-team="veteran">
-      <div class="team-logo">
-        <img src="https://drive.google.com/thumbnail?id=18GqojyIKrdOcvfNJdhrlNF_-mB-XVmjH&sz=w1000" alt="Veterankraft">
-      </div>
-      <h3>Veterankraft</h3>
-      <p><strong>C:</strong> I-Buffy-l<br><strong>A:</strong> Supremski, Prolane-</p>
-    </div>
-
-    <!-- 🏒 LAG 6 – vNexs Vipers -->
-    <div class="team-card" data-team="vnexs">
-      <div class="team-logo">
-        <img src="https://drive.google.com/thumbnail?id=1lM9wrVIDUgc1ri4ZSQmErsb9aGZo5wBM&sz=w1000" alt="vNexs Vipers">
-      </div>
-      <h3>vNexs Vipers</h3>
-      <p><strong>C:</strong> Hescoores<br><strong>A:</strong> Dan9105, Jonsson03</p>
-    </div>
-
+  <div id="team-grid" class="team-grid">
+    <p>Laddar lag…</p>
   </div>
+</div>
+
 <style>
-/* 🎨 FÖRBÄTTRAD DESIGN FÖR LAGSIDOR */
-.team-hero {
-  text-align: center;
-  padding: 30px 15px 10px;
-}
-.team-hero-logo {
-  width: 220px;
-  max-width: 80%;
-  margin-bottom: 12px;
-}
-.team-hero h2 {
-  font-size: 2rem;
-  margin: 10px 0;
-  color: #fff;
-  font-weight: 700;
-}
-.team-roster {
-  color: #ccc;
-  font-size: 1rem;
+/* =====================
+   LAG – GRID & KORT
+   ===================== */
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-top: 24px;
 }
 
-/* 🔘 Flikar (Gruppspel / Slutspel / Matcher) */
-.stat-tabs {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin: 20px 0 30px;
-}
-.stat-tabs .tab {
-  background: #10121a;
-  color: #ddd;
-  border: 1px solid #2e2f3a;
-  border-radius: 8px;
-  padding: 10px 18px;
+.team-card {
+  background: #0d0f17;
+  border: 1px solid #2a2d38;
+  border-radius: 14px;
+  padding: 20px 16px;
+  text-align: center;
   cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
 }
-.stat-tabs .tab:hover {
-  background: #1c1f29;
-  color: #fff;
-}
-.stat-tabs .tab.active {
-  background: #ffd35c;
-  color: #000;
+
+.team-card:hover {
+  transform: translateY(-3px);
+  background: #14182a;
   border-color: #ffd35c;
 }
 
-/* 📊 Tabellen */
-.team-view table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
-  background: #0d0f17;
-  border-radius: 10px;
-  overflow: hidden;
-}
-.team-view th {
-  background: #162032;
-  color: #ffda73;
-  padding: 10px;
-  text-align: left;
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-.team-view td {
-  padding: 10px;
-  color: #eaeaea;
-  border-bottom: 1px solid #1f2533;
-}
-.team-view tr:nth-child(even) td {
-  background: #111523;
-}
-.team-view tr:hover td {
-  background: #1b2233;
-}
-
-/* 🧱 Matchblock */
-.match-container {
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-}
-.match-block {
-  background: #0f111a;
-  border: 1px solid #2a2d38;
-  border-radius: 10px;
-  padding: 15px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-}
-.match-date {
-  font-weight: 600;
-  color: #ffda73;
-  margin-bottom: 10px;
+.team-card h3 {
+  margin: 0;
   font-size: 1.05rem;
-}
-.match-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.match-time {
-  width: 70px;
-  color: #999;
-}
-.match-team {
-  color: #ddd;
-  font-weight: 500;
-}
-.match-team.winner {
-  color: #79ff97;
-  font-weight: 700;
-}
-.match-score {
+  font-weight: 600;
   color: #fff;
-  text-align: center;
-  font-weight: 600;
+  letter-spacing: 0.03em;
 }
-.match-score .ot {
-  color: #ffda73;
-  font-size: 0.8rem;
-  margin-left: 4px;
-}
-
-/* 🔙 Tillbaka-knapp */
-.back-to-lag {
-  display: inline-block;
-  background: #ffd35c;
-  color: #000;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 14px;
-  cursor: pointer;
-  margin: 10px 0 15px;
-  font-weight: 600;
-}
-.back-to-lag:hover {
-  background: #ffe27a;
-}
-
-/* 🔹 Allmänt */
-.wrap {
-  overflow-x: auto;
-}
-.sep {
-  height: 25px;
-}
-/* Dölj rubriken "Deltagande lag" när man är inne på en individuell lagsida */
-#lag.show-team > h2,
-#lag.show-team > p {
-  display: none !important;
-}
-
-/* 🔄 Fade-effekt vid växling mellan lag och lagsidor */
-#lag .team-grid,
-#lag .team-panel {
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-#lag .team-grid[style*="display: grid"],
-#lag .team-panel[style*="display: block"] {
-  opacity: 1;
-}
-
-/* --- Lagsidevisning (stabil version) --- */
-
-/* Dölj alla individuella lagpaneler som standard */
-.team-panel {
-  display: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-/* Visa aktiv panel när JS sätter display:block */
-.team-panel[style*="display: block"] {
-  display: block;
-  opacity: 1;
-}
-
-/* Visa lagöversikten som grid, med fade */
-#lag > .team-grid {
-  display: grid;
-  opacity: 1;
-  transition: opacity 0.3s ease;
-}
-
-/* Dölj rubrik och text när man är inne på ett lag */
-#lag.show-team > h2,
-#lag.show-team > p {
-  display: none !important;
-}
-
-/* Dölj "Tillbaka till lagsidan"-knappen på huvudsidan, men visa på lagsidor */
-#lag .back-to-lag {
-  display: none;
-}
-.team-panel .back-to-lag {
-  display: inline-block !important;
-}
-
-
-
-
 </style>
 
-
-
- <!-- 🧩 Script for team navigation -->
 <script>
-  const teamCards = document.querySelectorAll('.team-card');
-  const lagMain = document.querySelector('#lag > .team-grid');
-  const teamPanels = document.querySelectorAll('#lag .team-panel');
+/* =====================
+   LAG – AUTO FRÅN matcherSEC
+   ===================== */
+(function () {
+  const grid = document.getElementById("team-grid");
+  if (!grid) return;
 
-  teamCards.forEach(card => {
-    card.addEventListener('click', () => {
-      lagMain.style.display = 'none';
-      teamPanels.forEach(p => p.style.display = 'none');
-      document.getElementById('team-' + card.dataset.team).style.display = 'block';
-      document.getElementById('lag').classList.add('show-team'); // 👈 Lägg till denna rad
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-  });
+  const CUP_NAME = "SEC 19.5"; // 👈 ändra vid ny cup
 
-  document.querySelectorAll('.back-to-lag').forEach(btn => {
-    btn.addEventListener('click', () => {
-      teamPanels.forEach(p => p.style.display = 'none');
-      lagMain.style.display = 'grid';
-      document.getElementById('lag').classList.remove('show-team'); // 👈 Lägg till denna rad
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-  });
+  const API =
+    "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec" +
+    "?sheet=matcherSEC";
 
-  document.querySelectorAll('.team-subtabs').forEach(tabset => {
-    const tabs = tabset.querySelectorAll('.team-tab');
-    tabs.forEach(btn => {
-      btn.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        btn.classList.add('active');
-        const target = btn.dataset.target;
-        const panels = tabset.parentElement.querySelectorAll('.team-subpanel');
-        panels.forEach(p => p.classList.toggle('active', p.id === target));
+  fetch(API)
+    .then(res => res.json())
+    .then(rows => {
+      if (!Array.isArray(rows) || rows.length === 0) {
+        grid.innerHTML = "<p>Inga matcher hittades.</p>";
+        return;
+      }
+
+      const teams = new Set();
+
+      rows.forEach(r => {
+        if (r.Cup !== CUP_NAME) return;
+
+        if (r["Home team"]) teams.add(r["Home team"]);
+        if (r["Away team"]) teams.add(r["Away team"]);
       });
-    });
-  });
-  document.querySelectorAll('.team-subtabs').forEach(tabset => {
-    const tabs = tabset.querySelectorAll('.team-tab');
-    tabs.forEach(btn => {
-      btn.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        btn.classList.add('active');
-        const target = btn.dataset.target;
-        const panels = tabset.parentElement.querySelectorAll('.team-subpanel');
-        panels.forEach(p => p.classList.toggle('active', p.id === target));
+
+      if (teams.size === 0) {
+        grid.innerHTML = "<p>Inga lag hittades för denna cup.</p>";
+        return;
+      }
+
+      grid.innerHTML = "";
+
+      [...teams].sort().forEach(team => {
+        const card = document.createElement("div");
+        card.className = "team-card";
+        card.innerHTML = `<h3>${team}</h3>`;
+        card.addEventListener("click", () => {
+          location.href =
+            "lagkort.html?team=" +
+            encodeURIComponent(team) +
+            "&cup=19.5";
+        });
+        grid.appendChild(card);
       });
+    })
+    .catch(err => {
+      console.error(err);
+      grid.innerHTML = "<p>Fel vid hämtning av lag.</p>";
     });
-  });
-
-  // 🔁 Återställ till huvudsidan när man klickar på "LAG" i toppmenyn
-  document.querySelectorAll('a[href="#lag"], [data-target="lag"], [data-panel="lag"]').forEach(link => {
-    link.addEventListener('click', () => {
-      const lagMain = document.querySelector('#lag > .team-grid');
-      const teamPanels = document.querySelectorAll('.team-panel');
-      if (!lagMain) return;
-
-      teamPanels.forEach(p => p.style.display = 'none');
-      lagMain.style.display = 'grid';
-      const lagSection = document.getElementById('lag');
-      if (lagSection) lagSection.classList.remove('show-team');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-  });
+})();
 </script>
-
-
-</script>
-
-</div>
-
-
 
 
     
@@ -2700,6 +2468,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
