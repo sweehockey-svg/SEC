@@ -1159,165 +1159,192 @@ html, body {
 
 
 <script>
-(function() {
-  const sheetURL = "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec?sheet=matcherSEC19_5";
+(function () {
   const container = document.getElementById("playoff-container");
+  container.innerHTML = "<div style='color:#ccc;padding:12px;'>Laddar slutspel…</div>";
 
-  const logos = {
-    "Modo Hockey": "https://drive.google.com/thumbnail?id=1Pbr3B5ZSRjbluKEpNXvz6e4xnj0oB0Pw&sz=w1000",
-    "SSK Academy": "https://drive.google.com/thumbnail?id=1kdxwWivlii1hCK3doJY8I44dIQ_hQzYo&sz=w1000",
-    "Sunne IK Esport": "https://drive.google.com/thumbnail?id=15oE3SXfRAA3VK0nciLqYZ2FL6D8GUBtG&sz=w1000",
-    "Surte Sisu HC": "https://drive.google.com/thumbnail?id=1qRkJLEFmS-npNei6bs09fsy0QLmmrvpB&sz=w1000",
-    "Veterankraft": "https://drive.google.com/thumbnail?id=18GqojyIKrdOcvfNJdhrlNF_-mB-XVmjH&sz=w1000",
-    "vNexs Vipers": "https://drive.google.com/thumbnail?id=1lM9wrVIDUgc1ri4ZSQmErsb9aGZo5wBM&sz=w1000"
-  };
+  const CUP_NAME = "SEC 19.5";
 
-  fetch(sheetURL)
-    .then(r => r.json())
-    .then(data => {
-      let currentRound = "";
-      const playoffs = [];
+  const API_BASE =
+    "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec";
 
-      data.forEach(row => {
-        const time = (row.date__time || "").trim();
-        if (/round/i.test(time)) currentRound = time;
-        else if (row.home_team && row.away_team && row.home_score && row.away_score) {
-          playoffs.push({
-            round: currentRound,
-            home_team: row.home_team.trim(),
-            away_team: row.away_team.trim(),
-            home_score: Number(row.home_score),
-            away_score: Number(row.away_score)
-          });
-        }
+  const MATCHER_API = API_BASE + "?sheet=matcherSEC";
+  const LOGO_API    = API_BASE + "?sheet=lagloggor";
+
+  Promise.all([
+    fetch(MATCHER_API).then(r => r.json()),
+    fetch(LOGO_API).then(r => r.json())
+  ])
+  .then(([matches, logos]) => {
+
+    /* =====================
+       LOGOMAP
+       ===================== */
+    const logoMap = {};
+    logos.forEach(r => {
+      const name = (r.laglogga || r.Laglogga || "").trim().toLowerCase();
+      const id   = (r.driveid || r.DriveID || "").trim();
+      if (name && id) {
+        logoMap[name] =
+          `https://drive.google.com/thumbnail?id=${id}&sz=w200`;
+      }
+    });
+
+    /* =====================
+       HJÄLPFUNKTIONER
+       ===================== */
+    function norm(s) {
+      return (s || "").toString().trim();
+    }
+
+    function logo(team) {
+      return logoMap[team.toLowerCase()] || "";
+    }
+
+    function seriesResult(matches) {
+      const wins = {};
+      matches.forEach(m => {
+        const h = m.home_team;
+        const a = m.away_team;
+        if (!wins[h]) wins[h] = 0;
+        if (!wins[a]) wins[a] = 0;
+        if (m.home_score > m.away_score) wins[h]++;
+        else wins[a]++;
       });
+      const teams = Object.keys(wins);
+      return {
+        teamA: teams[0],
+        teamB: teams[1],
+        winsA: wins[teams[0]],
+        winsB: wins[teams[1]],
+        winner: wins[teams[0]] > wins[teams[1]] ? teams[0] : teams[1]
+      };
+    }
 
-      const playoffsOnly = playoffs.filter(m =>
-        /round 1|round 2/i.test(m.round || "")
-      );
-      renderPlayoffBracket(playoffsOnly);
-    })
-    .catch(err => {
-      container.innerHTML = `<div style="color:#f66;padding:12px;">Fel vid hämtning av slutspelsdata: ${err}</div>`;
+    /* =====================
+       FILTRERA SLUTSPELSMATCHER
+       ===================== */
+    const playoffMatches = matches
+      .filter(m =>
+        norm(m.cup || m.Cup) === CUP_NAME &&
+        /semi|final/i.test(norm(m.stage || m.Stage || m.round))
+      )
+      .map(m => ({
+        stage: norm(m.stage || m.Stage || m.round),
+        home_team: norm(m.home_team || m["Home team"]),
+        away_team: norm(m.away_team || m["Away team"]),
+        home_score: Number(m.home_score ?? m["Home score"] ?? 0),
+        away_score: Number(m.away_score ?? m["Away score"] ?? 0)
+      }));
+
+    if (!playoffMatches.length) {
+      container.innerHTML =
+        "<div style='color:#ccc;padding:12px;'>Ingen slutspelsdata hittades.</div>";
+      return;
+    }
+
+    /* =====================
+       GRUPPERA PER RONDER
+       ===================== */
+    const rounds = {};
+    playoffMatches.forEach(m => {
+      const key = /final/i.test(m.stage) ? "FINAL" : "SEMIFINAL";
+      if (!rounds[key]) rounds[key] = [];
+      rounds[key].push(m);
     });
 
-function renderPlayoffBracket(rows) {
-  if (!rows || !rows.length) {
-    container.innerHTML = "<div style='color:#ccc;padding:12px;'>Ingen slutspelsdata hittades.</div>";
-    return;
-  }
-
-  const groupedByRound = {};
-  rows.forEach(m => {
-    if (!groupedByRound[m.round]) groupedByRound[m.round] = [];
-    groupedByRound[m.round].push(m);
-  });
-
-  let champion = "";
-
-  function calculateSeries(matches) {
-    const scoreMap = {};
-    matches.forEach(m => {
-      if (!scoreMap[m.home_team]) scoreMap[m.home_team] = 0;
-      if (!scoreMap[m.away_team]) scoreMap[m.away_team] = 0;
-      if (m.home_score > m.away_score) scoreMap[m.home_team]++;
-      else scoreMap[m.away_team]++;
+    /* =====================
+       SEMIFINALER
+       ===================== */
+    const semiSeries = {};
+    (rounds.SEMIFINAL || []).forEach(m => {
+      const key = [m.home_team, m.away_team].sort().join("_");
+      (semiSeries[key] = semiSeries[key] || []).push(m);
     });
 
-    const teams = Object.keys(scoreMap);
-    return {
-      teamA: teams[0],
-      teamB: teams[1],
-      winsA: scoreMap[teams[0]],
-      winsB: scoreMap[teams[1]],
-      winner: scoreMap[teams[0]] > scoreMap[teams[1]] ? teams[0] : teams[1]
-    };
+    const semiHTML = Object.values(semiSeries).map(series => {
+      const s = seriesResult(series);
+      return seriesCard(s);
+    }).join("");
+
+    /* =====================
+       FINAL
+       ===================== */
+    let finalHTML = "";
+    let champion = "";
+
+    const finalSeries = {};
+    (rounds.FINAL || []).forEach(m => {
+      const key = [m.home_team, m.away_team].sort().join("_");
+      (finalSeries[key] = finalSeries[key] || []).push(m);
+    });
+
+    Object.values(finalSeries).forEach(series => {
+      const s = seriesResult(series);
+      champion = s.winner;
+      finalHTML = seriesCard(s);
+    });
+
+    /* =====================
+       RENDER
+       ===================== */
+    container.innerHTML = `
+      <div class="slutspel-wrapper">
+
+        <h3 class="section-title">🏒 Semifinaler</h3>
+        <div class="semi-grid">${semiHTML}</div>
+
+        <div class="gold-divider"></div>
+
+        <h3 class="section-title">🥇 Final</h3>
+        <div class="final-box">${finalHTML}</div>
+
+        <div class="champion-clean">
+          <img src="${logo(champion)}" alt="${champion}">
+          🏆 <strong>${champion}</strong>
+        </div>
+
+      </div>
+    `;
+  })
+  .catch(err => {
+    console.error("Slutspel fel:", err);
+    container.innerHTML =
+      "<div style='color:#f66;padding:12px;'>Fel vid laddning av slutspel.</div>";
+  });
+
+  /* =====================
+     KORT
+     ===================== */
+  function seriesCard(s) {
+    const bestOf = Math.max(s.winsA, s.winsB) * 2 - 1;
+    const cup = "19.5";
+
+    return `
+      <div class="series-card">
+        <div class="team-line">
+          <span class="${s.winsA > s.winsB ? "winner" : ""}">
+            <a href="lagkort.html?team=${encodeURIComponent(s.teamA)}&cup=${cup}">
+              ${s.teamA}
+            </a>
+          </span>
+          <span>${s.winsA} – ${s.winsB}</span>
+        </div>
+        <div class="team-line">
+          <span class="${s.winsB > s.winsA ? "winner" : ""}">
+            <a href="lagkort.html?team=${encodeURIComponent(s.teamB)}&cup=${cup}">
+              ${s.teamB}
+            </a>
+          </span>
+          <span>${s.winsB} – ${s.winsA}</span>
+        </div>
+        <div class="best-of">Bäst av ${bestOf}</div>
+      </div>
+    `;
   }
-
-  // Semifinaler
-  const semiSeries = {};
-  (groupedByRound["ROUND 1 - SEMIFINAL"] || []).forEach(m => {
-    const key = [m.home_team, m.away_team].sort().join("_");
-    (semiSeries[key] = semiSeries[key] || []).push(m);
-  });
-
-  const semiHTML = Object.values(semiSeries)
-    .map(series => {
-      const s = calculateSeries(series);
-      return playoffCard(s.teamA, s.teamB, s.winsA, s.winsB);
-    })
-    .join("");
-
-  // Final
-  const finalSeries = {};
-  (groupedByRound["ROUND 2 - FINAL"] || []).forEach(m => {
-    const key = [m.home_team, m.away_team].sort().join("_");
-    (finalSeries[key] = finalSeries[key] || []).push(m);
-  });
-
-  let finalHTML = "";
-  Object.values(finalSeries).forEach(series => {
-    const s = calculateSeries(series);
-    champion = s.winner;
-    finalHTML = playoffCard(s.teamA, s.teamB, s.winsA, s.winsB);
-  });
-
-  // NY ren layout
-  const html = `
-    <div class="slutspel-wrapper">
-
-      <h3 class="section-title">🏒 Semifinaler</h3>
-      <div class="semi-grid">${semiHTML}</div>
-
-      <div class="gold-divider"></div>
-
-      <h3 class="section-title">🥇 Final</h3>
-      <div class="final-box">${finalHTML}</div>
-
-      <div class="champion-clean">
-        <img src="${logos[champion] || ''}">
-        🏆 <strong>${champion}</strong>
-      </div>
-
-    </div>
-  `;
-
-  container.innerHTML = html;
-}
-
-
-
-  // --- Kortdesign ---
-function playoffCard(teamA, teamB, winsA, winsB) {
-  const highlightA = winsA > winsB ? "winner" : "";
-  const highlightB = winsB > winsA ? "winner" : "";
-  const bestOf = Math.max(winsA, winsB) * 2 - 1;
-
-  const cupParam = "19.5";
-  const urlA = `lagkort.html?team=${encodeURIComponent(teamA)}&cup=${encodeURIComponent(cupParam)}`;
-  const urlB = `lagkort.html?team=${encodeURIComponent(teamB)}&cup=${encodeURIComponent(cupParam)}`;
-
-  return `
-    <div class="series-card">
-      <div class="team-line">
-        <span class="${highlightA}">
-          <a href="${urlA}" style="color:inherit; text-decoration:none;">${teamA}</a>
-        </span>
-        <span>${winsA} – ${winsB}</span>
-      </div>
-      <div class="team-line">
-        <span class="${highlightB}">
-          <a href="${urlB}" style="color:inherit; text-decoration:none;">${teamB}</a>
-        </span>
-        <span>${winsB} – ${winsA}</span>
-      </div>
-      <div class="best-of">Bäst av ${bestOf}</div>
-    </div>
-  `;
-}
-
 })();
 </script>
+
 <style>
 .slutspel-wrapper {
   display: flex;
@@ -2614,6 +2641,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
