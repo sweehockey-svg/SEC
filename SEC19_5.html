@@ -802,125 +802,178 @@ html, body {
   <div id="sec-standings" style="max-width:950px;margin:auto;"></div>
 
 <script>
-(function() {
-  const host = document.getElementById('sec-standings');
-  host.innerHTML = '<div style="padding:12px;font-family:Inter,Arial;color:#ccc;">Laddar …</div>';
+(function () {
+  const host = document.getElementById("sec-standings");
+  host.innerHTML = '<div style="padding:12px;color:#ccc;">Laddar tabell…</div>';
 
-  // 🔗 Ditt Google Sheet API
-  const API = "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec?sheet=Standings";
-  const url = API + (API.indexOf('?')>-1 ? '&' : '?') + '_t=' + Date.now();
+  const CUP_NAME = "SEC 19.5";
 
-  let rows = [];
-  let currentSort = { key: 'p', dir: 'desc' };
+  const API_BASE =
+    "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec";
 
-  fetch(url)
-    .then(r => r.json())
-    .then(data => {
-      rows = data;
-      renderTable();
-    })
-    .catch(err => {
-      host.innerHTML = '<div style="color:#f66;padding:12px;">Kunde inte ladda tabellen.<br>'+err+'</div>';
+  const MATCHER_API = API_BASE + "?sheet=matcherSEC";
+  const LOGO_API    = API_BASE + "?sheet=lagloggor";
+
+  Promise.all([
+    fetch(MATCHER_API).then(r => r.json()),
+    fetch(LOGO_API).then(r => r.json())
+  ])
+  .then(([matches, logos]) => {
+
+    /* =====================
+       LOGOMAP
+       ===================== */
+    const logoMap = {};
+    logos.forEach(r => {
+      const name = (r.laglogga || r.Laglogga || "").trim().toLowerCase();
+      const id   = (r.driveid || r.DriveID || "").trim();
+      if (name && id) {
+        logoMap[name] =
+          `https://drive.google.com/thumbnail?id=${id}&sz=w200`;
+      }
     });
 
-  function sortRows() {
-    const { key, dir } = currentSort;
-    const num = n => Number(String(n||0).replace(/[−–—]/g, '-'));
-    rows.sort((a,b)=>{
-      if (key === 'team_name') return (a[key]||'').localeCompare(b[key]||'') * (dir==='asc'?1:-1);
-      return (num(a[key]) - num(b[key])) * (dir==='asc'?1:-1);
-    });
-  }
+    /* =====================
+       TABELLSTRUKTUR
+       ===================== */
+    const table = {};
 
-  function renderTable() {
-    sortRows();
+    function ensureTeam(name) {
+      if (!table[name]) {
+        table[name] = {
+          team_name: name,
+          gp: 0,
+          w: 0,
+          otw: 0,
+          l: 0,
+          otl: 0,
+          gf: 0,
+          ga: 0,
+          gd: 0,
+          p: 0,
+          logo_url: logoMap[name.toLowerCase()] || ""
+        };
+      }
+      return table[name];
+    }
 
-    const table = document.createElement('table');
-    table.className = 'sec-table sortable';
+    /* =====================
+       PROCESSA MATCHER
+       ===================== */
+    matches.forEach(m => {
+      const cup = (m.cup || m.Cup || "").trim();
+      if (cup !== CUP_NAME) return;
 
-    const headers = [
-      { label:'#', key:'rank', sortable:false },
-      { label:'Lag', key:'team_name', sortable:false },
-      { label:'GP', key:'gp', sortable:true },
-      { label:'W', key:'w', sortable:true },
-      { label:'OTW', key:'otw', sortable:true },
-      { label:'L', key:'l', sortable:true },
-      { label:'OTL', key:'otl', sortable:true },
-      { label:'GD', key:'gd', sortable:true },
-      { label:'P', key:'p', sortable:true }
-    ];
+      const home = (m.home_team || m["Home team"] || "").trim();
+      const away = (m.away_team || m["Away team"] || "").trim();
+      if (!home || !away) return;
 
-    const thead = document.createElement('thead');
-    const trHead = document.createElement('tr');
-    headers.forEach(h => {
-      const th = document.createElement('th');
-      th.textContent = h.label;
-      if (h.sortable) {
-        th.classList.add('sortable-header');
-        th.style.cursor = 'pointer';
-        th.addEventListener('click', () => {
-          if (currentSort.key === h.key) {
-            currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
-          } else {
-            currentSort.key = h.key;
-            currentSort.dir = 'desc';
-          }
-          renderTable();
-        });
+      const hs = Number(m.home_score ?? m["Home score"] ?? 0);
+      const as = Number(m.away_score ?? m["Away score"] ?? 0);
+      const isOT = String(m.ot || m.OT || "").toLowerCase() === "ot";
 
-        // 🔽🔼 symbol
-        if (currentSort.key === h.key) {
-          const arrow = document.createElement('span');
-          arrow.textContent = currentSort.dir === 'asc' ? ' 🔼' : ' 🔽';
-          th.appendChild(arrow);
+      const H = ensureTeam(home);
+      const A = ensureTeam(away);
+
+      H.gp++; A.gp++;
+      H.gf += hs; H.ga += as;
+      A.gf += as; A.ga += hs;
+
+      if (hs > as) {
+        if (isOT) {
+          H.otw++; H.p += 2;
+          A.otl++; A.p += 1;
+        } else {
+          H.w++; H.p += 3;
+          A.l++;
+        }
+      } else {
+        if (isOT) {
+          A.otw++; A.p += 2;
+          H.otl++; H.p += 1;
+        } else {
+          A.w++; A.p += 3;
+          H.l++;
         }
       }
-      trHead.appendChild(th);
-    });
-    thead.appendChild(trHead);
-    table.appendChild(thead);
-
-    const tbody = document.createElement('tbody');
-    rows.forEach((r,i)=>{
-      const tr = document.createElement('tr');
-      if(i < 4) tr.classList.add('top4');
-
-      const tdRank = document.createElement('td');
-      tdRank.textContent = i+1;
-      tr.appendChild(tdRank);
-
-const tdTeam = document.createElement('td');
-const teamName = r.team_name || r.team || '';
-const teamUrl  = `lagkort.html?team=${encodeURIComponent(teamName)}&cup=19.5`;
-
-tdTeam.innerHTML = `
-  <a href="${teamUrl}" class="team-cell-link" style="color:inherit; text-decoration:none;">
-    <div class="team-cell">
-      <img src="${r.logo_url||''}" alt="${teamName}">
-      <span>${teamName}</span>
-    </div>
-  </a>`;
-tr.appendChild(tdTeam);
-
-
-      ['gp','w','otw','l','otl','gd','p'].forEach(k=>{
-        const td = document.createElement('td');
-        td.textContent = r[k] ?? '';
-        tr.appendChild(td);
-      });
-      tbody.appendChild(tr);
     });
 
-    table.appendChild(tbody);
-host.innerHTML = '';
-const wrapper = document.createElement('div');
-wrapper.className = 'table-wrapper';
-wrapper.appendChild(table);
-host.appendChild(wrapper);
+    /* =====================
+       SLUTBEARBETNING
+       ===================== */
+    const rows = Object.values(table).map(t => {
+      t.gd = t.gf - t.ga;
+      return t;
+    });
 
-  }
+    rows.sort((a,b) =>
+      b.p - a.p ||
+      b.gd - a.gd ||
+      b.gf - a.gf ||
+      a.team_name.localeCompare(b.team_name)
+    );
+
+    /* =====================
+       RENDER TABELL
+       ===================== */
+    const tbl = document.createElement("table");
+    tbl.className = "sec-table";
+
+    tbl.innerHTML = `
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Lag</th>
+          <th>GP</th>
+          <th>W</th>
+          <th>OTW</th>
+          <th>L</th>
+          <th>OTL</th>
+          <th>GD</th>
+          <th>P</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map((r,i)=>`
+          <tr class="${i < 4 ? "top4" : ""}">
+            <td>${i+1}</td>
+            <td>
+              <a href="lagkort.html?team=${encodeURIComponent(r.team_name)}&cup=19.5"
+                 class="team-cell-link"
+                 style="color:inherit;text-decoration:none;">
+                <div class="team-cell">
+                  <img src="${r.logo_url}" alt="${r.team_name}">
+                  <span>${r.team_name}</span>
+                </div>
+              </a>
+            </td>
+            <td>${r.gp}</td>
+            <td>${r.w}</td>
+            <td>${r.otw}</td>
+            <td>${r.l}</td>
+            <td>${r.otl}</td>
+            <td>${r.gd}</td>
+            <td>${r.p}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    `;
+
+    host.innerHTML = "";
+    const wrap = document.createElement("div");
+    wrap.className = "table-wrapper";
+    wrap.appendChild(tbl);
+    host.appendChild(wrap);
+
+  })
+  .catch(err => {
+    console.error("Tabellfel:", err);
+    host.innerHTML =
+      '<div style="color:#f66;padding:12px;">Kunde inte bygga tabellen.</div>';
+  });
 })();
 </script>
+
 
 </div>
 
@@ -2528,6 +2581,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
