@@ -645,97 +645,135 @@ html, body {
 .team-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 18px;
-  margin-top: 24px;
+  gap: 20px;
+  margin-top: 28px;
 }
 
 .team-card {
-  background: #0d0f17;
-  border: 1px solid #2a2d38;
-  border-radius: 14px;
-  padding: 20px 16px;
+  background: linear-gradient(180deg, #0f1220, #0a0d18);
+  border: 1px solid rgba(255,215,0,0.25);
+  border-radius: 18px;
+  padding: 22px 18px;
   text-align: center;
   cursor: pointer;
   transition: all 0.25s ease;
 }
 
 .team-card:hover {
-  transform: translateY(-3px);
-  background: #14182a;
+  transform: translateY(-4px);
   border-color: #ffd35c;
+  box-shadow: 0 0 20px rgba(255,215,0,0.25);
+}
+
+.team-logo {
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background: #0b0e1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255,215,0,0.35);
+}
+
+.team-logo img {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
 }
 
 .team-card h3 {
-  margin: 0;
+  margin: 6px 0 0;
   font-size: 1.05rem;
   font-weight: 600;
   color: #fff;
-  letter-spacing: 0.03em;
 }
 </style>
 
 <script>
+/* =====================
+   LAG – AUTO + LOGGOR
+   ===================== */
 (function () {
   const grid = document.getElementById("team-grid");
   if (!grid) return;
 
-  const CUP_NAME = "SEC 19.5"; // exakt som i Sheet
+  const CUP_NAME = "SEC 19.5";
 
-  const API =
-    "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec" +
-    "?sheet=matcherSEC";
+  const API_BASE =
+    "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec";
 
-  fetch(API)
-    .then(res => res.json())
-    .then(rows => {
-      if (!Array.isArray(rows) || rows.length === 0) {
-        grid.innerHTML = "<p>Inga matcher hittades.</p>";
-        return;
-      }
+  const MATCHER_API = API_BASE + "?sheet=matcherSEC";
+  const LOGO_API    = API_BASE + "?sheet=lagloggor";
 
-      const teams = new Set();
+  Promise.all([
+    fetch(MATCHER_API).then(r => r.json()),
+    fetch(LOGO_API).then(r => r.json())
+  ])
+  .then(([matcher, logos]) => {
 
-      rows.forEach(r => {
-        const cupValue =
-          (r.Cup || r.cup || "").toString().trim();
-
-        if (cupValue !== CUP_NAME) return;
-
-        const home =
-          r["Home team"] || r.home_team || r.HomeTeam || "";
-        const away =
-          r["Away team"] || r.away_team || r.AwayTeam || "";
-
-        if (home) teams.add(home.trim());
-        if (away) teams.add(away.trim());
-      });
-
-      if (teams.size === 0) {
-        grid.innerHTML = "<p>Inga lag hittades för denna cup.</p>";
-        return;
-      }
-
-      grid.innerHTML = "";
-
-      [...teams].sort().forEach(team => {
-        const card = document.createElement("div");
-        card.className = "team-card";
-        card.innerHTML = `<h3>${team}</h3>`;
-        card.addEventListener("click", () => {
-          location.href =
-            "lagkort.html?team=" +
-            encodeURIComponent(team) +
-            "&cup=19.5";
-        });
-        grid.appendChild(card);
-      });
-    })
-    .catch(err => {
-      console.error("Lag-flik fel:", err);
-      grid.innerHTML = "<p>Fel vid hämtning av lag.</p>";
+    /* ---- bygg logg-mapp ---- */
+    const logoMap = {};
+    logos.forEach(r => {
+      if (!r.Laglogga || !r.DriveID) return;
+      logoMap[r.Laglogga.trim()] =
+        `https://drive.google.com/thumbnail?id=${r.DriveID}&sz=w300`;
     });
+
+    /* ---- samla lag från matcher ---- */
+    const teams = new Set();
+
+    matcher.forEach(r => {
+      const cup = (r.Cup || "").trim();
+      if (cup !== CUP_NAME) return;
+
+      const home = (r["Home team"] || "").trim();
+      const away = (r["Away team"] || "").trim();
+
+      if (home) teams.add(home);
+      if (away) teams.add(away);
+    });
+
+    if (teams.size === 0) {
+      grid.innerHTML = "<p>Inga lag hittades för denna cup.</p>";
+      return;
+    }
+
+    grid.innerHTML = "";
+
+    [...teams].sort().forEach(team => {
+      const logo =
+        logoMap[team] ||
+        "https://dummyimage.com/200x200/0b0e1a/ffffff&text=SEC";
+
+      const card = document.createElement("div");
+      card.className = "team-card";
+
+      card.innerHTML = `
+        <div class="team-logo">
+          <img src="${logo}" alt="${team}">
+        </div>
+        <h3>${team}</h3>
+      `;
+
+      card.addEventListener("click", () => {
+        location.href =
+          "lagkort.html?team=" +
+          encodeURIComponent(team) +
+          "&cup=19.5";
+      });
+
+      grid.appendChild(card);
+    });
+  })
+  .catch(err => {
+    console.error("Lag-flik fel:", err);
+    grid.innerHTML = "<p>Fel vid laddning av lag.</p>";
+  });
 })();
 </script>
+
 
 
 
@@ -2474,6 +2512,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
