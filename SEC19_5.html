@@ -2218,13 +2218,11 @@ html, body {
 
 <script>
 /* ============================
-   STATISTIK – DATA & LOGIK
+   STATISTIK – SLUTGILTIG VERSION
    ============================ */
 
 const API_BASE =
   "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec";
-
-const CUP_PREFIX = "SEC 19.5";
 
 /* ============================
    FASVÄXEL
@@ -2284,12 +2282,17 @@ const FLAG = {
 
 const norm = v => (v ?? "").toString().trim();
 
+function getCup(row){
+  // Fungerar för både utestatsall & målvaktsstatsall
+  return norm(row["CUP"]);
+}
+
 function mapTeam(v){
   return TEAM_MAP[norm(v)] || norm(v);
 }
 
 function flagify(name){
-  let txt = norm(name);
+  const txt = norm(name);
   const m = txt.match(/,\s*([A-Za-z]{2,3})$/);
   let code = m ? m[1].toUpperCase() : "";
   const MAP = { SWE:"SE", FIN:"FI", NOR:"NO", DNK:"DK", ISL:"IS", USA:"US", CAN:"CA" };
@@ -2300,20 +2303,15 @@ function flagify(name){
   };
 }
 
-/* 🔑 HÄMTA CUP OAVSETT CASE */
-function getCup(row){
-  return norm(row.CUP ?? row.Cup ?? row.cup ?? "");
-}
-
 /* ============================
-   GENERISK TABELLRENDER
+   TABELLRENDER
    ============================ */
 function renderTable({
   hostId,
   searchId,
   updatedId,
   sheet,
-  phase,   // "G" eller "S"
+  cupValue,   // "SEC 19.5 G" / "SEC 19.5 S"
   sortFn
 }) {
   const host = document.getElementById(hostId);
@@ -2336,10 +2334,8 @@ function renderTable({
         return;
       }
 
-      const wanted = `${CUP_PREFIX} ${phase}`;
-
-      /* ✅ ROBUST FILTRERING */
-      const data = rows.filter(r => getCup(r) === wanted);
+      /* ✅ EXAKT FILTRERING */
+      const data = rows.filter(r => getCup(r) === cupValue);
 
       if (!data.length) {
         host.textContent = "Ingen statistik hittades.";
@@ -2426,7 +2422,7 @@ renderTable({
   searchId:"searchGroupSkaters",
   updatedId:"updated-group-skaters",
   sheet:"utestatsall",
-  phase:"G",
+  cupValue:"SEC 19.5 G",
   sortFn:(a,b)=>(+b.PTS||0)-(+a.PTS||0)||(+b.G||0)-(+a.G||0)
 });
 
@@ -2435,7 +2431,7 @@ renderTable({
   searchId:"searchGroupGoalies",
   updatedId:"updated-group-goalies",
   sheet:"målvaktsstatsall",
-  phase:"G",
+  cupValue:"SEC 19.5 G",
   sortFn:(a,b)=>(parseFloat(b.SVP)||0)-(parseFloat(a.SVP)||0)
 });
 
@@ -2447,7 +2443,7 @@ renderTable({
   searchId:"searchPlayoffSkaters",
   updatedId:"updated-playoff-skaters",
   sheet:"utestatsall",
-  phase:"S",
+  cupValue:"SEC 19.5 S",
   sortFn:(a,b)=>(+b.PTS||0)-(+a.PTS||0)||(+b.G||0)-(+a.G||0)
 });
 
@@ -2456,10 +2452,11 @@ renderTable({
   searchId:"searchPlayoffGoalies",
   updatedId:"updated-playoff-goalies",
   sheet:"målvaktsstatsall",
-  phase:"S",
+  cupValue:"SEC 19.5 S",
   sortFn:(a,b)=>(parseFloat(b.SVP)||0)-(parseFloat(a.SVP)||0)
 });
 </script>
+
 
 
 <!-- 🔹 REGLER FLIK 7 -->
@@ -2956,6 +2953,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
