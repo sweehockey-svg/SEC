@@ -2197,29 +2197,18 @@ html, body {
   }
 }
 @media (max-width: 768px) {
-  #statistik .wrap {
-    width: 100%;
-    border-radius: 0; /* tar bort rundade hörn för full-width-look */
-    border-left: none;
-    border-right: none;
-  }
-
   #statistik table {
     width: 100%;
-    min-width: 0 !important; /* låter den skalas ned helt */
-  }
-
-  #statistik thead th,
-  #statistik tbody td {
-    padding-left: 12px;
-    padding-right: 12px;
+    min-width: 0 !important;
   }
 }
+</style>
 
 <script>
 /* ============================
    STATISTIK – SLUTGILTIG VERSION
    ============================ */
+
 
 const API_BASE =
   "https://script.google.com/macros/s/AKfycbw-JnotgWHS9ftpM-1m_4dPg6IYJthH3KZ0acRzNB7u8vQmgsy0j82Xpgoxt3aBdpQ/exec";
@@ -2953,6 +2942,7 @@ document.querySelectorAll(".team-card").forEach(card => {
 
 </body>
 </html>
+
 
 
 
